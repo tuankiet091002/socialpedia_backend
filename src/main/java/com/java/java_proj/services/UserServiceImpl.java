@@ -144,13 +144,6 @@ public class UserServiceImpl implements UserService {
         }
         user.setRole(role);
 
-        // check avatar file
-        if (requestUser.getAvatarFile() != null) {
-            resourceService.deleteFile(user.getAvatar().getId());
-            Resource resource = resourceService.addFile(requestUser.getAvatarFile());
-            user.setAvatar(resource);
-        }
-
         // save to db
         userRepository.save(user);
         return userRepository.findByEmail(user.getEmail());

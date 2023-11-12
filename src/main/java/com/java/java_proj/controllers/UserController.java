@@ -1,5 +1,8 @@
 package com.java.java_proj.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.java.java_proj.dto.request.forcreate.CRequestChannel;
 import com.java.java_proj.dto.request.forcreate.CRequestUser;
 import com.java.java_proj.dto.request.forupdate.URequestUser;
 import com.java.java_proj.dto.request.security.RequestLogin;
@@ -25,7 +28,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.DataBinder;
+import org.springframework.validation.Validator;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.util.Arrays;
@@ -45,6 +51,10 @@ public class UserController {
     RefreshTokenService refreshTokenService;
     @Autowired
     AuthenticationManager authenticationManager;
+    @Autowired
+    ObjectMapper objectMapper;
+    @Autowired
+    Validator validator;
 
 
     @PostMapping("/login")
@@ -87,14 +97,21 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<DResponseUser> addUser(@Valid @RequestBody CRequestUser requestUser,
-                                                 BindingResult bindingResult) {
+    public ResponseEntity<DResponseUser> addUser(@RequestPart String content,
+                                                 @RequestPart MultipartFile file) throws JsonProcessingException {
+
+        CRequestUser requestUser = objectMapper.readValue(content, CRequestUser.class);
 
         // get validation error
+        DataBinder binder = new DataBinder(requestUser);
+        binder.setValidator(validator);
+        binder.validate();
+        BindingResult bindingResult = binder.getBindingResult();
         if (bindingResult.hasErrors()) {
             throw new HttpException(HttpStatus.BAD_REQUEST, bindingResult);
         }
 
+        requestUser.setAvatarFile(file);
         DResponseUser user = userService.createUser(requestUser);
 
         return new ResponseEntity<>(user, HttpStatus.OK);

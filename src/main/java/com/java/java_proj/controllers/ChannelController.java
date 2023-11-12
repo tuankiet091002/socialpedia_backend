@@ -1,5 +1,7 @@
 package com.java.java_proj.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.java.java_proj.dto.request.forcreate.CRequestChannel;
 import com.java.java_proj.dto.request.forupdate.URequestChannel;
 import com.java.java_proj.dto.response.fordetail.DResponseChannel;
@@ -13,6 +15,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.DataBinder;
+import org.springframework.validation.Validator;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,12 +26,17 @@ import java.util.Arrays;
 import java.util.List;
 
 @RestController
-@RequestMapping("/channel")
+@RequestMapping(value = "/channel")
 @Api(tags = "Channel")
 public class ChannelController {
 
     @Autowired
     ChannelService channelService;
+    @Autowired
+    ObjectMapper objectMapper;
+    @Autowired
+    Validator validator;
+
 
     @GetMapping()
     public ResponseEntity<Page<LResponseChannel>> getAllChannel(@RequestParam(value = "name", defaultValue = "") String name,
@@ -64,16 +73,21 @@ public class ChannelController {
     }
 
     @PostMapping(value = "")
-    public ResponseEntity<DResponseChannel> createChannel(@Valid @RequestPart CRequestChannel requestChannel,
-                                                          @RequestPart MultipartFile file,
-                                                          BindingResult bindingResult) {
+    public ResponseEntity<DResponseChannel> createChannel(@RequestPart String content,
+                                                          @RequestPart MultipartFile file) throws JsonProcessingException {
+
+        CRequestChannel requestChannel = objectMapper.readValue(content, CRequestChannel.class);
 
         // get validation error
+        DataBinder binder = new DataBinder(requestChannel);
+        binder.setValidator(validator);
+        binder.validate();
+        BindingResult bindingResult = binder.getBindingResult();
         if (bindingResult.hasErrors()) {
             throw new HttpException(HttpStatus.BAD_REQUEST, bindingResult);
         }
-        requestChannel.setAvatarFile(file);
 
+        requestChannel.setAvatarFile(file);
         DResponseChannel channel = channelService.createChannel(requestChannel);
 
         return new ResponseEntity<>(channel, HttpStatus.OK);
@@ -81,14 +95,12 @@ public class ChannelController {
 
     @PutMapping("")
     public ResponseEntity<DResponseChannel> updateChannel(@Valid @RequestPart URequestChannel requestChannel,
-                                                          @RequestPart MultipartFile file,
                                                           BindingResult bindingResult) {
 
         // get validation error
         if (bindingResult.hasErrors()) {
             throw new HttpException(HttpStatus.BAD_REQUEST, bindingResult);
         }
-        requestChannel.setAvatarFile(file);
 
         DResponseChannel channel = channelService.updateChannel(requestChannel);
 

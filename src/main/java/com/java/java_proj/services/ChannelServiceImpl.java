@@ -100,12 +100,6 @@ public class ChannelServiceImpl implements ChannelService {
         channel.setName(requestChannel.getName());
         channel.setDescription(requestChannel.getDescription());
 
-        // avatar file check
-        if (requestChannel.getAvatarFile() != null) {
-            Resource resource = resourceService.addFile(requestChannel.getAvatarFile());
-            channel.setAvatar(resource);
-        }
-
         // set member list
         channel.setChannelMembers(genChannelMemberList(channel.getId(),
                 requestChannel.getChannelMembersId()));

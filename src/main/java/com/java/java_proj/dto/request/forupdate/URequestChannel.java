@@ -27,8 +27,6 @@ public class URequestChannel {
     @NotBlank(message = "Channel name is required.")
     private String description;
 
-    private MultipartFile avatarFile;
-
     @NotEmpty(message = "At least one additional member beside you is required.")
     private List<CRequestChannelMember> channelMembersId;
 }
