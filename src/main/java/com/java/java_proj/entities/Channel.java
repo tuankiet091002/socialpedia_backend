@@ -35,14 +35,14 @@ public class Channel {
     @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ChannelMember> channelMembers = new ArrayList<>();
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne()
     @JoinColumn(name = "created_by")
     private User createdBy;
 
     @Column(name = "created_date", columnDefinition = "DATE")
     private LocalDate createdDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne()
     @JoinColumn(name = "modified_by")
     private User modifiedBy;
 

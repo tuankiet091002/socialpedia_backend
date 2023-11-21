@@ -24,9 +24,14 @@ public class ResourceServiceImpl implements ResourceService {
     ResourceRepository resourceRepository;
 
     private User getOwner() {
-        return SecurityContextHolder.getContext().getAuthentication() == null ? null :
-                ((CustomUserDetail) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+        try {
+            return ((CustomUserDetail) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+        } catch (Exception e) {
+            return null;
+        }
+
     }
+
 
     @Override
     public DResponseResource findById(Integer id) {

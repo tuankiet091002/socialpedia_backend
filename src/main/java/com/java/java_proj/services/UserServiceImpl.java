@@ -58,9 +58,9 @@ public class UserServiceImpl implements UserService {
 
         // if orderBy = role, need to access field of child class (Permission.role)
         Pageable paging = orderDirection.equals("ASC")
-                ? PageRequest.of(page - 1, size, Sort.by(
+                ? PageRequest.of(page, size, Sort.by(
                 Objects.equals(orderBy, "role") ? "role.role" : orderBy).ascending())
-                : PageRequest.of(page - 1, size, Sort.by(
+                : PageRequest.of(page, size, Sort.by(
                 Objects.equals(orderBy, "role") ? "role.role" : orderBy).descending());
 
         return userRepository.findAllBy(id, name, email, paging);
@@ -169,7 +169,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User verifyUser(RequestLogin requestLogin) {
+    public DResponseUser verifyUser(RequestLogin requestLogin) {
         User user = userRepository.findUserByEmail(requestLogin.getEmail());
         if (user == null) {
             throw new HttpException(HttpStatus.BAD_REQUEST, "User not found.");
@@ -179,7 +179,7 @@ public class UserServiceImpl implements UserService {
             throw new HttpException(HttpStatus.BAD_REQUEST, "Wrong password.");
         }
 
-        return user;
+        return userRepository.findByEmail(user.getEmail());
     }
 
 }

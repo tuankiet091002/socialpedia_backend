@@ -1,6 +1,6 @@
 package com.java.java_proj.dto.response.forlist;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public interface LResponseMessage {
 
@@ -8,8 +8,10 @@ public interface LResponseMessage {
 
     public String getContent();
 
-    public LocalDate getCreatedDate();
+    public LResponseUser getCreatedBy();
 
-    public LocalDate getModifiedDate();
+    public LocalDateTime getCreatedDate();
+
+    public LocalDateTime getModifiedDate();
 
 }

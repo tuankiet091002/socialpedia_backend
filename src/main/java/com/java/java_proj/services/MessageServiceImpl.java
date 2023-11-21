@@ -14,9 +14,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
@@ -31,15 +33,21 @@ public class MessageServiceImpl implements MessageService {
     ResourceService resourceService;
 
     @Override
+    @Transactional
     public Page<DResponseMessage> getAllMessageByChannel(String content, Integer channelId, Integer page, Integer size) {
 
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Channel not found."));
 
         // create pageable
-        Pageable pageable = PageRequest.of(page - 1, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdDate").descending());
 
         return messageRepository.findByContentContainingAndChannel(content, channel, pageable);
+    }
+
+    @Override
+    public DResponseMessage getOneMessage(Integer messageId) {
+        return messageRepository.findOneById(messageId);
     }
 
     @Override

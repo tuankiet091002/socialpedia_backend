@@ -7,6 +7,4 @@ public interface LResponseUserPermission {
     public String getRole();
     public PermissionAccessType getUserManagement();
     public PermissionAccessType getDocumentManagement();
-
-
 }

@@ -36,14 +36,14 @@ public class Message {
             inverseJoinColumns = @JoinColumn(name = "resource_code"))
     private List<Resource> resources = new ArrayList<>();
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne()
     @JoinColumn(name = "created_by")
     private User createdBy;
 
     @Column(name = "created_date", columnDefinition = "DATETIME")
     private LocalDateTime createdDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne()
     @JoinColumn(name = "modified_by")
     private User modifiedBy;
 

@@ -13,9 +13,9 @@ import java.util.Optional;
 @Repository
 public interface ChannelRepository extends JpaRepository<Channel, Integer> {
 
-    Page<LResponseChannel> findByNameContaining(String name, Pageable paging);
+    Page<Channel> findByNameContaining(String name, Pageable paging);
 
-    Optional<DResponseChannel> findOneById(Integer id);
+    Optional<Channel> findOneById(Integer id);
 
     Integer countById(Integer id);
 }

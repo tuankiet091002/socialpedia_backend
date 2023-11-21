@@ -2,7 +2,6 @@ package com.java.java_proj.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.java.java_proj.dto.request.forcreate.CRequestChannel;
 import com.java.java_proj.dto.request.forcreate.CRequestUser;
 import com.java.java_proj.dto.request.forupdate.URequestUser;
 import com.java.java_proj.dto.request.security.RequestLogin;
@@ -11,11 +10,10 @@ import com.java.java_proj.dto.response.fordetail.DResponseUser;
 import com.java.java_proj.dto.response.security.ResponseJwt;
 import com.java.java_proj.dto.response.security.ResponseRefreshToken;
 import com.java.java_proj.entities.RefreshToken;
-import com.java.java_proj.entities.User;
+import com.java.java_proj.entities.miscs.CustomUserDetail;
 import com.java.java_proj.exceptions.HttpException;
 import com.java.java_proj.services.templates.RefreshTokenService;
 import com.java.java_proj.services.templates.UserService;
-import com.java.java_proj.entities.miscs.CustomUserDetail;
 import com.java.java_proj.util.JWTTokenProvider;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,10 +37,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/user")
-@CrossOrigin(origins = "http://localhost:3000")
 @Api(tags = "User")
 public class UserController {
-
     @Autowired
     UserService userService;
     @Autowired
@@ -60,7 +56,7 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<ResponseJwt> login(@Valid @RequestBody RequestLogin requestLogin) {
         // verified user account
-        User loginUser = userService.verifyUser(requestLogin);
+        DResponseUser loginUser = userService.verifyUser(requestLogin);
 
         Authentication authentication = authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(requestLogin.getEmail(), requestLogin.getPassword()));
@@ -71,10 +67,8 @@ public class UserController {
 
         ResponseJwt response = new ResponseJwt();
         response.setToken(tokenProvider.generateToken((CustomUserDetail) authentication.getPrincipal()));
-        response.setEmail(loginUser.getEmail());
-        response.setId(loginUser.getId());
         response.setRefreshToken(refreshTokenService.createToken(loginUser.getEmail()).getToken());
-        response.setPermission(loginUser.getRole());
+        response.setUser(loginUser);
 
         return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
     }
@@ -97,8 +91,8 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<DResponseUser> addUser(@RequestPart String content,
-                                                 @RequestPart MultipartFile file) throws JsonProcessingException {
+    public ResponseEntity<DResponseUser> createUser(@RequestPart String content,
+                                                    @RequestPart MultipartFile file) throws JsonProcessingException {
 
         CRequestUser requestUser = objectMapper.readValue(content, CRequestUser.class);
 
@@ -110,8 +104,11 @@ public class UserController {
         if (bindingResult.hasErrors()) {
             throw new HttpException(HttpStatus.BAD_REQUEST, bindingResult);
         }
+        if (!file.isEmpty()) {
+            requestUser.setAvatarFile(file);
+        }
 
-        requestUser.setAvatarFile(file);
+
         DResponseUser user = userService.createUser(requestUser);
 
         return new ResponseEntity<>(user, HttpStatus.OK);
@@ -121,10 +118,10 @@ public class UserController {
     public ResponseEntity<Page<DResponseUser>> getAllUser(@RequestParam(value = "id", defaultValue = "0") Integer id,
                                                           @RequestParam(value = "name", defaultValue = "") String name,
                                                           @RequestParam(value = "email", defaultValue = "") String email,
-                                                          @RequestParam(value = "order-by", defaultValue = "dob") String orderBy,
-                                                          @RequestParam(value = "page-no", defaultValue = "1") Integer page,
-                                                          @RequestParam(value = "page-size", defaultValue = "10") Integer size,
-                                                          @RequestParam(value = "order-direction", defaultValue = "DESC") String orderDirection) {
+                                                          @RequestParam(value = "orderBy", defaultValue = "dob") String orderBy,
+                                                          @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
+                                                          @RequestParam(value = "pageSize", defaultValue = "10") Integer size,
+                                                          @RequestParam(value = "orderDirection", defaultValue = "DESC") String orderDirection) {
 
         List<String> allowedFields = Arrays.asList("id", "name", "email", "dob", "gender", "role");
         if (!allowedFields.contains(orderBy)) {
@@ -137,9 +134,6 @@ public class UserController {
         }
 
         Page<DResponseUser> userPage = userService.getAllUser(id, name, email, orderBy, page, size, orderDirection);
-        if (userPage.isEmpty()) {
-            throw new HttpException(HttpStatus.NOT_FOUND, "Currently no records.");
-        }
 
         return new ResponseEntity<>(userPage, new HttpHeaders(), HttpStatus.OK);
     }

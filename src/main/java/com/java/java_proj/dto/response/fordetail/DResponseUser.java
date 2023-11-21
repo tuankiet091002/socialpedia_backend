@@ -20,4 +20,6 @@ public interface DResponseUser {
     public Boolean getGender();
 
     public Boolean getIsActive();
+
+    public DResponseResource getAvatar();
 }

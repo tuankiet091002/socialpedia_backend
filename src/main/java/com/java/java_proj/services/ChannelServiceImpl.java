@@ -4,17 +4,19 @@ import com.java.java_proj.dto.request.forcreate.CRequestChannel;
 import com.java.java_proj.dto.request.forcreate.CRequestChannelMember;
 import com.java.java_proj.dto.request.forupdate.URequestChannel;
 import com.java.java_proj.dto.response.fordetail.DResponseChannel;
+import com.java.java_proj.dto.response.fordetail.DResponseMessage;
 import com.java.java_proj.dto.response.forlist.LResponseChannel;
 import com.java.java_proj.entities.Channel;
 import com.java.java_proj.entities.ChannelMember;
 import com.java.java_proj.entities.Resource;
 import com.java.java_proj.entities.User;
+import com.java.java_proj.entities.miscs.CustomUserDetail;
 import com.java.java_proj.exceptions.HttpException;
 import com.java.java_proj.repositories.ChannelRepository;
+import com.java.java_proj.repositories.MessageRepository;
 import com.java.java_proj.repositories.UserRepository;
 import com.java.java_proj.services.templates.ChannelService;
 import com.java.java_proj.services.templates.ResourceService;
-import com.java.java_proj.entities.miscs.CustomUserDetail;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -37,6 +39,8 @@ public class ChannelServiceImpl implements ChannelService {
     @Autowired
     UserRepository userRepository;
     @Autowired
+    MessageRepository messageRepository;
+    @Autowired
     ResourceService resourceService;
     @Autowired
     ModelMapper modelMapper;
@@ -54,16 +58,38 @@ public class ChannelServiceImpl implements ChannelService {
     public Page<LResponseChannel> getAllChannel(String name, Integer page, Integer size, String orderBy, String orderDirection) {
         // create pageable
         Pageable paging = orderDirection.equals("ASC")
-                ? PageRequest.of(page - 1, size, Sort.by(orderBy).ascending())
-                : PageRequest.of(page - 1, size, Sort.by(orderBy).descending());
+                ? PageRequest.of(page, size, Sort.by(orderBy).ascending())
+                : PageRequest.of(page, size, Sort.by(orderBy).descending());
 
-        return channelRepository.findByNameContaining(name, paging);
+        // fetch entity page
+        Page<Channel> channelPage = channelRepository.findByNameContaining(name, paging);
+
+        // map to dto
+        return channelPage.map(entity -> {
+            // map to dto
+            LResponseChannel channel = modelMapper.map(entity, LResponseChannel.class);
+
+            // fetch latest message and set
+            DResponseMessage latestMessage = messageRepository.findTopByChannelOrderByCreatedDateDesc(entity);
+            channel.setLatestMessage(latestMessage);
+
+            return channel;
+        });
     }
 
     @Override
     public DResponseChannel getOneChannel(Integer id) {
-        return channelRepository.findOneById(id)
+
+        // get channel entity and map it to dto
+        Channel channel = channelRepository.findOneById(id)
                 .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Channel not found."));
+        DResponseChannel responseChannel = modelMapper.map(channel, DResponseChannel.class);
+
+        // fetch latest message and set
+        DResponseMessage latestMessage = messageRepository.findTopByChannelOrderByCreatedDateDesc(channel);
+        responseChannel.setLatestMessage(latestMessage);
+
+        return responseChannel;
     }
 
     @Override
@@ -87,7 +113,7 @@ public class ChannelServiceImpl implements ChannelService {
                 requestChannel.getChannelMembersId()));
 
         channelRepository.save(channel);
-        return channelRepository.findOneById(channel.getId()).orElse(null);
+        return getOneChannel(channel.getId());
     }
 
     @Override
@@ -108,7 +134,7 @@ public class ChannelServiceImpl implements ChannelService {
         channel.setModifiedDate(LocalDate.now());
 
         channel = channelRepository.save(channel);
-        return channelRepository.findOneById(channel.getId()).orElse(null);
+        return getOneChannel(channel.getId());
     }
 
     @Override

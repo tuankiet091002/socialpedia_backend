@@ -1,14 +1,24 @@
 package com.java.java_proj.dto.response.fordetail;
 
-public interface DResponseChannel {
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
-    public Integer getId();
+@NoArgsConstructor
+@Getter
+@Setter
+@ToString
+public class DResponseChannel {
 
-    public String getName();
+    private Integer id;
 
-    public String getDescription();
+    private String name;
 
-    public DResponseResource getAvatar();
+    private String description;
 
+    private DResponseResource avatar;
+
+    private DResponseMessage latestMessage;
 
 }

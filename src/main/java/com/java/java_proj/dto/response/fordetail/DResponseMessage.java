@@ -1,8 +1,8 @@
 package com.java.java_proj.dto.response.fordetail;
 
-import com.java.java_proj.dto.request.forcreate.CRequestUser;
+import com.java.java_proj.dto.response.forlist.LResponseUser;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface DResponseMessage {
@@ -13,11 +13,11 @@ public interface DResponseMessage {
 
     public List<DResponseResource> getResources();
 
-    public CRequestUser getCreatedBy();
+    public LResponseUser getCreatedBy();
 
-    public LocalDate getCreatedDate();
+    public LocalDateTime getCreatedDate();
 
-    public CRequestUser getModifiedBy();
+    public LResponseUser getModifiedBy();
 
-    public LocalDate getModifiedDate();
+    public LocalDateTime getModifiedDate();
 }

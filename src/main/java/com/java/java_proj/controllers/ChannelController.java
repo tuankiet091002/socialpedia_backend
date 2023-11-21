@@ -40,10 +40,10 @@ public class ChannelController {
 
     @GetMapping()
     public ResponseEntity<Page<LResponseChannel>> getAllChannel(@RequestParam(value = "name", defaultValue = "") String name,
-                                                                @RequestParam(value = "order-by", defaultValue = "id") String orderBy,
-                                                                @RequestParam(value = "page-no", defaultValue = "1") Integer page,
-                                                                @RequestParam(value = "page-size", defaultValue = "10") Integer size,
-                                                                @RequestParam(value = "order-direction", defaultValue = "DESC") String orderDirection) {
+                                                                @RequestParam(value = "orderBy", defaultValue = "id") String orderBy,
+                                                                @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
+                                                                @RequestParam(value = "pageSize", defaultValue = "10") Integer size,
+                                                                @RequestParam(value = "orderDirection", defaultValue = "DESC") String orderDirection) {
 
         List<String> allowedFields = Arrays.asList("id", "name");
         if (!allowedFields.contains(orderBy)) {
@@ -56,10 +56,6 @@ public class ChannelController {
         }
 
         Page<LResponseChannel> channelPage = channelService.getAllChannel(name, page, size, orderBy, orderDirection);
-
-        if (channelPage.isEmpty()) {
-            throw new HttpException(HttpStatus.NOT_FOUND, "Currently no records.");
-        }
 
         return new ResponseEntity<>(channelPage, new HttpHeaders(), HttpStatus.OK);
     }
@@ -87,10 +83,13 @@ public class ChannelController {
             throw new HttpException(HttpStatus.BAD_REQUEST, bindingResult);
         }
 
-        requestChannel.setAvatarFile(file);
+        if (!file.isEmpty()){
+            requestChannel.setAvatarFile(file);
+        }
+
         DResponseChannel channel = channelService.createChannel(requestChannel);
 
-        return new ResponseEntity<>(channel, HttpStatus.OK);
+        return new ResponseEntity<>(channel , HttpStatus.OK);
     }
 
     @PutMapping("")

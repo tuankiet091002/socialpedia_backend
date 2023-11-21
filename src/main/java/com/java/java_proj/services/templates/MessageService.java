@@ -9,6 +9,8 @@ public interface MessageService {
 
     Page<DResponseMessage> getAllMessageByChannel(String content, Integer channelId, Integer page, Integer size);
 
+    DResponseMessage getOneMessage(Integer channelId);
+
     public DResponseMessage createMessage(CRequestMessage message);
 
     public DResponseMessage updateMessage(URequestMessage message);

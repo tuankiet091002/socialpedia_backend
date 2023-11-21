@@ -18,5 +18,5 @@ public interface UserService {
 
     public DResponseUser updateUserRole(Integer id, String role);
 
-    public User verifyUser(RequestLogin requestLogin);
+    public DResponseUser verifyUser(RequestLogin requestLogin);
 }
