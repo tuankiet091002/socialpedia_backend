@@ -5,6 +5,7 @@ import lombok.*;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -45,26 +46,24 @@ public class User {
     @Column(name = "is_active", columnDefinition = "boolean default true")
     private Boolean isActive = true;
 
+    @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE)
+    private List<ChannelMember> channelMembers = new ArrayList<>();
+
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "avatar")
     private Resource avatar;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by")
-    private User createdBy;
-
     @Column(name = "created_date", columnDefinition = "DATETIME")
     private LocalDateTime createdDate;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "modified_by")
-    private User modifiedBy;
 
     @Column(name = "modified_date", columnDefinition = "DATETIME")
     private LocalDateTime modifiedDate;
 
-    @Column
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    private List<RefreshToken> refreshToken;
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @JoinTable(name = "user_friends",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "friend_id")
+    )
+    private List<User> friends;
 
 }

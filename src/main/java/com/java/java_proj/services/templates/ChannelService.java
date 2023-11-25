@@ -17,4 +17,8 @@ public interface ChannelService {
     public DResponseChannel updateChannel(URequestChannel channel);
 
     public void deleteChannel(Integer id);
+
+    public void joinChannel(Integer channelId);
+
+    public void leaveChannel(Integer channelId);
 }

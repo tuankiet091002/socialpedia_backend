@@ -17,6 +17,9 @@ public class CRequestChannelMember {
     @NotNull(message = "Member is required.")
     private Integer memberId;
 
-    @NotNull(message = "Permission access type is required.")
-    private PermissionAccessType permission;
+    @NotNull(message = "Permission toward chat is required.")
+    private PermissionAccessType chatPermission;
+
+    @NotNull(message = "Permission toward member is required.")
+    private PermissionAccessType memberPermission;
 }

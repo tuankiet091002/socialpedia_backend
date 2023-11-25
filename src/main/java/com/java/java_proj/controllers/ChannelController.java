@@ -114,4 +114,19 @@ public class ChannelController {
         return new ResponseEntity<>(null, HttpStatus.OK);
     }
 
+    @GetMapping("/{channelId}/join")
+    public ResponseEntity<Null> joinChannel(@PathVariable Integer channelId) {
+
+        channelService.joinChannel(channelId);
+
+        return new ResponseEntity<>(null, HttpStatus.OK);
+    }
+
+    @GetMapping("/{channelId}/leave")
+    public ResponseEntity<Null> leaveChannel(@PathVariable Integer channelId) {
+
+        channelService.leaveChannel(channelId);
+
+        return new ResponseEntity<>(null, HttpStatus.OK);
+    }
 }

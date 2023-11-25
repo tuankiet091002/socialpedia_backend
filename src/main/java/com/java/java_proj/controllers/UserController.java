@@ -7,6 +7,7 @@ import com.java.java_proj.dto.request.forupdate.URequestUser;
 import com.java.java_proj.dto.request.security.RequestLogin;
 import com.java.java_proj.dto.request.security.RequestRefreshToken;
 import com.java.java_proj.dto.response.fordetail.DResponseUser;
+import com.java.java_proj.dto.response.forlist.LResponseUser;
 import com.java.java_proj.dto.response.security.ResponseJwt;
 import com.java.java_proj.dto.response.security.ResponseRefreshToken;
 import com.java.java_proj.entities.RefreshToken;
@@ -39,83 +40,12 @@ import java.util.List;
 @RequestMapping("/user")
 @Api(tags = "User")
 public class UserController {
+
     @Autowired
     UserService userService;
-    @Autowired
-    JWTTokenProvider tokenProvider;
-    @Autowired
-    RefreshTokenService refreshTokenService;
-    @Autowired
-    AuthenticationManager authenticationManager;
-    @Autowired
-    ObjectMapper objectMapper;
-    @Autowired
-    Validator validator;
-
-
-    @PostMapping("/login")
-    public ResponseEntity<ResponseJwt> login(@Valid @RequestBody RequestLogin requestLogin) {
-        // verified user account
-        DResponseUser loginUser = userService.verifyUser(requestLogin);
-
-        Authentication authentication = authenticationManager
-                .authenticate(new UsernamePasswordAuthenticationToken(requestLogin.getEmail(), requestLogin.getPassword()));
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        refreshTokenService.deActiveUserToken(loginUser.getId());
-
-        ResponseJwt response = new ResponseJwt();
-        response.setToken(tokenProvider.generateToken((CustomUserDetail) authentication.getPrincipal()));
-        response.setRefreshToken(refreshTokenService.createToken(loginUser.getEmail()).getToken());
-        response.setUser(loginUser);
-
-        return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
-    }
-
-    @GetMapping("/refresh-token")
-    public ResponseEntity<ResponseRefreshToken> reFreshToken(@Valid @RequestBody RequestRefreshToken requestRefreshToken) {
-
-        RefreshToken refreshToken = refreshTokenService.findActiveToken(requestRefreshToken.getRefreshToken());
-
-        if (refreshToken == null) {
-            throw new HttpException(HttpStatus.BAD_REQUEST, "Refresh token is expired");
-        }
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetail userDetail = (CustomUserDetail) authentication.getPrincipal();
-
-        ResponseRefreshToken response = new ResponseRefreshToken();
-        response.setAccessToken(tokenProvider.generateToken(userDetail));
-        return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
-    }
-
-    @PostMapping("/register")
-    public ResponseEntity<DResponseUser> createUser(@RequestPart String content,
-                                                    @RequestPart MultipartFile file) throws JsonProcessingException {
-
-        CRequestUser requestUser = objectMapper.readValue(content, CRequestUser.class);
-
-        // get validation error
-        DataBinder binder = new DataBinder(requestUser);
-        binder.setValidator(validator);
-        binder.validate();
-        BindingResult bindingResult = binder.getBindingResult();
-        if (bindingResult.hasErrors()) {
-            throw new HttpException(HttpStatus.BAD_REQUEST, bindingResult);
-        }
-        if (!file.isEmpty()) {
-            requestUser.setAvatarFile(file);
-        }
-
-
-        DResponseUser user = userService.createUser(requestUser);
-
-        return new ResponseEntity<>(user, HttpStatus.OK);
-    }
 
     @GetMapping()
-    public ResponseEntity<Page<DResponseUser>> getAllUser(@RequestParam(value = "id", defaultValue = "0") Integer id,
+    public ResponseEntity<Page<LResponseUser>> getAllUser(@RequestParam(value = "id", defaultValue = "0") Integer id,
                                                           @RequestParam(value = "name", defaultValue = "") String name,
                                                           @RequestParam(value = "email", defaultValue = "") String email,
                                                           @RequestParam(value = "orderBy", defaultValue = "dob") String orderBy,
@@ -133,7 +63,7 @@ public class UserController {
             throw new HttpException(HttpStatus.BAD_REQUEST, "Sort Direction " + orderDirection + " is illegal!");
         }
 
-        Page<DResponseUser> userPage = userService.getAllUser(id, name, email, orderBy, page, size, orderDirection);
+        Page<LResponseUser> userPage = userService.getAllUser(id, name, email, orderBy, page, size, orderDirection);
 
         return new ResponseEntity<>(userPage, new HttpHeaders(), HttpStatus.OK);
     }
@@ -159,6 +89,22 @@ public class UserController {
         }
 
         DResponseUser user = userService.updateUserRole(id, role);
+
+        return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/{userId}/friend")
+    public ResponseEntity<DResponseUser> addFriend(@PathVariable Integer userId) {
+
+        DResponseUser user = userService.addFriend(userId);
+
+        return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+
+    @DeleteMapping(value = "/{userId}/friend")
+    public ResponseEntity<DResponseUser> deleteFriend(@PathVariable Integer userId) {
+
+        DResponseUser user = userService.deleteFriend(userId);
 
         return new ResponseEntity<>(user, HttpStatus.OK);
     }

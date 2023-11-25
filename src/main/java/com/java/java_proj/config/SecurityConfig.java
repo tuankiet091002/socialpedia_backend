@@ -3,6 +3,7 @@ package com.java.java_proj.config;
 import com.java.java_proj.config.filter.JwtTokenFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -26,24 +27,23 @@ public class SecurityConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("*")
+                        .allowedOrigins("http://localhost:3000")
                         .allowedHeaders("*")
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "HEAD")
-                        .allowCredentials(false);
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS")
+                        .allowCredentials(true);
             }
         };
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.authorizeHttpRequests(
-                        configurer -> configurer
+        httpSecurity.authorizeHttpRequests(configurer ->
+                        configurer
+                                .antMatchers(HttpMethod.GET, "/channel/**").authenticated()
                                 .anyRequest().permitAll()
-                        // 25
                 )
                 .csrf().disable()
-                .httpBasic()
-                .and()
+                .httpBasic().and()
                 .addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
 

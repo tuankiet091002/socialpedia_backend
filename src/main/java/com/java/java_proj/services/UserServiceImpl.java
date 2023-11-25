@@ -4,6 +4,7 @@ import com.java.java_proj.dto.request.forcreate.CRequestUser;
 import com.java.java_proj.dto.request.forupdate.URequestUser;
 import com.java.java_proj.dto.request.security.RequestLogin;
 import com.java.java_proj.dto.response.fordetail.DResponseUser;
+import com.java.java_proj.dto.response.forlist.LResponseUser;
 import com.java.java_proj.entities.Resource;
 import com.java.java_proj.entities.User;
 import com.java.java_proj.entities.UserPermission;
@@ -27,6 +28,7 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -42,18 +44,18 @@ public class UserServiceImpl implements UserService {
     @Autowired
     DateFormatter dateFormatter;
 
-    private User getOwner() {
+    @Override
+    public User getOwner() {
         try {
             return ((CustomUserDetail) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
         } catch (Exception e) {
-            return null;
+            throw new HttpException(HttpStatus.NOT_FOUND, "Current user not found.");
         }
 
     }
 
     @Override
-    @Transactional
-    public Page<DResponseUser> getAllUser(Integer id, String name, String email,
+    public Page<LResponseUser> getAllUser(Integer id, String name, String email,
                                           String orderBy, Integer page, Integer size, String orderDirection) {
 
         // if orderBy = role, need to access field of child class (Permission.role)
@@ -68,8 +70,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public DResponseUser createUser(CRequestUser requestUser) {
-
-        User owner = getOwner();
 
         // check if email exist
         DResponseUser oldUser = userRepository.findByEmail(requestUser.getEmail());
@@ -91,8 +91,7 @@ public class UserServiceImpl implements UserService {
                 .gender(requestUser.getGender())
                 .dob(dateFormatter.formatDate((requestUser.getDob())))
                 .isActive(true)
-                .createdDate(LocalDateTime.now())
-                .createdBy(owner).build();
+                .createdDate(LocalDateTime.now()).build();
 
         // find role
         UserPermission role = userPermissionRepository.findByRole(requestUser.getRole());
@@ -116,8 +115,6 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public DResponseUser updateUser(URequestUser requestUser) {
 
-        User owner = getOwner();
-
         // get user from db
         User user = userRepository.findById(requestUser.getId())
                 .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "User not found"));
@@ -135,7 +132,6 @@ public class UserServiceImpl implements UserService {
         user.setGender(requestUser.getGender());
         user.setIsActive(requestUser.getIsActive());
         user.setModifiedDate(LocalDateTime.now());
-        user.setModifiedBy(owner);
 
         // check role
         UserPermission role = userPermissionRepository.findByRole(requestUser.getRole());
@@ -182,4 +178,51 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByEmail(user.getEmail());
     }
 
+    @Override
+    public DResponseUser addFriend(Integer userId) {
+
+
+        User owner = getOwner();
+        // check if user exist
+        User friend = userRepository.findById(userId)
+                .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "User not found."));
+
+        // check if already friend
+        if (owner.getFriends().stream().anyMatch(f -> Objects.equals(f.getId(), friend.getId()))) {
+            throw new HttpException(HttpStatus.BAD_REQUEST, "User is already friend.");
+        }
+
+        // add user to both friend list
+        owner.getFriends().add(friend);
+        userRepository.save(owner);
+
+        friend.getFriends().add(owner);
+        userRepository.save(friend);
+
+        // return detail information
+        return userRepository.findByEmail(owner.getEmail());
+    }
+
+    @Override
+    public DResponseUser deleteFriend(Integer userId) {
+
+        User owner = getOwner();
+        // check if user exist
+        User friend = userRepository.findById(userId)
+                .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "User not found."));
+
+        // check if already friend
+        if (owner.getFriends().stream().noneMatch(f -> Objects.equals(f.getId(), friend.getId()))) {
+            throw new HttpException(HttpStatus.BAD_REQUEST, "User is not friend.");
+        }
+
+        // add user to both friend list
+        owner.setFriends(owner.getFriends().stream()
+                .filter(f -> !Objects.equals(f.getId(), friend.getId()))
+                .collect(Collectors.toList()));
+        userRepository.save(owner);
+
+        // return detail information
+        return userRepository.findByEmail(owner.getEmail());
+    }
 }

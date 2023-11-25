@@ -1,24 +1,28 @@
 package com.java.java_proj.dto.response.fordetail;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import com.java.java_proj.dto.response.forlist.LResponseUser;
 
-@NoArgsConstructor
-@Getter
-@Setter
-@ToString
-public class DResponseChannel {
+import java.time.LocalDate;
+import java.util.List;
 
-    private Integer id;
+public interface DResponseChannel {
 
-    private String name;
+    public Integer getId();
 
-    private String description;
+    public String getName();
 
-    private DResponseResource avatar;
+    public String getDescription();
 
-    private DResponseMessage latestMessage;
+    public DResponseResource getAvatar();
+
+    public List<DResponseChannelMember> getChannelMembers();
+
+    public LResponseUser getCreatedBy();
+
+    public LocalDate getCreatedDate();
+
+    public LResponseUser getModifiedBy();
+
+    public LocalDate getModifiedDate();
 
 }

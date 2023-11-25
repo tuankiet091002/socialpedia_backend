@@ -28,7 +28,14 @@ public class ChannelMember {
     @JoinColumn(name = "user_id")
     private User member;
 
-    @Column(name = "permission")
-    private PermissionAccessType permission;
+    @Column(name = "chat_permission")
+    private PermissionAccessType chatPermission = PermissionAccessType.CREATE;
 
+    @Column(name = "member_permission")
+    private PermissionAccessType memberPermission = PermissionAccessType.VIEW;
+
+    public ChannelMember(Channel channel, User member) {
+        this.channel = channel;
+        this.member = member;
+    }
 }
