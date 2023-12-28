@@ -19,8 +19,9 @@ public class CustomUserDetail implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         String[] authorityList = {
-                user.getRole().getRole(),
-                "USER_" + user.getRole().getUserManagement().toString()
+                user.getRole().getName(),
+                "USER_" + user.getRole().getUserPermission().toString(),
+                "CHANNEL_" + user.getRole().getChannelPermission().toString()
         };
         return List.of(
                 new SimpleGrantedAuthority(authorityList[0]),

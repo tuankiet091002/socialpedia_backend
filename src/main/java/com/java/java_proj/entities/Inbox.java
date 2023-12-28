@@ -1,0 +1,53 @@
+package com.java.java_proj.entities;
+
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(name = "inboxs")
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+@Builder
+public class Inbox {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ChatSpaceSequence")
+    private Integer id;
+
+    @Column(name = "name")
+    private String name;
+
+    @ManyToOne
+    @JoinColumns({
+            @JoinColumn(name = "sender_id", referencedColumnName = "sender_id"),
+            @JoinColumn(name = "receiver_id", referencedColumnName = "receiver_id")
+    })
+    private UserFriendship friendship;
+
+    @Column(name = "is_active", columnDefinition = "boolean default true")
+    private Boolean isActive;
+
+    @ManyToOne
+    @JoinColumn(name = "sender_last_seen")
+    private MessageLastSeen senderLastSeen;
+
+    @ManyToOne
+    @JoinColumn(name = "receiver_last_seen")
+    private MessageLastSeen receiverLastSeen;
+
+    @Builder.Default
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinTable(name = "inbox_messages",
+            joinColumns = @JoinColumn(name = "inbox_id"),
+            inverseJoinColumns = @JoinColumn(name = "message_id"))
+    @OrderBy(value = "id DESC")
+    private List<Message> messages = new ArrayList<>();
+}

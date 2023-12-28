@@ -3,6 +3,8 @@ package com.java.java_proj.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.java.java_proj.dto.request.forcreate.CRequestUser;
+import com.java.java_proj.dto.request.forupdate.URequestUser;
+import com.java.java_proj.dto.request.forupdate.URequestUserPassword;
 import com.java.java_proj.dto.request.security.RequestLogin;
 import com.java.java_proj.dto.request.security.RequestRefreshToken;
 import com.java.java_proj.dto.response.fordetail.DResponseUser;
@@ -13,11 +15,13 @@ import com.java.java_proj.entities.miscs.CustomUserDetail;
 import com.java.java_proj.exceptions.HttpException;
 import com.java.java_proj.services.templates.RefreshTokenService;
 import com.java.java_proj.services.templates.UserService;
-import com.java.java_proj.util.JWTTokenProvider;
-import io.swagger.annotations.Api;
+import com.java.java_proj.util.security.JWTTokenProvider;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Null;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -28,48 +32,54 @@ import org.springframework.validation.Validator;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.validation.Valid;
+
 
 @RestController
 @RequestMapping("/auth")
-@Api(tags = "Auth")
 public class AuthController {
+    final private UserService userService;
+    final private JWTTokenProvider tokenProvider;
+    final private RefreshTokenService refreshTokenService;
+    final private AuthenticationManager authenticationManager;
+    final private ObjectMapper objectMapper;
+    final private Validator validator;
+
     @Autowired
-    UserService userService;
-    @Autowired
-    JWTTokenProvider tokenProvider;
-    @Autowired
-    RefreshTokenService refreshTokenService;
-    @Autowired
-    AuthenticationManager authenticationManager;
-    @Autowired
-    ObjectMapper objectMapper;
-    @Autowired
-    Validator validator;
+    public AuthController(UserService userService, JWTTokenProvider tokenProvider, RefreshTokenService refreshTokenService, AuthenticationManager authenticationManager, ObjectMapper objectMapper, Validator validator) {
+        this.userService = userService;
+        this.tokenProvider = tokenProvider;
+        this.refreshTokenService = refreshTokenService;
+        this.authenticationManager = authenticationManager;
+        this.objectMapper = objectMapper;
+        this.validator = validator;
+    }
 
     @PostMapping("/login")
     public ResponseEntity<ResponseJwt> login(@Valid @RequestBody RequestLogin requestLogin) {
+
         // verified user account
-        DResponseUser loginUser = userService.verifyUser(requestLogin);
+        userService.login(requestLogin);
+        DResponseUser user = userService.getUserProfile(requestLogin.getEmail());
 
         Authentication authentication = authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(requestLogin.getEmail(), requestLogin.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        refreshTokenService.deActiveUserToken(loginUser.getId());
+        refreshTokenService.deActiveUserToken(user.getId());
 
         ResponseJwt response = new ResponseJwt();
         response.setToken(tokenProvider.generateToken((CustomUserDetail) authentication.getPrincipal()));
-        response.setRefreshToken(refreshTokenService.createToken(loginUser.getEmail()).getToken());
-        response.setUser(loginUser);
+        response.setRefreshToken(refreshTokenService.createToken(user.getEmail()).getToken());
+        response.setUser(user);
 
         return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
     }
 
-    @PostMapping("/refresh-token")
+    @PostMapping("/refreshToken")
     public ResponseEntity<ResponseRefreshToken> reFreshToken(@Valid @RequestBody RequestRefreshToken requestRefreshToken,
                                                              BindingResult bindingResult) {
+
         // get validation error
         if (bindingResult.hasErrors()) {
             throw new HttpException(HttpStatus.BAD_REQUEST, bindingResult);
@@ -94,8 +104,8 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<DResponseUser> register(@RequestPart String content,
-                                                    @RequestPart MultipartFile file) throws JsonProcessingException {
+    public ResponseEntity<Null> register(@RequestPart String content,
+                                         @RequestPart MultipartFile file) throws JsonProcessingException {
 
         CRequestUser requestUser = objectMapper.readValue(content, CRequestUser.class);
 
@@ -110,10 +120,42 @@ public class AuthController {
         if (!file.isEmpty()) {
             requestUser.setAvatarFile(file);
         }
+        userService.register(requestUser);
 
 
-        DResponseUser user = userService.createUser(requestUser);
-
-        return new ResponseEntity<>(user, HttpStatus.OK);
+        return new ResponseEntity<>(null, HttpStatus.OK);
     }
+
+    @PutMapping("/profile")
+    @PreAuthorize("hasPermission('GLOBAL', 'USER', 'SELF')")
+    public ResponseEntity<Null> changeUserProfile(@Valid @RequestBody URequestUser requestUser,
+                                                  BindingResult bindingResult) {
+        // get validation error
+        if (bindingResult.hasErrors()) {
+            throw new HttpException(HttpStatus.BAD_REQUEST, bindingResult);
+        }
+
+        userService.updateUserProfile(requestUser);
+
+        return new ResponseEntity<>(null, HttpStatus.OK);
+    }
+
+    @PutMapping(value = "/password")
+    @PreAuthorize("hasPermission('GLOBAL', 'USER', 'SELF')")
+    public ResponseEntity<Null> changeUserPassword(@RequestBody URequestUserPassword requestUserPassword) {
+
+        userService.updateUserPassword(requestUserPassword);
+
+        return new ResponseEntity<>(null, HttpStatus.OK);
+    }
+
+    @PutMapping(value = "/avatar")
+    @PreAuthorize("hasPermission('GLOBAL', 'USER', 'SELF')")
+    public ResponseEntity<Null> changeUserAvatar(@RequestPart MultipartFile file) {
+
+        userService.updateUserAvatar(file);
+
+        return new ResponseEntity<>(null, HttpStatus.OK);
+    }
+
 }

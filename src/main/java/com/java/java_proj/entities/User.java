@@ -1,8 +1,12 @@
 package com.java.java_proj.entities;
 
-import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -12,8 +16,7 @@ import java.util.List;
 @Table(name = "users")
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
+@Data
 @Builder
 public class User {
 
@@ -44,26 +47,21 @@ public class User {
     private Boolean gender;
 
     @Column(name = "is_active", columnDefinition = "boolean default true")
-    private Boolean isActive = true;
-
-    @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE)
-    private List<ChannelMember> channelMembers = new ArrayList<>();
+    private Boolean isActive;
 
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "avatar")
     private Resource avatar;
 
-    @Column(name = "created_date", columnDefinition = "DATETIME")
-    private LocalDateTime createdDate;
-
     @Column(name = "modified_date", columnDefinition = "DATETIME")
     private LocalDateTime modifiedDate;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    @JoinTable(name = "user_friends",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "friend_id")
-    )
-    private List<User> friends;
+    @Builder.Default
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<UserFriendship> friends = new ArrayList<>();
 
+    @Builder.Default
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "member",
+            cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<ChannelMember> channelMembers = new ArrayList<>();
 }

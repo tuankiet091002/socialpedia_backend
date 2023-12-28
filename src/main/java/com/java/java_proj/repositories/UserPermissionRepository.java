@@ -11,5 +11,5 @@ import java.util.List;
 @Repository
 public interface UserPermissionRepository extends JpaRepository<UserPermission, Integer> {
     List<LResponseUserPermission> findAllBy();
-    UserPermission findByRole(String role);
+    UserPermission findByName(String name);
 }

@@ -8,10 +8,7 @@ import java.io.Serializable;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
-@ToString
-@EqualsAndHashCode
+@Data
 public class ChannelMemberCompositeKey implements Serializable {
 
     private Channel channel;

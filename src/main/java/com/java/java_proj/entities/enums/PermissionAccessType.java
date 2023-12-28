@@ -5,36 +5,23 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
 
 @AllArgsConstructor
 @Getter
 public enum PermissionAccessType {
-    ACCESS_DENIED(1),
-    VIEW(2),
-    MODIFY(3),
-    CREATE(4),
-    FULL_ACCESS(5);
+    NO_ACCESS(1),
+    SELF(2),
+    VIEW(3),
+    SEND(4),
+    MODIFY(5);
 
     private final Integer value;
 
-    public static Optional<PermissionAccessType> valueOf(int value) {
+    public static PermissionAccessType valueOf(int value) {
         return Arrays.stream(values())
                 .filter(t -> t.value == value)
-                .findFirst();
+                .findFirst().orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Invalid enum value"));
     }
 
-    public List<String> getAuthorityStringList(String prefix) {
-        List<String> result = new ArrayList<>();
-
-        for (int i = 1; i <= value; i++) {
-            result.add(prefix + PermissionAccessType.valueOf(i)
-                    .orElseThrow(() -> new HttpException(HttpStatus.INTERNAL_SERVER_ERROR, "Wrong enum value.")));
-        }
-
-        return result;
-    }
 }

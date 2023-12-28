@@ -7,6 +7,8 @@ public interface DResponseChannelMember {
 
     public LResponseUser getMember();
 
-    public PermissionAccessType getPermission();
+    public PermissionAccessType getChatPermission();
+
+    public PermissionAccessType getMemberPermission();
 
 }

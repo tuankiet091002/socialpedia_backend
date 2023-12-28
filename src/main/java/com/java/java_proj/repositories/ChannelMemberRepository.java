@@ -12,5 +12,5 @@ import java.util.Optional;
 @Repository
 public interface ChannelMemberRepository extends JpaRepository<ChannelMember, ChannelMemberCompositeKey> {
 
-    Integer countByChannelAndMember(Channel channel, User user);
+    Optional<ChannelMember> findByChannelAndMember(Channel channel, User user);
 }

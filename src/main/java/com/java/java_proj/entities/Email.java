@@ -1,18 +1,19 @@
 package com.java.java_proj.entities;
 
+
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
-
+@Entity
+@Table(name = "email")
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @Builder
-@Entity
-@Table(name = "email")
+
 public class Email {
 
     @Id

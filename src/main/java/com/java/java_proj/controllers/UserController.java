@@ -1,57 +1,42 @@
 package com.java.java_proj.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.java.java_proj.dto.request.forcreate.CRequestUser;
-import com.java.java_proj.dto.request.forupdate.URequestUser;
-import com.java.java_proj.dto.request.security.RequestLogin;
-import com.java.java_proj.dto.request.security.RequestRefreshToken;
+import com.java.java_proj.dto.request.forupdate.URequestUserRole;
 import com.java.java_proj.dto.response.fordetail.DResponseUser;
 import com.java.java_proj.dto.response.forlist.LResponseUser;
-import com.java.java_proj.dto.response.security.ResponseJwt;
-import com.java.java_proj.dto.response.security.ResponseRefreshToken;
-import com.java.java_proj.entities.RefreshToken;
-import com.java.java_proj.entities.miscs.CustomUserDetail;
 import com.java.java_proj.exceptions.HttpException;
-import com.java.java_proj.services.templates.RefreshTokenService;
 import com.java.java_proj.services.templates.UserService;
-import com.java.java_proj.util.JWTTokenProvider;
-import io.swagger.annotations.Api;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Null;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.DataBinder;
-import org.springframework.validation.Validator;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import javax.validation.Valid;
 import java.util.Arrays;
 import java.util.List;
 
 @RestController
 @RequestMapping("/user")
-@Api(tags = "User")
 public class UserController {
 
-    @Autowired
-    UserService userService;
+    final private UserService userService;
 
-    @GetMapping()
-    public ResponseEntity<Page<LResponseUser>> getAllUser(@RequestParam(value = "id", defaultValue = "0") Integer id,
-                                                          @RequestParam(value = "name", defaultValue = "") String name,
-                                                          @RequestParam(value = "email", defaultValue = "") String email,
-                                                          @RequestParam(value = "orderBy", defaultValue = "dob") String orderBy,
-                                                          @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
-                                                          @RequestParam(value = "pageSize", defaultValue = "10") Integer size,
-                                                          @RequestParam(value = "orderDirection", defaultValue = "DESC") String orderDirection) {
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
+    @GetMapping("/")
+    @PreAuthorize("hasPermission('GLOBAL', 'USER', 'VIEW')")
+    public ResponseEntity<Page<LResponseUser>> getUserList(@RequestParam(value = "name", defaultValue = "") String name,
+                                                           @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
+                                                           @RequestParam(value = "pageSize", defaultValue = "10") Integer size,
+                                                           @RequestParam(value = "orderBy", defaultValue = "dob") String orderBy,
+                                                           @RequestParam(value = "orderDirection", defaultValue = "DESC") String orderDirection) {
 
         List<String> allowedFields = Arrays.asList("id", "name", "email", "dob", "gender", "role");
         if (!allowedFields.contains(orderBy)) {
@@ -63,49 +48,99 @@ public class UserController {
             throw new HttpException(HttpStatus.BAD_REQUEST, "Sort Direction " + orderDirection + " is illegal!");
         }
 
-        Page<LResponseUser> userPage = userService.getAllUser(id, name, email, orderBy, page, size, orderDirection);
+        Page<LResponseUser> userPage = userService.getUserList(name, page, size, orderBy, orderDirection);
 
         return new ResponseEntity<>(userPage, new HttpHeaders(), HttpStatus.OK);
     }
 
-    @PutMapping()
-    public ResponseEntity<DResponseUser> updateUser(@Valid @RequestBody URequestUser requestUser,
-                                                    BindingResult bindingResult) {
+    @GetMapping("/friend")
+    @PreAuthorize("hasPermission('GLOBAL', 'USER', 'SELF')")
+    public ResponseEntity<Page<LResponseUser>> getFriendList(@RequestParam(value = "name", defaultValue = "") String name,
+                                                             @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
+                                                             @RequestParam(value = "pageSize", defaultValue = "10") Integer size,
+                                                             @RequestParam(value = "orderBy", defaultValue = "dob") String orderBy,
+                                                             @RequestParam(value = "orderDirection", defaultValue = "DESC") String orderDirection) {
+
+        List<String> allowedFields = Arrays.asList("id", "name", "email", "dob", "gender", "role");
+        if (!allowedFields.contains(orderBy)) {
+            throw new HttpException(HttpStatus.BAD_REQUEST, "Order by column " + orderBy + " is illegal!");
+        }
+
+        List<String> allowedSort = Arrays.asList("ASC", "DESC");
+        if (!allowedSort.contains(orderDirection)) {
+            throw new HttpException(HttpStatus.BAD_REQUEST, "Sort Direction " + orderDirection + " is illegal!");
+        }
+
+        Page<LResponseUser> userPage = userService.getFriendList(name, page, size, orderBy, orderDirection);
+
+        return new ResponseEntity<>(userPage, new HttpHeaders(), HttpStatus.OK);
+    }
+
+    @GetMapping("/{userEmail}")
+    @PreAuthorize("hasPermission('GLOBAL', 'USER', 'SELF')")
+    public ResponseEntity<DResponseUser> getUserProfile(@PathVariable String userEmail) {
+
+        DResponseUser user = userService.getUserProfile(userEmail);
+
+        return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+
+    @PutMapping("/role")
+    @PreAuthorize("hasPermission('GLOBAL', 'USER', 'MODIFY')")
+    public ResponseEntity<Null> updateUserRole(@Valid @RequestBody URequestUserRole requestUser,
+                                               BindingResult bindingResult) {
         // get validation error
         if (bindingResult.hasErrors()) {
             throw new HttpException(HttpStatus.BAD_REQUEST, bindingResult);
         }
 
-        DResponseUser user = userService.updateUser(requestUser);
+        userService.updateUserRole(requestUser);
 
-        return new ResponseEntity<>(user, HttpStatus.OK);
+        return new ResponseEntity<>(null, HttpStatus.OK);
     }
 
-    @PutMapping(value = "/{id}/role")
-    public ResponseEntity<DResponseUser> updateUserRole(@PathVariable Integer id, @RequestParam("role") String role) {
+    @DeleteMapping("/{userId}")
+    @PreAuthorize("hasPermission('GLOBAL', 'USER', 'MODIFY')")
+    public ResponseEntity<Null> disableUser(@PathVariable Integer userId) {
 
-        if (!role.equals("trainer") && !role.equals("class_admin") && !role.equals("super_admin")) {
-            throw new HttpException(HttpStatus.BAD_REQUEST, "Role is invalid");
-        }
+        userService.disableUser(userId);
 
-        DResponseUser user = userService.updateUserRole(id, role);
-
-        return new ResponseEntity<>(user, HttpStatus.OK);
+        return new ResponseEntity<>(null, HttpStatus.OK);
     }
 
-    @PostMapping(value = "/{userId}/friend")
-    public ResponseEntity<DResponseUser> addFriend(@PathVariable Integer userId) {
+    @PostMapping("/{userId}/friend")
+    @PreAuthorize("hasPermission('GLOBAL', 'USER', 'SELF')")
+    public ResponseEntity<Null> createFriendRequest(@PathVariable Integer userId) {
 
-        DResponseUser user = userService.addFriend(userId);
+        userService.createFriendRequest(userId);
 
-        return new ResponseEntity<>(user, HttpStatus.OK);
+        return new ResponseEntity<>(null, HttpStatus.OK);
     }
 
-    @DeleteMapping(value = "/{userId}/friend")
-    public ResponseEntity<DResponseUser> deleteFriend(@PathVariable Integer userId) {
+    @PutMapping("/{userId}/friend/accept")
+    @PreAuthorize("hasPermission('GLOBAL', 'USER', 'SELF')")
+    public ResponseEntity<Null> acceptFriendRequest(@PathVariable Integer userId) {
 
-        DResponseUser user = userService.deleteFriend(userId);
+        userService.acceptFriendRequest(userId);
 
-        return new ResponseEntity<>(user, HttpStatus.OK);
+        return new ResponseEntity<>(null, HttpStatus.OK);
+    }
+
+    @PutMapping("/{userId}/friend/reject")
+    @PreAuthorize("hasPermission('GLOBAL', 'USER', 'SELF')")
+    public ResponseEntity<Null> rejectFriendRequest(@PathVariable Integer userId) {
+
+        userService.rejectFriendRequest(userId);
+
+        return new ResponseEntity<>(null, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{userId}/friend")
+    @PreAuthorize("hasPermission('GLOBAL', 'USER', 'SELF')")
+    public ResponseEntity<Null> unFriend(@PathVariable Integer userId) {
+
+        userService.unFriend(userId);
+
+        return new ResponseEntity<>(null, HttpStatus.OK);
     }
 }

@@ -1,17 +1,19 @@
 package com.java.java_proj.entities;
 
 import com.java.java_proj.entities.enums.PermissionAccessType;
-import lombok.*;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
 
 @Entity
-@Table(name="user_permissions")
+@Table(name = "user_permissions")
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
-@ToString
+@Data
+@Builder
 public class UserPermission {
 
     @Id
@@ -19,15 +21,14 @@ public class UserPermission {
     private Integer id;
 
     @Column(unique = true, nullable = false)
-    private String role;
+    private String name;
 
-    @Column(name = "document")
-    @Enumerated(EnumType.ORDINAL)
-    private PermissionAccessType documentManagement;
+    @Column(name = "channel_permission")
+    @Enumerated(EnumType.STRING)
+    private PermissionAccessType channelPermission;
 
-    @Column(name = "user")
-    @Enumerated(EnumType.ORDINAL)
-    private PermissionAccessType userManagement;
-
+    @Column(name = "user_permmission")
+    @Enumerated(EnumType.STRING)
+    private PermissionAccessType userPermission;
 
 }

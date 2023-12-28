@@ -1,12 +1,13 @@
 package com.java.java_proj.entities;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-import javax.persistence.*;
-import java.time.LocalDate;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,12 +15,13 @@ import java.util.List;
 @Table(name = "channels")
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
+@Data
+@Builder
 public class Channel {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ChatSpaceSequence")
+    @SequenceGenerator(name="ChatSpaceSequence", sequenceName = "space_seq")
     private Integer id;
 
     @Column(name = "name")
@@ -28,26 +30,37 @@ public class Channel {
     @Column(name = "description")
     private String description;
 
+    @Column(name = "is_active", columnDefinition = "boolean default true")
+    private Boolean isActive;
+
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "avatar")
     private Resource avatar;
 
-    @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    @OneToMany(mappedBy = "channel", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<ChannelMember> channelMembers = new ArrayList<>();
 
-    @ManyToOne()
+    @Builder.Default
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinTable(name = "channel_messages",
+            joinColumns = @JoinColumn(name = "channel_id"),
+            inverseJoinColumns = @JoinColumn(name = "message_id"))
+    @OrderBy(value = "id DESC")
+    private List<Message> messages = new ArrayList<>();
+
+    @ManyToOne
     @JoinColumn(name = "created_by")
     private User createdBy;
 
-    @Column(name = "created_date", columnDefinition = "DATE")
-    private LocalDate createdDate;
+    @Column(name = "created_date", columnDefinition = "DATETIME")
+    private LocalDateTime createdDate;
 
-    @ManyToOne()
+    @ManyToOne
     @JoinColumn(name = "modified_by")
     private User modifiedBy;
 
-    @Column(name = "modified_date", columnDefinition = "DATE")
-    private LocalDate modifiedDate;
-
+    @Column(name = "modified_date", columnDefinition = "DATETIME")
+    private LocalDateTime modifiedDate;
 
 }

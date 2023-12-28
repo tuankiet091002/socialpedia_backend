@@ -1,12 +1,12 @@
 package com.java.java_proj.dto.request.forcreate;
 
 import com.java.java_proj.entities.enums.PermissionAccessType;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.validation.constraints.NotNull;
 
 @AllArgsConstructor
 @NoArgsConstructor

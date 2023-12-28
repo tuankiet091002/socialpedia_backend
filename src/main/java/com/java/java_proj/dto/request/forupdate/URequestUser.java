@@ -1,10 +1,11 @@
 package com.java.java_proj.dto.request.forupdate;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Pattern;
+
 
 @Getter
 @Setter
@@ -15,9 +16,6 @@ public class URequestUser {
     @NotBlank(message = "User name is required.")
     private String name;
 
-    @NotBlank(message = "Password is required.")
-    private String password;
-
     @NotBlank(message = "Phone number is required.")
     @Pattern(regexp = "^0\\d{9}")
     private String phone;
@@ -25,10 +23,5 @@ public class URequestUser {
     @NotBlank(message = "Date of birth is required.")
     private String dob;
 
-    @NotBlank(message = "User type is required")
-    private String role;
-
     private Boolean gender;
-
-    private Boolean isActive;
 }

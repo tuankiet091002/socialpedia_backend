@@ -1,6 +1,7 @@
 package com.java.java_proj.repositories;
 
 import com.java.java_proj.dto.response.fordetail.DResponseChannel;
+import com.java.java_proj.dto.response.fordetail.DResponseMessage;
 import com.java.java_proj.entities.Channel;
 import com.java.java_proj.entities.User;
 import org.springframework.data.domain.Page;
@@ -14,13 +15,16 @@ import java.util.Optional;
 @Repository
 public interface ChannelRepository extends JpaRepository<Channel, Integer> {
 
+    Page<Channel> findByNameContaining(String name, Pageable pageable);
+
     @Query("SELECT m.channel FROM ChannelMember m " +
             "WHERE m.member = :user " +
+            "AND m.status = 'accepted' " +
             "AND m.channel.name LIKE CONCAT('%',:name, '%')")
-    Page<Channel> findChannelIn(String name, User user, Pageable pageable);
+    Page<Channel> findPersonalChannelList(String name, User user, Pageable pageable);
 
+    @Query("SELECT c FROM Channel c JOIN FETCH c.channelMembers WHERE c.id = :id")
     Optional<DResponseChannel> findOneById(Integer id);
 
-    Integer countById(Integer id);
 }
 

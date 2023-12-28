@@ -1,12 +1,13 @@
 package com.java.java_proj.entities;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-import javax.persistence.*;
-import java.time.LocalDate;
+import com.java.java_proj.entities.enums.MessageStatusType;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,39 +16,33 @@ import java.util.List;
 @Table(name = "messages")
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
+@Data
+@Builder
 public class Message {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "channel_id")
-    private Channel channel;
-
     @Column(name = "content", columnDefinition = "TEXT")
     private String content;
 
+    @Builder.Default
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "message_resources",
-            joinColumns = @JoinColumn(name = "message_code"),
-            inverseJoinColumns = @JoinColumn(name = "resource_code"))
+            joinColumns = @JoinColumn(name = "message_id"),
+            inverseJoinColumns = @JoinColumn(name = "resource_id"))
     private List<Resource> resources = new ArrayList<>();
 
-    @ManyToOne()
+    @ManyToOne
     @JoinColumn(name = "created_by")
     private User createdBy;
 
-    @Column(name = "created_date", columnDefinition = "DATETIME")
-    private LocalDateTime createdDate;
-
-    @ManyToOne()
-    @JoinColumn(name = "modified_by")
-    private User modifiedBy;
-
     @Column(name = "modified_date", columnDefinition = "DATETIME")
     private LocalDateTime modifiedDate;
+
+    @Column(name = "status")
+    @Enumerated(value = EnumType.STRING)
+    private MessageStatusType status;
 
 }

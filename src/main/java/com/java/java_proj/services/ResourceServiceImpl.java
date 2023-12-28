@@ -2,14 +2,11 @@ package com.java.java_proj.services;
 
 import com.java.java_proj.dto.response.fordetail.DResponseResource;
 import com.java.java_proj.entities.Resource;
-import com.java.java_proj.entities.User;
 import com.java.java_proj.exceptions.HttpException;
 import com.java.java_proj.repositories.ResourceRepository;
 import com.java.java_proj.services.templates.ResourceService;
-import com.java.java_proj.entities.miscs.CustomUserDetail;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,18 +15,12 @@ import java.io.IOException;
 @Service
 public class ResourceServiceImpl implements ResourceService {
 
-    @Autowired
-    FirebaseFileService fileService;
-    @Autowired
-    ResourceRepository resourceRepository;
+    final private FirebaseFileService fileService;
+    final private ResourceRepository resourceRepository;
 
-    private User getOwner() {
-        try {
-            return ((CustomUserDetail) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
-        } catch (Exception e) {
-            return null;
-        }
-
+    public ResourceServiceImpl(FirebaseFileService fileService, ResourceRepository resourceRepository) {
+        this.fileService = fileService;
+        this.resourceRepository = resourceRepository;
     }
 
 
@@ -42,18 +33,17 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public Resource addFile(MultipartFile file) {
 
-        User owner = getOwner();
-
         try {
-
             // save to cloud
             String generatedName = fileService.save(file);
             String imageUrl = fileService.getImageUrl(generatedName);
+            String fileType = FilenameUtils.getExtension(file.getOriginalFilename());
 
             // create entity
             Resource resource = Resource.builder()
                     .filename(file.getOriginalFilename())
                     .generatedName(generatedName)
+                    .fileType(fileType)
                     .url(imageUrl)
                     .build();
 

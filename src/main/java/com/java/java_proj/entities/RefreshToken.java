@@ -1,9 +1,10 @@
 package com.java.java_proj.entities;
 
+import jakarta.persistence.*;
 import lombok.*;
 
-import javax.persistence.*;
 import java.time.LocalDate;
+
 
 @Entity
 @Table(name = "refresh_tokens")
@@ -15,7 +16,7 @@ import java.time.LocalDate;
 public class RefreshToken {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @ManyToOne

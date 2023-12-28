@@ -1,15 +1,17 @@
 package com.java.java_proj.entities;
 
-import lombok.*;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
 
 @Entity
 @Table(name = "files")
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
+@Data
 @Builder
 public class Resource {
 
@@ -19,6 +21,9 @@ public class Resource {
 
     @Column(name = "filename", nullable = false)
     private String filename;
+
+    @Column(name = "file_type", nullable = false)
+    private String fileType;
 
     @Column(name = "generated_name", nullable = false)
     private String generatedName;
