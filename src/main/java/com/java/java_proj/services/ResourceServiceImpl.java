@@ -47,7 +47,6 @@ public class ResourceServiceImpl implements ResourceService {
                     .url(imageUrl)
                     .build();
 
-
             return resourceRepository.save(resource);
 
         } catch (Exception e) {
@@ -61,11 +60,11 @@ public class ResourceServiceImpl implements ResourceService {
             Resource resource = resourceRepository.findById(id)
                     .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Training material not found."));
 
-            // delete file on firebase
-            fileService.delete(resource.getFilename());
-
             // delete entity
             resourceRepository.deleteById(id);
+
+            // delete file on firebase
+            fileService.delete(resource.getGeneratedName());
         } catch (IOException e) {
             throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't delete file.");
         }

@@ -13,8 +13,7 @@ public interface ChannelService {
     Page<LResponseChatSpace> getChannelList(String name, Integer page, Integer size,
                                             String orderBy, String orderDirection);
 
-    Page<LResponseChatSpace> getPersonalChannelList(String name, Integer page, Integer size,
-                                                    String orderBy, String orderDirection);
+    Page<LResponseChatSpace> getPersonalChannelList(String name, Integer page, Integer size);
 
     DResponseChannel getChannelProfile(Integer id);
 

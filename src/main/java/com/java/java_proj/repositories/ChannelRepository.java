@@ -19,7 +19,7 @@ public interface ChannelRepository extends JpaRepository<Channel, Integer> {
 
     @Query("SELECT m.channel FROM ChannelMember m " +
             "WHERE m.member = :user " +
-            "AND m.status = 'accepted' " +
+            "AND m.status = 'ACCEPTED' " +
             "AND m.channel.name LIKE CONCAT('%',:name, '%')")
     Page<Channel> findPersonalChannelList(String name, User user, Pageable pageable);
 

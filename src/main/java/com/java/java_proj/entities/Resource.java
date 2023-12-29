@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 
 
 @Entity
-@Table(name = "files")
+@Table(name = "resources")
 @AllArgsConstructor
 @NoArgsConstructor
 @Data

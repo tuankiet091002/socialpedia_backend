@@ -9,9 +9,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class URequestUser {
-
-    private Integer id;
+public class URequestUserProfile {
 
     @NotBlank(message = "User name is required.")
     private String name;

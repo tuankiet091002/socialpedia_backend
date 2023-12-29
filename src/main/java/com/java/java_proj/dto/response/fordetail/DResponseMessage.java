@@ -1,23 +1,34 @@
 package com.java.java_proj.dto.response.fordetail;
 
 import com.java.java_proj.dto.response.forlist.LResponseUser;
+import com.java.java_proj.dto.response.forlist.LResponseUserMinimal;
+import com.java.java_proj.entities.enums.MessageStatusType;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
-public interface DResponseMessage {
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+@Builder
+public class DResponseMessage {
 
-    public Integer getId();
+    public Integer id;
 
-    public String getContent();
+    public String content;
 
-    public List<DResponseResource> getResources();
+    public List<DResponseResource> resources;
 
-    public LResponseUser getCreatedBy();
+    public LResponseUserMinimal createdBy;
 
-    public LocalDateTime getCreatedDate();
+    public LocalDateTime modifiedDate;
 
-    public LResponseUser getModifiedBy();
+    public MessageStatusType status;
 
-    public LocalDateTime getModifiedDate();
+    public List<LResponseUserMinimal> seenBy = new ArrayList<>();
 }

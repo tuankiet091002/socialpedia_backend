@@ -1,26 +1,27 @@
 package com.java.java_proj.services;
 
-import com.java.java_proj.dto.response.fordetail.DResponseMessage;
+import com.java.java_proj.dto.request.forupdate.URequestInbox;
+import com.java.java_proj.dto.response.fordetail.DResponseResource;
 import com.java.java_proj.dto.response.forlist.LResponseChatSpace;
-import com.java.java_proj.entities.Inbox;
-import com.java.java_proj.entities.User;
-import com.java.java_proj.entities.UserFriendship;
+import com.java.java_proj.dto.response.forlist.LResponseMessage;
+import com.java.java_proj.entities.*;
 import com.java.java_proj.exceptions.HttpException;
 import com.java.java_proj.repositories.InboxRepository;
 import com.java.java_proj.repositories.MessageRepository;
 import com.java.java_proj.services.templates.InboxService;
 import com.java.java_proj.services.templates.UserService;
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.projection.ProjectionFactory;
+import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Objects;
 
 @Service
 public class InboxServiceImpl implements InboxService {
@@ -39,34 +40,44 @@ public class InboxServiceImpl implements InboxService {
     }
 
     @Override
-    public Page<LResponseChatSpace> getInboxList(String name, Integer page, Integer size,
-                                                 String orderBy, String orderDirection) {
+    @Transactional
+    public Page<LResponseChatSpace> getInboxList(String name, Integer page, Integer size) {
 
         // create pageable
-        Pageable paging = orderDirection.equals("ASC")
-                ? PageRequest.of(page, size, Sort.by(orderBy).ascending())
-                : PageRequest.of(page, size, Sort.by(orderBy).descending());
+        Pageable paging = PageRequest.of(page, size);
 
         // fetch entity page
-        Page<Inbox> inboxPage = inboxRepository.findByNameContaining(name, paging);
+        User user = userService.getOwner();
+        Page<Inbox> inboxPage = inboxRepository.findByNameAndUser(name, user, paging);
 
         // map to dto
         return inboxPage.map(entity -> {
             // map to dto
             LResponseChatSpace inbox = modelMapper.map(entity, LResponseChatSpace.class);
 
+            // convert missing fields
+            ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
+
             // fetch top message and skip the pageable part
-            List<DResponseMessage> messageList = messageRepository.findByInbox("", entity, PageRequest.of(0, 1))
+            List<Message> messageList = messageRepository.findByInbox("", entity, PageRequest.of(0, 1))
                     .getContent();
             if (!messageList.isEmpty()) {
-                inbox.setLatestMessage(messageList.get(0));
+                inbox.setLatestMessage(pf.createProjection(LResponseMessage.class, messageList.get(0)));
             }
+
+            // get opposite's avatar as inbox's avatar
+            Resource avatar = entity.getFriendship().getSender() == userService.getOwner() ?
+                    entity.getFriendship().getSender().getAvatar()
+                    : entity.getFriendship().getReceiver().getAvatar();
+
+            inbox.setAvatar(pf.createProjection(DResponseResource.class, avatar));
 
             return inbox;
         });
     }
 
     @Override
+    @Transactional
     public void createInbox(Integer userId) {
 
         // find existing friendship
@@ -88,20 +99,16 @@ public class InboxServiceImpl implements InboxService {
     }
 
     @Override
-    public void disableInbox(Integer id) {
+    public void updateInboxProfile(Integer userId, URequestInbox requestInbox) {
 
         // find inbox
-        Inbox inbox = inboxRepository.findById(id)
+        Inbox inbox = inboxRepository.findByFriendship(userService.findFriendship(userId))
                 .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Inbox not found."));
 
-        // check authorization
-        User owner = userService.getOwner();
-        if (!Objects.equals(inbox.getFriendship().getSender().getId(), owner.getId())
-                || !Objects.equals(inbox.getFriendship().getReceiver().getId(), owner.getId())) {
-            throw new HttpException(HttpStatus.BAD_REQUEST, "Not your inbox.");
-        }
-        inbox.setIsActive(false);
+        inbox.setName(requestInbox.getName());
+        inbox.setIsActive(requestInbox.getIsActive());
 
         inboxRepository.save(inbox);
     }
+
 }

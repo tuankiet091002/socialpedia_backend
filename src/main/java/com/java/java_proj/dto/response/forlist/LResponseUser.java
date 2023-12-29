@@ -1,10 +1,11 @@
 package com.java.java_proj.dto.response.forlist;
 
-import com.java.java_proj.dto.response.fordetail.DResponseResource;
+import com.java.java_proj.dto.response.fordetail.DResponseUserPermission;
 
 import java.time.LocalDate;
 
 public interface LResponseUser {
+
     public Integer getId();
 
     public String getName();
@@ -15,9 +16,7 @@ public interface LResponseUser {
 
     public LocalDate getDob();
 
-    public LResponseUserPermission getRole();
+    public DResponseUserPermission getRole();
 
     public Boolean getGender();
-
-    public DResponseResource getAvatar();
 }

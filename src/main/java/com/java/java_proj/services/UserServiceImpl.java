@@ -1,32 +1,40 @@
 package com.java.java_proj.services;
 
 import com.java.java_proj.dto.request.forcreate.CRequestUser;
-import com.java.java_proj.dto.request.forupdate.URequestUser;
 import com.java.java_proj.dto.request.forupdate.URequestUserPassword;
-import com.java.java_proj.dto.request.forupdate.URequestUserRole;
+import com.java.java_proj.dto.request.forupdate.URequestUserProfile;
 import com.java.java_proj.dto.request.security.RequestLogin;
+import com.java.java_proj.dto.request.security.RequestRefreshToken;
 import com.java.java_proj.dto.response.fordetail.DResponseUser;
+import com.java.java_proj.dto.response.fordetail.DResponseUserPermission;
 import com.java.java_proj.dto.response.forlist.LResponseUser;
-import com.java.java_proj.entities.Resource;
-import com.java.java_proj.entities.User;
-import com.java.java_proj.entities.UserFriendship;
-import com.java.java_proj.entities.UserPermission;
+import com.java.java_proj.dto.response.security.ResponseJwt;
+import com.java.java_proj.dto.response.security.ResponseRefreshToken;
+import com.java.java_proj.entities.*;
 import com.java.java_proj.entities.enums.RequestType;
 import com.java.java_proj.entities.miscs.CustomUserDetail;
 import com.java.java_proj.exceptions.HttpException;
 import com.java.java_proj.repositories.UserFriendshipRepository;
 import com.java.java_proj.repositories.UserPermissionRepository;
 import com.java.java_proj.repositories.UserRepository;
+import com.java.java_proj.services.templates.RefreshTokenService;
 import com.java.java_proj.services.templates.ResourceService;
 import com.java.java_proj.services.templates.UserService;
 import com.java.java_proj.util.DateFormatter;
+import com.java.java_proj.util.security.JWTTokenProvider;
 import jakarta.transaction.Transactional;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.projection.ProjectionFactory;
+import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -42,16 +50,25 @@ public class UserServiceImpl implements UserService {
     final private UserPermissionRepository userPermissionRepository;
     final private UserFriendshipRepository userFriendshipRepository;
     final private ResourceService resourceService;
+    final private JWTTokenProvider tokenProvider;
+    final private RefreshTokenService refreshTokenService;
+    final private AuthenticationManager authenticationManager;
     final private BCryptPasswordEncoder bCryptPasswordEncoder;
+
+    final private ModelMapper modelMapper;
     final private DateFormatter dateFormatter;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, UserPermissionRepository userPermissionRepository, UserFriendshipRepository userFriendshipRepository, ResourceService resourceService, BCryptPasswordEncoder bCryptPasswordEncoder, DateFormatter dateFormatter) {
+    public UserServiceImpl(UserRepository userRepository, UserPermissionRepository userPermissionRepository, UserFriendshipRepository userFriendshipRepository, ResourceService resourceService, JWTTokenProvider tokenProvider, RefreshTokenService refreshTokenService, AuthenticationManager authenticationManager, BCryptPasswordEncoder bCryptPasswordEncoder, ModelMapper modelMapper, DateFormatter dateFormatter) {
         this.userRepository = userRepository;
         this.userPermissionRepository = userPermissionRepository;
         this.userFriendshipRepository = userFriendshipRepository;
         this.resourceService = resourceService;
+        this.tokenProvider = tokenProvider;
+        this.refreshTokenService = refreshTokenService;
+        this.authenticationManager = authenticationManager;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.modelMapper = modelMapper;
         this.dateFormatter = dateFormatter;
     }
 
@@ -90,14 +107,24 @@ public class UserServiceImpl implements UserService {
                 : PageRequest.of(page, size, Sort.by(
                 Objects.equals(orderBy, "role") ? "role.name" : orderBy).descending());
 
-        return userRepository.findFriendByName(name, user, paging);
+        return userRepository.findFriendsByName(name, user, paging);
     }
 
     @Override
+    @Transactional
     public DResponseUser getUserProfile(String userEmail) {
 
-        return userRepository.findByEmail(userEmail)
+        // get raw entity
+        User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "User not found."));
+
+        // map to dto
+        DResponseUser responseUser = modelMapper.map(user, DResponseUser.class);
+        ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
+        responseUser.setRole(pf.createProjection(DResponseUserPermission.class, user.getRole()));
+        responseUser.setFriends(userRepository.findFriends(user));
+
+        return responseUser;
     }
 
     @Override
@@ -142,23 +169,65 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void login(RequestLogin requestLogin) {
+    @Transactional
+    public ResponseJwt login(RequestLogin requestLogin) {
 
+        // find user
         User user = userRepository.findUserByEmail(requestLogin.getEmail());
         if (user == null) {
             throw new HttpException(HttpStatus.BAD_REQUEST, "User not found.");
         }
 
+        // check password
         if (!bCryptPasswordEncoder.matches(requestLogin.getPassword(), user.getPassword())) {
             throw new HttpException(HttpStatus.BAD_REQUEST, "Wrong password.");
         }
+
+        // register authentication
+        Authentication authentication = authenticationManager
+                .authenticate(new UsernamePasswordAuthenticationToken(requestLogin.getEmail(), requestLogin.getPassword()));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // de-active old token
+        refreshTokenService.deActiveUserToken(user.getId());
+
+        // return result
+        ResponseJwt response = new ResponseJwt();
+        response.setToken(tokenProvider.generateToken((CustomUserDetail) authentication.getPrincipal()));
+        response.setRefreshToken(refreshTokenService.createToken(user.getEmail()).getToken());
+        response.setUser(getUserProfile(requestLogin.getEmail()));
+
+        return response;
     }
 
     @Override
-    public void updateUserProfile(URequestUser requestUser) {
+    public ResponseRefreshToken refreshToken(RequestRefreshToken requestToken) {
+
+        // find unexpired token
+        RefreshToken refreshToken = refreshTokenService.findActiveToken(requestToken.getRefreshToken());
+        if (refreshToken == null) {
+            throw new HttpException(HttpStatus.BAD_REQUEST, "Refresh token is invalid");
+        }
+
+        CustomUserDetail userDetail;
+        // get user detail
+        try {
+            userDetail = (CustomUserDetail) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        } catch (Exception e) {
+            throw new HttpException(HttpStatus.NOT_FOUND, "Failed to fetch current user");
+        }
+
+        ResponseRefreshToken response = new ResponseRefreshToken();
+        response.setAccessToken(tokenProvider.generateToken(userDetail));
+
+        return response;
+    }
+
+    @Override
+    public void updateUserProfile(URequestUserProfile requestUser) {
 
         // get user from db
-        User user = userRepository.findById(requestUser.getId())
+        User user = userRepository.findById(getOwner().getId())
                 .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "User not found"));
 
         // check if phone exist
@@ -177,19 +246,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
-    public void updateUserRole(URequestUserRole requestUser) {
+    public void updateUserRole(Integer userId, String role) {
 
         // check user
-        User user = userRepository.findById(requestUser.getId())
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new HttpException(HttpStatus.BAD_REQUEST, "User not found."));
 
         // check role
-        UserPermission role = userPermissionRepository.findByName(requestUser.getRole());
+        UserPermission newRole = userPermissionRepository.findByName(role);
         if (role == null) {
             throw new HttpException(HttpStatus.NOT_FOUND, "Role not found.");
         }
-        user.setRole(role);
+        user.setRole(newRole);
 
         userRepository.save(user);
     }
@@ -215,14 +283,19 @@ public class UserServiceImpl implements UserService {
         // get user from session
         User user = getOwner();
 
+        // mark old avatar to delete
+        Integer oldResource = null;
         if (user.getAvatar() != null) {
-            resourceService.deleteFile(user.getAvatar().getId());
+            oldResource = user.getAvatar().getId();
         }
 
+        // set and save
         Resource resource = resourceService.addFile(file);
         user.setAvatar(resource);
-
         userRepository.save(user);
+
+        if (oldResource != null)
+            resourceService.deleteFile(oldResource);
     }
 
     @Override
@@ -232,20 +305,19 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new HttpException(HttpStatus.BAD_REQUEST, "User not found."));
 
-        // check active status
-        if (!user.getIsActive()) {
-            throw new HttpException(HttpStatus.BAD_REQUEST, "User is already inactive");
-        }
         user.setIsActive(false);
 
         userRepository.save(user);
     }
 
     @Override
+    @Transactional
     public void createFriendRequest(Integer userId) {
 
-        //check user
-        User sender = getOwner();
+        // need to be persisted
+        User sender = userRepository.findById(getOwner().getId())
+                .orElseThrow(() -> new HttpException(HttpStatus.BAD_REQUEST, "User not found."));
+        ;
         User receiver = userRepository.findById(userId)
                 .orElseThrow(() -> new HttpException(HttpStatus.BAD_REQUEST, "User not found."));
 
@@ -297,7 +369,7 @@ public class UserServiceImpl implements UserService {
         // change request status
         UserFriendship friendship = findFriendship(userId);
 
-        if (friendship.getStatus() != RequestType.PENDING)
+        if (friendship.getStatus() != RequestType.ACCEPTED)
             throw new HttpException(HttpStatus.BAD_REQUEST, "User is not your friend.");
         friendship.setStatus(RequestType.REJECTED);
 

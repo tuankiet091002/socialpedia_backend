@@ -42,7 +42,7 @@ public class ChannelController {
     }
 
 
-    @GetMapping("/")
+    @GetMapping("")
     @PreAuthorize("hasPermission('GLOBAL', 'CHANNEL', 'VIEW')")
     public ResponseEntity<Page<LResponseChatSpace>> getChannelList(@RequestParam(value = "name", defaultValue = "") String name,
                                                                    @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
@@ -69,21 +69,9 @@ public class ChannelController {
     @PreAuthorize("hasPermission('GLOBAL', 'CHANNEL', 'SELF')")
     public ResponseEntity<Page<LResponseChatSpace>> getPersonalChannelList(@RequestParam(value = "name", defaultValue = "") String name,
                                                                            @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
-                                                                           @RequestParam(value = "pageSize", defaultValue = "10") Integer size,
-                                                                           @RequestParam(value = "orderBy", defaultValue = "id") String orderBy,
-                                                                           @RequestParam(value = "orderDirection", defaultValue = "DESC") String orderDirection) {
+                                                                           @RequestParam(value = "pageSize", defaultValue = "10") Integer size) {
 
-        List<String> allowedFields = Arrays.asList("id", "name");
-        if (!allowedFields.contains(orderBy)) {
-            throw new HttpException(HttpStatus.BAD_REQUEST, "Order by column " + orderBy + " is illegal!");
-        }
-
-        List<String> allowedSort = Arrays.asList("ASC", "DESC");
-        if (!allowedSort.contains(orderDirection)) {
-            throw new HttpException(HttpStatus.BAD_REQUEST, "Sort Direction " + orderDirection + " is illegal!");
-        }
-
-        Page<LResponseChatSpace> channelPage = channelService.getPersonalChannelList(name, page, size, orderBy, orderDirection);
+        Page<LResponseChatSpace> channelPage = channelService.getPersonalChannelList(name, page, size);
 
         return new ResponseEntity<>(channelPage, new HttpHeaders(), HttpStatus.OK);
     }
@@ -113,6 +101,7 @@ public class ChannelController {
             throw new HttpException(HttpStatus.BAD_REQUEST, bindingResult);
         }
 
+        // set avatar if exist
         if (!file.isEmpty()) {
             requestChannel.setAvatarFile(file);
         }
@@ -125,7 +114,7 @@ public class ChannelController {
     @PutMapping("/{channelId}/profile")
     @PreAuthorize("hasPermission(#channelId, 'CHANNEL', 'MODIFY')")
     public ResponseEntity<Null> updateChannelProfile(@PathVariable Integer channelId,
-                                                     @Valid @RequestPart URequestChannel requestChannel,
+                                                     @Valid @RequestBody URequestChannel requestChannel,
                                                      BindingResult bindingResult) {
 
         // get validation error
@@ -189,7 +178,7 @@ public class ChannelController {
     @PreAuthorize("hasPermission(#channelId, 'CHANNEL', 'MODIFY')")
     public ResponseEntity<Null> updateMemberPermission(@PathVariable Integer channelId,
                                                        @PathVariable Integer memberId,
-                                                       @Valid @RequestPart URequestChannelMember requestChannel,
+                                                       @Valid @RequestBody URequestChannelMember requestChannel,
                                                        BindingResult bindingResult) {
 
         // get validation error

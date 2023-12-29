@@ -1,12 +1,14 @@
 package com.java.java_proj.services.templates;
 
 import com.java.java_proj.dto.request.forcreate.CRequestUser;
-import com.java.java_proj.dto.request.forupdate.URequestUser;
 import com.java.java_proj.dto.request.forupdate.URequestUserPassword;
-import com.java.java_proj.dto.request.forupdate.URequestUserRole;
+import com.java.java_proj.dto.request.forupdate.URequestUserProfile;
 import com.java.java_proj.dto.request.security.RequestLogin;
+import com.java.java_proj.dto.request.security.RequestRefreshToken;
 import com.java.java_proj.dto.response.fordetail.DResponseUser;
 import com.java.java_proj.dto.response.forlist.LResponseUser;
+import com.java.java_proj.dto.response.security.ResponseJwt;
+import com.java.java_proj.dto.response.security.ResponseRefreshToken;
 import com.java.java_proj.entities.User;
 import com.java.java_proj.entities.UserFriendship;
 import org.springframework.data.domain.Page;
@@ -26,11 +28,13 @@ public interface UserService {
 
     public void register(CRequestUser requestUser);
 
-    public void login(RequestLogin requestLogin);
+    public ResponseJwt login(RequestLogin requestLogin);
 
-    public void updateUserProfile(URequestUser requestUser);
+    public ResponseRefreshToken refreshToken(RequestRefreshToken requestToken);
 
-    public void updateUserRole(URequestUserRole requestUser);
+    public void updateUserProfile(URequestUserProfile requestUser);
+
+    public void updateUserRole(Integer userId, String role);
 
     public void updateUserPassword(URequestUserPassword requestUserPassword);
 

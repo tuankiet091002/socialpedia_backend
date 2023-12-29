@@ -1,8 +1,8 @@
 package com.java.java_proj.dto.response.fordetail;
 
-import com.java.java_proj.dto.response.forlist.LResponseUser;
+import com.java.java_proj.dto.response.forlist.LResponseUserMinimal;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface DResponseChannel {
@@ -17,12 +17,12 @@ public interface DResponseChannel {
 
     public List<DResponseChannelMember> getChannelMembers();
 
-    public LResponseUser getCreatedBy();
+    public LResponseUserMinimal getCreatedBy();
 
-    public LocalDate getCreatedDate();
+    public LocalDateTime getCreatedDate();
 
-    public LResponseUser getModifiedBy();
+    public LResponseUserMinimal getModifiedBy();
 
-    public LocalDate getModifiedDate();
+    public LocalDateTime getModifiedDate();
 
 }

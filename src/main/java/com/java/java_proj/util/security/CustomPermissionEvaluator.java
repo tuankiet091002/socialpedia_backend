@@ -13,7 +13,7 @@ public class CustomPermissionEvaluator implements PermissionEvaluator {
             return false;
         }
         String targetType = targetDomainObject.getClass().getSimpleName().toUpperCase();
-        System.out.println("has Permission 1");
+
         return hasPrivilege(auth, targetType, permission.toString().toUpperCase());
     }
 
@@ -23,7 +23,7 @@ public class CustomPermissionEvaluator implements PermissionEvaluator {
         if ((auth == null) || (targetType == null) || !(permission instanceof String)) {
             return false;
         }
-        System.out.println("has Permission 2");
+
         return hasPrivilege(auth, targetId.toString() + "_" + targetType.toUpperCase(),
                 permission.toString().toUpperCase());
     }

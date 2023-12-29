@@ -24,8 +24,8 @@ import java.util.List;
 @Service
 public class FirebaseFileService implements IImageService {
 
-    String BUCKET_NAME = "spring-60dd1.appspot.com";
-    String IMAGE_URL = "https://storage.googleapis.com/spring-60dd1.appspot.com/%s";
+    String BUCKET_NAME = "socialpedia-62c35.appspot.com";
+    String IMAGE_URL = "https://storage.googleapis.com/socialpedia-62c35.appspot.com/%s";
 
     @EventListener
     public void init(ApplicationReadyEvent e) {
@@ -40,7 +40,9 @@ public class FirebaseFileService implements IImageService {
                     .setStorageBucket(BUCKET_NAME)
                     .build();
 
-            FirebaseApp.initializeApp(options);
+            if (FirebaseApp.getApps().isEmpty()) {
+                FirebaseApp.initializeApp(options);
+            }
 
         } catch (Exception ex) {
             throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR, "Cannot connect to Firebase Storage.");

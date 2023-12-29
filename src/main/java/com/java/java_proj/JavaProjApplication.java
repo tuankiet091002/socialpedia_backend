@@ -1,6 +1,6 @@
 package com.java.java_proj;
 
-import com.java.java_proj.dto.response.forlist.LResponseUserPermission;
+import com.java.java_proj.dto.response.fordetail.DResponseUserPermission;
 import com.java.java_proj.entities.UserPermission;
 import com.java.java_proj.entities.enums.PermissionAccessType;
 import com.java.java_proj.repositories.UserPermissionRepository;
@@ -21,7 +21,7 @@ import java.util.List;
 
 @SpringBootApplication
 @OpenAPIDefinition(
-        info =@Info(
+        info = @Info(
                 title = "Socialpedia API",
                 version = "1.0",
                 contact = @Contact(
@@ -30,7 +30,6 @@ import java.util.List;
                 license = @License(
                         name = "Term of Service", url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
                 ),
-                termsOfService = "${tos.uri}",
                 description = "Danh sach API cua backend"
         ),
         servers = @Server(
@@ -86,7 +85,7 @@ public class JavaProjApplication implements CommandLineRunner {
 //    }
 
     private void autoUserPermission() {
-        List<LResponseUserPermission> userPermissionList = userPermissionRepository.findAllBy();
+        List<DResponseUserPermission> userPermissionList = userPermissionRepository.findAllBy();
 
         // check if user permission's exist
         if (userPermissionList.isEmpty()) {

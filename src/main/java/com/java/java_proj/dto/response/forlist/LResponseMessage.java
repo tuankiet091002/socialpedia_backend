@@ -8,10 +8,6 @@ public interface LResponseMessage {
 
     public String getContent();
 
-    public LResponseUser getCreatedBy();
-
-    public LocalDateTime getCreatedDate();
-
     public LocalDateTime getModifiedDate();
 
 }

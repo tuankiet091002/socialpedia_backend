@@ -16,6 +16,7 @@ public class JWTTokenProvider {
         Date now = new Date();
         long JWT_EXPIRATION = 604800000L;
         Date expiryDate = new Date(now.getTime() + JWT_EXPIRATION);
+
         // Tạo json web token từ email của user.
         return Jwts.builder()
                 .setSubject(userDetails.getUser().getEmail())

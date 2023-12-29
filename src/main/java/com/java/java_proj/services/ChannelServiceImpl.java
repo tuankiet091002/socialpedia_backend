@@ -1,16 +1,14 @@
 package com.java.java_proj.services;
 
 import com.java.java_proj.dto.request.forcreate.CRequestChannel;
-import com.java.java_proj.dto.request.forcreate.CRequestChannelMember;
 import com.java.java_proj.dto.request.forupdate.URequestChannel;
 import com.java.java_proj.dto.request.forupdate.URequestChannelMember;
 import com.java.java_proj.dto.response.fordetail.DResponseChannel;
-import com.java.java_proj.dto.response.fordetail.DResponseMessage;
+import com.java.java_proj.dto.response.fordetail.DResponseResource;
 import com.java.java_proj.dto.response.forlist.LResponseChatSpace;
-import com.java.java_proj.entities.Channel;
-import com.java.java_proj.entities.ChannelMember;
-import com.java.java_proj.entities.Resource;
-import com.java.java_proj.entities.User;
+import com.java.java_proj.dto.response.forlist.LResponseMessage;
+import com.java.java_proj.dto.response.forlist.LResponseUserMinimal;
+import com.java.java_proj.entities.*;
 import com.java.java_proj.entities.enums.PermissionAccessType;
 import com.java.java_proj.entities.enums.RequestType;
 import com.java.java_proj.exceptions.HttpException;
@@ -21,18 +19,20 @@ import com.java.java_proj.repositories.UserRepository;
 import com.java.java_proj.services.templates.ChannelService;
 import com.java.java_proj.services.templates.ResourceService;
 import com.java.java_proj.services.templates.UserService;
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.projection.ProjectionFactory;
+import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class ChannelServiceImpl implements ChannelService {
@@ -71,11 +71,17 @@ public class ChannelServiceImpl implements ChannelService {
             // map to dto
             LResponseChatSpace channel = modelMapper.map(entity, LResponseChatSpace.class);
 
+            // convert missing fields
+            ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
+            channel.setAvatar(pf.createProjection(DResponseResource.class, entity.getAvatar()));
+            channel.setCreatedBy(pf.createProjection(LResponseUserMinimal.class, entity.getCreatedBy()));
+
+
             // fetch top message and skip the pageable part
-            List<DResponseMessage> messageList = messageRepository.findByChannel("", entity, PageRequest.of(0, 1))
+            List<Message> messageList = messageRepository.findByChannel("", entity, PageRequest.of(0, 1))
                     .getContent();
             if (!messageList.isEmpty()) {
-                channel.setLatestMessage(messageList.get(0));
+                channel.setLatestMessage(pf.createProjection(LResponseMessage.class, messageList.get(0)));
             }
 
             return channel;
@@ -83,28 +89,32 @@ public class ChannelServiceImpl implements ChannelService {
     }
 
     @Override
-    public Page<LResponseChatSpace> getPersonalChannelList(String name, Integer page, Integer size, String orderBy, String orderDirection) {
+    public Page<LResponseChatSpace> getPersonalChannelList(String name, Integer page, Integer size) {
         // fetch user
         User user = userService.getOwner();
 
         // create pageable
-        Pageable paging = orderDirection.equals("ASC")
-                ? PageRequest.of(page, size, Sort.by(orderBy).ascending())
-                : PageRequest.of(page, size, Sort.by(orderBy).descending());
+        Pageable paging = PageRequest.of(page, size);
 
         // fetch entity page
         Page<Channel> channelPage = channelRepository.findPersonalChannelList(name, user, paging);
 
         // map to dto
         return channelPage.map(entity -> {
+
             // map to dto
             LResponseChatSpace channel = modelMapper.map(entity, LResponseChatSpace.class);
 
+            // convert missing fields
+            ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
+            channel.setAvatar(pf.createProjection(DResponseResource.class, entity.getAvatar()));
+            channel.setCreatedBy(pf.createProjection(LResponseUserMinimal.class, entity.getCreatedBy()));
+
             // fetch top message and skip the pageable part
-            List<DResponseMessage> messageList = messageRepository.findByChannel("", entity, PageRequest.of(0, 1))
+            List<Message> messageList = messageRepository.findByChannel("", entity, PageRequest.of(0, 1))
                     .getContent();
             if (!messageList.isEmpty()) {
-                channel.setLatestMessage(messageList.get(0));
+                channel.setLatestMessage(pf.createProjection(LResponseMessage.class, messageList.get(0)));
             }
 
             return channel;
@@ -119,10 +129,16 @@ public class ChannelServiceImpl implements ChannelService {
     }
 
     @Override
+    @Transactional
     public void createChannel(CRequestChannel requestChannel) {
 
         // model map
         Channel channel = modelMapper.map(requestChannel, Channel.class);
+
+        // set normal field
+        channel.setCreatedBy(userService.getOwner());
+        channel.setCreatedDate(LocalDateTime.now());
+        channel.setIsActive(true);
 
         // avatar file check
         if (requestChannel.getAvatarFile() != null) {
@@ -130,17 +146,27 @@ public class ChannelServiceImpl implements ChannelService {
             channel.setAvatar(resource);
         }
 
-        // set creator
-        channel.setCreatedBy(userService.getOwner());
-        channel.setCreatedDate(LocalDateTime.now());
-
+        // save entity
         channel = channelRepository.save(channel);
 
-        // set member list after save once
-        channel.setChannelMembers(genChannelMemberList(channel.getId(),
-                requestChannel.getChannelMembersId()));
+        // save middle entities
+        // intellij's recommended
+        Channel finalChannel = channel;
+        requestChannel.getChannelMembersId().forEach(request -> {
 
-        channelRepository.save(channel);
+            // corresponding user
+            User user = userRepository.findById(request.getMemberId())
+                    .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Channel member with id " + request.getMemberId() + " is not found"));
+
+            channelMemberRepository.save(ChannelMember.builder()
+                    .member(user)
+                    .channel(finalChannel)
+                    .status(RequestType.ACCEPTED)
+                    .memberPermission(PermissionAccessType.VIEW)
+                    .messagePermission(PermissionAccessType.VIEW)
+                    .lastSeenMessage(null)
+                    .build());
+        });
     }
 
     @Override
@@ -168,14 +194,22 @@ public class ChannelServiceImpl implements ChannelService {
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Channel not found"));
 
+        // mark old avatar to delete
+        Integer oldResource = null;
         if (channel.getAvatar() != null) {
-            resourceService.deleteFile(channel.getAvatar().getId());
+            oldResource = channel.getAvatar().getId();
         }
 
+        // set and save
         Resource resource = resourceService.addFile(file);
         channel.setAvatar(resource);
+        channel.setModifiedBy(userService.getOwner());
+        channel.setModifiedDate(LocalDateTime.now());
 
         channelRepository.save(channel);
+
+        if (oldResource != null)
+            resourceService.deleteFile(oldResource);
     }
 
     @Override
@@ -185,16 +219,16 @@ public class ChannelServiceImpl implements ChannelService {
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Channel not found"));
 
-        // check active status
-        if (!channel.getIsActive()) {
-            throw new HttpException(HttpStatus.BAD_REQUEST, "User is already inactive");
-        }
+        // set fields
         channel.setIsActive(false);
+        channel.setModifiedBy(userService.getOwner());
+        channel.setModifiedDate(LocalDateTime.now());
 
         channelRepository.save(channel);
     }
 
     @Override
+    @Transactional
     public void createChannelRequest(Integer channelId) {
 
         // fetch channel from id
@@ -202,24 +236,29 @@ public class ChannelServiceImpl implements ChannelService {
                 .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Channel not found."));
 
         // fetch user from id
-        User member = userService.getOwner();
+        User member = userRepository.findById(userService.getOwner().getId())
+                .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "User not found."));
 
-        ChannelMember channelMember = channelMemberRepository.findByChannelAndMember(channel, member)
-                .orElse(ChannelMember.builder()
-                        .channel(channel)
-                        .member(member)
-                        .status(RequestType.PENDING)
-                        .memberPermission(PermissionAccessType.VIEW)
-                        .messagePermission(PermissionAccessType.VIEW)
-                        .build());
+        if (channelMemberRepository.findByChannelAndMember(channel, member).isPresent()) {
+            throw new HttpException(HttpStatus.BAD_REQUEST, "You are already member of this channel.");
+        }
+
+        ChannelMember channelMember = (ChannelMember.builder()
+                .channel(channel)
+                .member(member)
+                .status(RequestType.PENDING)
+                .memberPermission(PermissionAccessType.VIEW)
+                .messagePermission(PermissionAccessType.VIEW)
+                .build());
 
         channelMemberRepository.save(channelMember);
     }
 
     @Override
+    @Transactional
     public void acceptChannelRequest(Integer channelId, Integer memberId) {
 
-        ChannelMember channelMember = findMember(channelId, memberId);
+        ChannelMember channelMember = findMemberRequest(channelId, memberId);
 
         // change request status
         if (channelMember.getStatus() != RequestType.PENDING)
@@ -230,9 +269,11 @@ public class ChannelServiceImpl implements ChannelService {
     }
 
     @Override
+    @Transactional
     public void rejectChannelRequest(Integer channelId, Integer memberId) {
 
-        ChannelMember channelMember = findMember(channelId, memberId);
+        ChannelMember channelMember = findMemberRequest(channelId, memberId);
+
         // change request status
         if (channelMember.getStatus() != RequestType.PENDING)
             throw new HttpException(HttpStatus.BAD_REQUEST, "Member request is not pending");
@@ -243,47 +284,35 @@ public class ChannelServiceImpl implements ChannelService {
     }
 
     @Override
+    @Transactional
     public void updateMemberPermission(Integer channelId, Integer memberId, URequestChannelMember requestChannel) {
 
+        ChannelMember channelMember = findMemberRequest(channelId, memberId);
+
+        // change permission
+        if (channelMember.getStatus() != RequestType.ACCEPTED)
+            throw new HttpException(HttpStatus.BAD_REQUEST, "User is not a member.");
+        channelMember.setMessagePermission(requestChannel.getMessagePermission());
+        channelMember.setMemberPermission(requestChannel.getMemberPermission());
+
+        channelMemberRepository.save(channelMember);
     }
 
     @Override
+    @Transactional
     public void unMember(Integer channelId, Integer memberId) {
 
-        ChannelMember channelMember = findMember(channelId, memberId);
+        ChannelMember channelMember = findMemberRequest(channelId, memberId);
+
         // change request status
         if (channelMember.getStatus() != RequestType.ACCEPTED)
-            throw new HttpException(HttpStatus.BAD_REQUEST, "Member request is not pending");
+            throw new HttpException(HttpStatus.BAD_REQUEST, "User is not a member.");
         channelMember.setStatus(RequestType.REJECTED);
 
         channelMemberRepository.save(channelMember);
     }
 
-    private List<ChannelMember> genChannelMemberList(Integer channelId, List<CRequestChannelMember> requestChannelList) {
-
-        return requestChannelList.stream()
-                .map(request -> {
-
-                    // dummy channel
-                    Channel dummy = new Channel();
-                    dummy.setId(channelId);
-
-                    // corresponding user
-                    User user = userRepository.findById(request.getMemberId())
-                            .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Channel member with id " + request.getMemberId() + " is not found"));
-
-                    return ChannelMember.builder()
-                            .member(user)
-                            .channel(dummy)
-                            .status(RequestType.ACCEPTED)
-                            .memberPermission(PermissionAccessType.VIEW)
-                            .lastSeenMessage(null)
-                            .build();
-                })
-                .collect(Collectors.toList());
-    }
-
-    private ChannelMember findMember(Integer channelId, Integer userId) {
+    private ChannelMember findMemberRequest(Integer channelId, Integer userId) {
 
         // fetch channel from id
         Channel channel = channelRepository.findById(channelId)

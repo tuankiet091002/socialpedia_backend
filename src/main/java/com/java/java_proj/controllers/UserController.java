@@ -1,11 +1,9 @@
 package com.java.java_proj.controllers;
 
-import com.java.java_proj.dto.request.forupdate.URequestUserRole;
 import com.java.java_proj.dto.response.fordetail.DResponseUser;
 import com.java.java_proj.dto.response.forlist.LResponseUser;
 import com.java.java_proj.exceptions.HttpException;
 import com.java.java_proj.services.templates.UserService;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.Null;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -13,7 +11,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
@@ -30,7 +27,7 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/")
+    @GetMapping("")
     @PreAuthorize("hasPermission('GLOBAL', 'USER', 'VIEW')")
     public ResponseEntity<Page<LResponseUser>> getUserList(@RequestParam(value = "name", defaultValue = "") String name,
                                                            @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
@@ -85,16 +82,13 @@ public class UserController {
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
-    @PutMapping("/role")
+    @PutMapping("/{userId}/role")
     @PreAuthorize("hasPermission('GLOBAL', 'USER', 'MODIFY')")
-    public ResponseEntity<Null> updateUserRole(@Valid @RequestBody URequestUserRole requestUser,
-                                               BindingResult bindingResult) {
-        // get validation error
-        if (bindingResult.hasErrors()) {
-            throw new HttpException(HttpStatus.BAD_REQUEST, bindingResult);
-        }
+    public ResponseEntity<Null> updateUserRole(@PathVariable Integer userId,
+                                               @RequestParam(value = "role") String role) {
 
-        userService.updateUserRole(requestUser);
+
+        userService.updateUserRole(userId, role);
 
         return new ResponseEntity<>(null, HttpStatus.OK);
     }

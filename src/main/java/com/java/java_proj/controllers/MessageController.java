@@ -1,10 +1,11 @@
 package com.java.java_proj.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.java.java_proj.dto.request.forcreate.CRequestMessage;
 import com.java.java_proj.dto.request.forupdate.URequestMessageProfile;
 import com.java.java_proj.dto.request.forupdate.URequestMessageStatus;
 import com.java.java_proj.dto.response.fordetail.DResponseMessage;
-import com.java.java_proj.entities.miscs.SocketMessage;
 import com.java.java_proj.exceptions.HttpException;
 import com.java.java_proj.services.templates.MessageService;
 import jakarta.validation.Valid;
@@ -16,7 +17,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.DataBinder;
+import org.springframework.validation.Validator;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/message")
@@ -24,11 +31,15 @@ public class MessageController {
 
     final private MessageService messageService;
     final private SimpMessagingTemplate messagingTemplate;
+    final private ObjectMapper objectMapper;
+    final private Validator validator;
 
     @Autowired
-    public MessageController(MessageService messageService, SimpMessagingTemplate messagingTemplate) {
+    public MessageController(MessageService messageService, SimpMessagingTemplate messagingTemplate, ObjectMapper objectMapper, Validator validator) {
         this.messageService = messageService;
         this.messagingTemplate = messagingTemplate;
+        this.objectMapper = objectMapper;
+        this.validator = validator;
     }
 
     @GetMapping("/channel/{channelId}")
@@ -59,42 +70,56 @@ public class MessageController {
 
     @PostMapping("/channel/{channelId}")
     @PreAuthorize("hasPermission(#channelId, 'CHANNEL', 'CREATE')")
-    public ResponseEntity<Null> sendMessageToChannel(@PathVariable Integer channelId,
-                                                     @Valid @RequestBody CRequestMessage requestMessage,
-                                                     BindingResult bindingResult) {
+    public ResponseEntity<Null> sendMessageToChannel(@PathVariable Integer channelId, @RequestPart String content,
+                                                     @RequestPart List<MultipartFile> files) throws JsonProcessingException {
+
+        CRequestMessage requestMessage = objectMapper.readValue(content, CRequestMessage.class);
 
         // get validation error
+        DataBinder binder = new DataBinder(requestMessage);
+        binder.setValidator(validator);
+        binder.validate();
+        BindingResult bindingResult = binder.getBindingResult();
         if (bindingResult.hasErrors()) {
             throw new HttpException(HttpStatus.BAD_REQUEST, bindingResult);
         }
 
-        messageService.sendMessageToChannel(channelId, requestMessage);
+        // check if file list is empty
+        if (files.size() == 1 || files.get(0).isEmpty()) {
+            requestMessage.setResourceFiles(new ArrayList<>());
+        } else {
+            requestMessage.setResourceFiles(files);
+        }
 
-        // socket message for member in the same channel
-        messagingTemplate.convertAndSend("/channel/" + channelId,
-                new SocketMessage(SocketMessage.MessageType.CHAT,
-                        "", channelId.toString()));
+        messageService.sendMessageToChannel(channelId, requestMessage);
 
         return new ResponseEntity<>(null, HttpStatus.OK);
     }
 
     @PostMapping("/inbox/{inboxId}")
     @PreAuthorize("hasPermission(#inboxId, 'INBOX', 'CREATE')")
-    public ResponseEntity<Null> sendMessageToInbox(@PathVariable Integer inboxId,
-                                                   @Valid @RequestBody CRequestMessage requestMessage,
-                                                   BindingResult bindingResult) {
+    public ResponseEntity<Null> sendMessageToInbox(@PathVariable Integer inboxId, @RequestPart String content,
+                                                   @RequestPart List<MultipartFile> files) throws JsonProcessingException {
+
+        CRequestMessage requestMessage = objectMapper.readValue(content, CRequestMessage.class);
 
         // get validation error
+        DataBinder binder = new DataBinder(requestMessage);
+        binder.setValidator(validator);
+        binder.validate();
+        BindingResult bindingResult = binder.getBindingResult();
         if (bindingResult.hasErrors()) {
             throw new HttpException(HttpStatus.BAD_REQUEST, bindingResult);
         }
 
-        messageService.sendMessageToInbox(inboxId, requestMessage);
+        // check if file list is empty
+        if (files.size() == 1 || files.get(0).isEmpty()) {
+            requestMessage.setResourceFiles(new ArrayList<>());
+        } else {
+            requestMessage.setResourceFiles(files);
+        }
 
-        // socket message for member in the same inbox
-        messagingTemplate.convertAndSend("/inbox/" + inboxId,
-                new SocketMessage(SocketMessage.MessageType.CHAT,
-                        "", inboxId.toString()));
+        messageService.sendMessageToInbox(inboxId, requestMessage);
 
         return new ResponseEntity<>(null, HttpStatus.OK);
     }

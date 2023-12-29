@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
@@ -19,5 +21,11 @@ public class LResponseChatSpace {
 
     private DResponseResource avatar;
 
-    private DResponseMessage latestMessage;
+    private LResponseMessage latestMessage;
+
+    private LResponseUserMinimal createdBy;
+
+    private LocalDateTime createdDate;
+
+    private LocalDateTime modifiedDate;
 }

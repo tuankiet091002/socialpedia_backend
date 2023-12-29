@@ -1,8 +1,10 @@
 package com.java.java_proj.controllers;
 
+import com.java.java_proj.dto.request.forupdate.URequestInbox;
 import com.java.java_proj.dto.response.forlist.LResponseChatSpace;
 import com.java.java_proj.exceptions.HttpException;
 import com.java.java_proj.services.templates.InboxService;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Null;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -10,10 +12,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Arrays;
-import java.util.List;
 
 @RestController
 @RequestMapping(value = "/inbox")
@@ -26,25 +26,13 @@ public class InboxController {
         this.inboxService = inboxService;
     }
 
-    @GetMapping("/")
+    @GetMapping("")
     @PreAuthorize("hasPermission('GLOBAL', 'USER', 'SELF')")
     public ResponseEntity<Page<LResponseChatSpace>> getInboxList(@RequestParam(value = "name", defaultValue = "") String name,
                                                                  @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
-                                                                 @RequestParam(value = "pageSize", defaultValue = "10") Integer size,
-                                                                 @RequestParam(value = "orderBy", defaultValue = "id") String orderBy,
-                                                                 @RequestParam(value = "orderDirection", defaultValue = "DESC") String orderDirection) {
+                                                                 @RequestParam(value = "pageSize", defaultValue = "10") Integer size) {
 
-        List<String> allowedFields = Arrays.asList("id", "name");
-        if (!allowedFields.contains(orderBy)) {
-            throw new HttpException(HttpStatus.BAD_REQUEST, "Order by column " + orderBy + " is illegal!");
-        }
-
-        List<String> allowedSort = Arrays.asList("ASC", "DESC");
-        if (!allowedSort.contains(orderDirection)) {
-            throw new HttpException(HttpStatus.BAD_REQUEST, "Sort Direction " + orderDirection + " is illegal!");
-        }
-
-        Page<LResponseChatSpace> inboxPage = inboxService.getInboxList(name, page, size, orderBy, orderDirection);
+        Page<LResponseChatSpace> inboxPage = inboxService.getInboxList(name, page, size);
 
         return new ResponseEntity<>(inboxPage, new HttpHeaders(), HttpStatus.OK);
     }
@@ -58,12 +46,20 @@ public class InboxController {
         return new ResponseEntity<>(null, HttpStatus.OK);
     }
 
-    @DeleteMapping("/{userId}")
-    @PreAuthorize("hasPermission('GLOBAL', 'USER', 'SELF')")
-    public ResponseEntity<Null> disableInbox(@PathVariable Integer userId) {
+    @PutMapping("/{userId}/profile")
+    @PreAuthorize("hasPermission(#userId, 'USER', 'SELF')")
+    public ResponseEntity<Null> updateInboxName(@PathVariable Integer userId,
+                                                @Valid @RequestBody URequestInbox requestChannel,
+                                                BindingResult bindingResult) {
 
-        inboxService.disableInbox(userId);
+        // get validation error
+        if (bindingResult.hasErrors()) {
+            throw new HttpException(HttpStatus.BAD_REQUEST, bindingResult);
+        }
+
+        inboxService.updateInboxProfile(userId, requestChannel);
 
         return new ResponseEntity<>(null, HttpStatus.OK);
     }
+
 }
