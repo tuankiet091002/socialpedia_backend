@@ -82,7 +82,9 @@ public class InboxServiceImpl implements InboxService {
 
         // find existing friendship
         UserFriendship friendship = userService.findFriendship(userId);
-        if (inboxRepository.countByFriendship(friendship) > 0) {
+
+        // count active inbox
+        if (inboxRepository.countByFriendshipAndIsActive(friendship, true) > 0) {
             throw new HttpException(HttpStatus.BAD_REQUEST, "Inbox is already exist");
         }
 
@@ -101,8 +103,8 @@ public class InboxServiceImpl implements InboxService {
     @Override
     public void updateInboxProfile(Integer userId, URequestInbox requestInbox) {
 
-        // find inbox
-        Inbox inbox = inboxRepository.findByFriendship(userService.findFriendship(userId))
+        // find active inbox
+        Inbox inbox = inboxRepository.findByFriendshipAndIsActive(userService.findFriendship(userId), true)
                 .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Inbox not found."));
 
         inbox.setName(requestInbox.getName());

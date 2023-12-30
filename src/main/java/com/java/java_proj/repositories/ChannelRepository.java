@@ -20,10 +20,11 @@ public interface ChannelRepository extends JpaRepository<Channel, Integer> {
     @Query("SELECT m.channel FROM ChannelMember m " +
             "WHERE m.member = :user " +
             "AND m.status = 'ACCEPTED' " +
-            "AND m.channel.name LIKE CONCAT('%',:name, '%')")
+            "AND m.channel.name LIKE CONCAT('%',:name, '%') " +
+            "AND m.channel.isActive = TRUE ")
     Page<Channel> findPersonalChannelList(String name, User user, Pageable pageable);
 
-    @Query("SELECT c FROM Channel c JOIN FETCH c.channelMembers WHERE c.id = :id")
+    @Query("SELECT c FROM Channel c JOIN FETCH c.channelMembers WHERE c.id = :id AND c.isActive = TRUE")
     Optional<DResponseChannel> findOneById(Integer id);
 
 }

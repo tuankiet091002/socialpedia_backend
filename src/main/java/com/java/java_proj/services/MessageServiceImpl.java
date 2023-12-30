@@ -31,6 +31,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -141,11 +142,15 @@ public class MessageServiceImpl implements MessageService {
 
         // check if message belong to that location
         if (messageRepository.countByLocation(message, locationId) == 0)
-            throw new HttpException(HttpStatus.FORBIDDEN, "Message don't belong to that location");
+            throw new HttpException(HttpStatus.FORBIDDEN, "Message don't belong to that location.");
 
         // check if message owner
         if (!Objects.equals(message.getCreatedBy().getId(), userService.getOwner().getId()))
-            throw new HttpException(HttpStatus.FORBIDDEN, "Can't change others message");
+            throw new HttpException(HttpStatus.FORBIDDEN, "Can't change others message.");
+
+        // check if message is active
+        if (message.getStatus() == MessageStatusType.INACTIVE)
+            throw new HttpException(HttpStatus.FORBIDDEN, "Message is deleted.");
 
         message.setContent(requestMessage.getContent());
         message.setModifiedDate(LocalDateTime.now());
@@ -162,7 +167,7 @@ public class MessageServiceImpl implements MessageService {
 
         // check if message belong to that location
         if (messageRepository.countByLocation(message, locationId) == 0)
-            throw new HttpException(HttpStatus.FORBIDDEN, "Message don't belong to that location");
+            throw new HttpException(HttpStatus.FORBIDDEN, "Message don't belong to that location.");
 
         message.setStatus(requestMessage.getStatus());
         message.setModifiedDate(LocalDateTime.now());
@@ -194,6 +199,12 @@ public class MessageServiceImpl implements MessageService {
             List<Resource> resourceList = entity.getResources();
             entity.setResources(null);
             DResponseMessage message = modelMapper.map(entity, DResponseMessage.class);
+
+            // remove deleted content
+            if (message.getStatus() == MessageStatusType.INACTIVE) {
+                message.setResources(new ArrayList<>());
+                message.setContent(null);
+            }
 
             // convert missing fields
             ProjectionFactory pf = new SpelAwareProxyProjectionFactory();

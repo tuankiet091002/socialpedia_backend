@@ -15,10 +15,11 @@ public interface InboxRepository extends JpaRepository<Inbox, Integer> {
     @Query("SELECT i FROM Inbox i WHERE i.friendship IN " +
             "(SELECT f FROM UserFriendship f WHERE f.status = 'ACCEPTED' AND " +
             "f.sender = :user OR f.receiver = :user)" +
-            "AND i.name LIKE CONCAT('%', :name, '%')")
+            "AND i.name LIKE CONCAT('%', :name, '%')" +
+            "AND i.isActive = TRUE")
     Page<Inbox> findByNameAndUser(String name, User user, Pageable pageable);
 
-    Optional<Inbox> findByFriendship(UserFriendship friendship);
+    Optional<Inbox> findByFriendshipAndIsActive(UserFriendship friendship, Boolean status);
 
-    Integer countByFriendship(UserFriendship friendship);
+    Integer countByFriendshipAndIsActive(UserFriendship friendship, Boolean status);
 }

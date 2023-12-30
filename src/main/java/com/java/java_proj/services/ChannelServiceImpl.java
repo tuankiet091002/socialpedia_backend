@@ -239,11 +239,13 @@ public class ChannelServiceImpl implements ChannelService {
         User member = userRepository.findById(userService.getOwner().getId())
                 .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "User not found."));
 
-        if (channelMemberRepository.findByChannelAndMember(channel, member).isPresent()) {
-            throw new HttpException(HttpStatus.BAD_REQUEST, "You are already member of this channel.");
+        // fetch old request
+        ChannelMember channelMember = channelMemberRepository.findByChannelAndMember(channel, member).orElse(null);
+        if (channelMember != null && channelMember.getStatus() != RequestType.REJECTED) {
+            throw new HttpException(HttpStatus.BAD_REQUEST, "Old member request's existed.");
         }
 
-        ChannelMember channelMember = (ChannelMember.builder()
+        channelMember = (ChannelMember.builder()
                 .channel(channel)
                 .member(member)
                 .status(RequestType.PENDING)
