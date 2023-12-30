@@ -9,7 +9,7 @@ import java.util.Date;
 
 @Component
 @Slf4j
-public class JWTTokenProvider {
+public class JwtTokenProvider {
     private final String JWT_SECRET = "TOP-SECRET-YOU-WILL-NEVER-KNOW";
 
     public String generateToken(CustomUserDetail userDetails) {

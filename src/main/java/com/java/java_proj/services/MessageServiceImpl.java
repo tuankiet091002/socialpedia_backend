@@ -140,6 +140,10 @@ public class MessageServiceImpl implements MessageService {
                 .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Message not found."));
 
         // check if message belong to that location
+        if (messageRepository.countByLocation(message, locationId) == 0)
+            throw new HttpException(HttpStatus.FORBIDDEN, "Message don't belong to that location");
+
+        // check if message owner
         if (!Objects.equals(message.getCreatedBy().getId(), userService.getOwner().getId()))
             throw new HttpException(HttpStatus.FORBIDDEN, "Can't change others message");
 
@@ -155,6 +159,10 @@ public class MessageServiceImpl implements MessageService {
         // check and set
         Message message = messageRepository.findById(requestMessage.getId())
                 .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Message not found."));
+
+        // check if message belong to that location
+        if (messageRepository.countByLocation(message, locationId) == 0)
+            throw new HttpException(HttpStatus.FORBIDDEN, "Message don't belong to that location");
 
         message.setStatus(requestMessage.getStatus());
         message.setModifiedDate(LocalDateTime.now());

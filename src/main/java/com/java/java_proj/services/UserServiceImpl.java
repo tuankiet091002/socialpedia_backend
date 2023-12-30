@@ -21,7 +21,7 @@ import com.java.java_proj.services.templates.RefreshTokenService;
 import com.java.java_proj.services.templates.ResourceService;
 import com.java.java_proj.services.templates.UserService;
 import com.java.java_proj.util.DateFormatter;
-import com.java.java_proj.util.security.JWTTokenProvider;
+import com.java.java_proj.util.security.JwtTokenProvider;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,16 +50,15 @@ public class UserServiceImpl implements UserService {
     final private UserPermissionRepository userPermissionRepository;
     final private UserFriendshipRepository userFriendshipRepository;
     final private ResourceService resourceService;
-    final private JWTTokenProvider tokenProvider;
+    final private JwtTokenProvider tokenProvider;
     final private RefreshTokenService refreshTokenService;
     final private AuthenticationManager authenticationManager;
     final private BCryptPasswordEncoder bCryptPasswordEncoder;
-
     final private ModelMapper modelMapper;
     final private DateFormatter dateFormatter;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, UserPermissionRepository userPermissionRepository, UserFriendshipRepository userFriendshipRepository, ResourceService resourceService, JWTTokenProvider tokenProvider, RefreshTokenService refreshTokenService, AuthenticationManager authenticationManager, BCryptPasswordEncoder bCryptPasswordEncoder, ModelMapper modelMapper, DateFormatter dateFormatter) {
+    public UserServiceImpl(UserRepository userRepository, UserPermissionRepository userPermissionRepository, UserFriendshipRepository userFriendshipRepository, ResourceService resourceService, JwtTokenProvider tokenProvider, RefreshTokenService refreshTokenService, AuthenticationManager authenticationManager, BCryptPasswordEncoder bCryptPasswordEncoder, ModelMapper modelMapper, DateFormatter dateFormatter) {
         this.userRepository = userRepository;
         this.userPermissionRepository = userPermissionRepository;
         this.userFriendshipRepository = userFriendshipRepository;
@@ -173,10 +172,8 @@ public class UserServiceImpl implements UserService {
     public ResponseJwt login(RequestLogin requestLogin) {
 
         // find user
-        User user = userRepository.findUserByEmail(requestLogin.getEmail());
-        if (user == null) {
-            throw new HttpException(HttpStatus.BAD_REQUEST, "User not found.");
-        }
+        User user = userRepository.findByEmail(requestLogin.getEmail())
+                .orElseThrow(() -> new HttpException(HttpStatus.BAD_REQUEST, "User not found."));
 
         // check password
         if (!bCryptPasswordEncoder.matches(requestLogin.getPassword(), user.getPassword())) {

@@ -1,6 +1,5 @@
 package com.java.java_proj.repositories;
 
-import com.java.java_proj.dto.response.fordetail.DResponseUser;
 import com.java.java_proj.dto.response.forlist.LResponseUser;
 import com.java.java_proj.entities.User;
 import org.springframework.data.domain.Page;
@@ -15,7 +14,7 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
 
-    @Query(value = "SELECT u FROM User u LEFT JOIN FETCH u.friends WHERE u.email = ?1")
+    @Query(value = "SELECT u FROM User u LEFT JOIN FETCH u.friends WHERE u.email = :email")
     User findUserByEmail(String email);
 
     @Query("SELECT u FROM User u WHERE u.email = :email")

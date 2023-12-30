@@ -22,4 +22,10 @@ public interface MessageRepository extends JpaRepository<Message, Integer> {
             "AND m.content LIKE CONCAT('%', :content, '%')")
     Page<Message> findByInbox(String content, Inbox inbox, Pageable pageable);
 
+    @Query("SELECT COUNT(m) FROM Message m " +
+            "WHERE m = :message AND " +
+            "m IN (SELECT c.messages FROM Channel c WHERE c.id = :locationId) " +
+            "OR m IN (SELECT i.messages FROM Inbox i WHERE i.id = :locationId)")
+    Integer countByLocation(Message message, Integer locationId);
+
 }

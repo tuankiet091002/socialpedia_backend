@@ -17,10 +17,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 @Slf4j
-public class JWTTokenFilter extends OncePerRequestFilter {
+public class JwtTokenFilter extends OncePerRequestFilter {
 
     @Autowired
-    JWTTokenProvider jwtTokenProvider;
+    JwtTokenProvider jwtTokenProvider;
     @Autowired
     UserDetailService userDetailService;
 

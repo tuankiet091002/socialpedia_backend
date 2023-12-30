@@ -1,7 +1,7 @@
 package com.java.java_proj.config;
 
 import com.java.java_proj.util.security.CustomPermissionEvaluator;
-import com.java.java_proj.util.security.JWTTokenFilter;
+import com.java.java_proj.util.security.JwtTokenFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
@@ -33,8 +33,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public JWTTokenFilter authenticationJwtTokenFilter() {
-        return new JWTTokenFilter();
+    public JwtTokenFilter authenticationJwtTokenFilter() {
+        return new JwtTokenFilter();
     }
 
     @Bean

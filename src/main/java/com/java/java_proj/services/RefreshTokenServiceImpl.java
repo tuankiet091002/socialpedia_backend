@@ -2,10 +2,12 @@ package com.java.java_proj.services;
 
 import com.java.java_proj.entities.RefreshToken;
 import com.java.java_proj.entities.User;
+import com.java.java_proj.exceptions.HttpException;
 import com.java.java_proj.repositories.RefreshTokenRepository;
 import com.java.java_proj.repositories.UserRepository;
 import com.java.java_proj.services.templates.RefreshTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -23,7 +25,8 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     public RefreshToken createToken(String userEmail) {
 
         RefreshToken token = new RefreshToken();
-        User user = userRepository.findUserByEmail(userEmail);
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "User not Found"));
 
         // set required fields
         token.setExpiryDate(LocalDate.now().plusDays(30));
