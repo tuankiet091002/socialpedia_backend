@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "files")
+@Table(name = "notifications")
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
@@ -16,9 +16,16 @@ import lombok.NoArgsConstructor;
 public class Notification {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "avatar")
+    private Resource avatar;
 
     @Column(name = "title")
     private String title;
@@ -29,8 +36,7 @@ public class Notification {
     @Column(name = "target")
     private String target;
 
-    @ManyToOne
-    @JoinColumn(name = "resource")
-    private Resource resource;
+    @Column(name = "is_read")
+    private Boolean isRead;
 
 }

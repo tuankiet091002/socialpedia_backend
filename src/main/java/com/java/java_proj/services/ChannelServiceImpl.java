@@ -17,6 +17,7 @@ import com.java.java_proj.repositories.ChannelRepository;
 import com.java.java_proj.repositories.MessageRepository;
 import com.java.java_proj.repositories.UserRepository;
 import com.java.java_proj.services.templates.ChannelService;
+import com.java.java_proj.services.templates.NotificationService;
 import com.java.java_proj.services.templates.ResourceService;
 import com.java.java_proj.services.templates.UserService;
 import jakarta.transaction.Transactional;
@@ -42,15 +43,17 @@ public class ChannelServiceImpl implements ChannelService {
     final private UserRepository userRepository;
     final private MessageRepository messageRepository;
     final private ResourceService resourceService;
+    final private NotificationService notificationService;
     final private UserService userService;
     final private ModelMapper modelMapper;
 
-    public ChannelServiceImpl(ChannelRepository channelRepository, ChannelMemberRepository channelMemberRepository, UserRepository userRepository, MessageRepository messageRepository, ResourceService resourceService, UserService userService, ModelMapper modelMapper) {
+    public ChannelServiceImpl(ChannelRepository channelRepository, ChannelMemberRepository channelMemberRepository, UserRepository userRepository, MessageRepository messageRepository, ResourceService resourceService, NotificationService notificationService, UserService userService, ModelMapper modelMapper) {
         this.channelRepository = channelRepository;
         this.channelMemberRepository = channelMemberRepository;
         this.userRepository = userRepository;
         this.messageRepository = messageRepository;
         this.resourceService = resourceService;
+        this.notificationService = notificationService;
         this.userService = userService;
         this.modelMapper = modelMapper;
     }
@@ -254,6 +257,9 @@ public class ChannelServiceImpl implements ChannelService {
                 .build());
 
         channelMemberRepository.save(channelMember);
+
+        // create notification and send socket message
+        notificationService.channelRequestSend(member, channel);
     }
 
     @Override
@@ -268,6 +274,9 @@ public class ChannelServiceImpl implements ChannelService {
         channelMember.setStatus(RequestType.ACCEPTED);
 
         channelMemberRepository.save(channelMember);
+
+        // create notification and send socket message
+        notificationService.channelRequestAccepted(channelMember.getChannel(), channelMember.getMember());
     }
 
     @Override

@@ -13,7 +13,8 @@ public enum PermissionAccessType {
     NO_ACCESS(1),
     SELF(2),
     VIEW(3),
-    MODIFY(4);
+    CREATE(4),
+    MODIFY(5);
 
     private final Integer value;
 

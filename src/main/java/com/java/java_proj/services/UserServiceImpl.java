@@ -17,6 +17,7 @@ import com.java.java_proj.exceptions.HttpException;
 import com.java.java_proj.repositories.UserFriendshipRepository;
 import com.java.java_proj.repositories.UserPermissionRepository;
 import com.java.java_proj.repositories.UserRepository;
+import com.java.java_proj.services.templates.NotificationService;
 import com.java.java_proj.services.templates.RefreshTokenService;
 import com.java.java_proj.services.templates.ResourceService;
 import com.java.java_proj.services.templates.UserService;
@@ -52,19 +53,21 @@ public class UserServiceImpl implements UserService {
     final private ResourceService resourceService;
     final private JwtTokenProvider tokenProvider;
     final private RefreshTokenService refreshTokenService;
+    final private NotificationService notificationService;
     final private AuthenticationManager authenticationManager;
     final private BCryptPasswordEncoder bCryptPasswordEncoder;
     final private ModelMapper modelMapper;
     final private DateFormatter dateFormatter;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, UserPermissionRepository userPermissionRepository, UserFriendshipRepository userFriendshipRepository, ResourceService resourceService, JwtTokenProvider tokenProvider, RefreshTokenService refreshTokenService, AuthenticationManager authenticationManager, BCryptPasswordEncoder bCryptPasswordEncoder, ModelMapper modelMapper, DateFormatter dateFormatter) {
+    public UserServiceImpl(UserRepository userRepository, UserPermissionRepository userPermissionRepository, UserFriendshipRepository userFriendshipRepository, ResourceService resourceService, JwtTokenProvider tokenProvider, RefreshTokenService refreshTokenService, NotificationService notificationService, AuthenticationManager authenticationManager, BCryptPasswordEncoder bCryptPasswordEncoder, ModelMapper modelMapper, DateFormatter dateFormatter) {
         this.userRepository = userRepository;
         this.userPermissionRepository = userPermissionRepository;
         this.userFriendshipRepository = userFriendshipRepository;
         this.resourceService = resourceService;
         this.tokenProvider = tokenProvider;
         this.refreshTokenService = refreshTokenService;
+        this.notificationService = notificationService;
         this.authenticationManager = authenticationManager;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.modelMapper = modelMapper;
@@ -328,6 +331,9 @@ public class UserServiceImpl implements UserService {
                         .build());
 
         userFriendshipRepository.save(friendship);
+
+        // create notification and send socket message
+        notificationService.friendRequestSend(sender, receiver);
     }
 
     @Override
@@ -342,6 +348,13 @@ public class UserServiceImpl implements UserService {
         friendship.setStatus(RequestType.ACCEPTED);
 
         userFriendshipRepository.save(friendship);
+
+        // create notification and send socket message
+        if (Objects.equals(friendship.getReceiver().getId(), getOwner().getId())) {
+            notificationService.friendRequestSend(friendship.getReceiver(), friendship.getSender());
+        } else {
+            notificationService.friendRequestSend(friendship.getSender(), friendship.getReceiver());
+        }
     }
 
     @Override

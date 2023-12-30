@@ -16,6 +16,7 @@ import com.java.java_proj.repositories.ChannelRepository;
 import com.java.java_proj.repositories.InboxRepository;
 import com.java.java_proj.repositories.MessageRepository;
 import com.java.java_proj.services.templates.MessageService;
+import com.java.java_proj.services.templates.NotificationService;
 import com.java.java_proj.services.templates.ResourceService;
 import com.java.java_proj.services.templates.UserService;
 import jakarta.transaction.Transactional;
@@ -44,15 +45,17 @@ public class MessageServiceImpl implements MessageService {
     final private InboxRepository inboxRepository;
     final private ResourceService resourceService;
     final private UserService userService;
+    final private NotificationService notificationService;
     final private ModelMapper modelMapper;
 
     @Autowired
-    public MessageServiceImpl(MessageRepository messageRepository, ChannelRepository channelRepository, InboxRepository inboxRepository, ResourceService resourceService, UserService userService, ModelMapper modelMapper) {
+    public MessageServiceImpl(MessageRepository messageRepository, ChannelRepository channelRepository, InboxRepository inboxRepository, ResourceService resourceService, UserService userService, NotificationService notificationService, ModelMapper modelMapper) {
         this.messageRepository = messageRepository;
         this.channelRepository = channelRepository;
         this.inboxRepository = inboxRepository;
         this.resourceService = resourceService;
         this.userService = userService;
+        this.notificationService = notificationService;
         this.modelMapper = modelMapper;
     }
 
@@ -109,6 +112,9 @@ public class MessageServiceImpl implements MessageService {
         channel.getMessages().add(message);
 
         channelRepository.save(channel);
+
+        // create notification and send socket message
+        notificationService.messageToChannel(locationId);
     }
 
     @Override
@@ -132,6 +138,9 @@ public class MessageServiceImpl implements MessageService {
         inbox.getMessages().add(message);
 
         inboxRepository.save(inbox);
+
+        // create notification and send socket message
+        notificationService.messageToInbox(locationId);
     }
 
     @Override
