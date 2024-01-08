@@ -70,10 +70,33 @@ public class InboxServiceImpl implements InboxService {
                     entity.getFriendship().getSender().getAvatar()
                     : entity.getFriendship().getReceiver().getAvatar();
 
-            inbox.setAvatar(pf.createProjection(DResponseResource.class, avatar));
+            if (avatar != null)
+                inbox.setAvatar(pf.createProjection(DResponseResource.class, avatar));
 
             return inbox;
         });
+    }
+
+    @Override
+    @Transactional
+    public LResponseChatSpace getInboxProfile(Integer inboxId) {
+
+        // get entity
+        Inbox inbox = inboxRepository.findById(inboxId)
+                .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Inbox not found."));
+
+        // map to dto
+        LResponseChatSpace result = modelMapper.map(inbox, LResponseChatSpace.class);
+
+        // get opposite's avatar as inbox's avatar
+        Resource avatar = inbox.getFriendship().getSender() == userService.getOwner() ?
+                inbox.getFriendship().getSender().getAvatar()
+                : inbox.getFriendship().getReceiver().getAvatar();
+
+        ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
+        result.setAvatar(pf.createProjection(DResponseResource.class, avatar));
+
+        return result;
     }
 
     @Override

@@ -37,11 +37,11 @@ public class Inbox {
 
     @ManyToOne
     @JoinColumn(name = "sender_last_seen")
-    private MessageLastSeen senderLastSeen;
+    private Message senderLastSeen;
 
     @ManyToOne
     @JoinColumn(name = "receiver_last_seen")
-    private MessageLastSeen receiverLastSeen;
+    private Message receiverLastSeen;
 
     @Builder.Default
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)

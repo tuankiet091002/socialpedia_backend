@@ -9,18 +9,15 @@ import lombok.NoArgsConstructor;
 @Data
 public class SocketMessage {
     public enum MessageType {
+        TYPE,
+        STOP_TYPE,
         CHAT,
         JOIN,
-        LEAVE
+        LEAVE,
+        SEEN,
     }
 
     private MessageType type;
-    private String content;
-    private String sender;
+    private Integer owner;
 
-    public SocketMessage(String content) {
-        this.type = MessageType.CHAT;
-        this.content = content;
-        this.sender = "";
-    }
 }

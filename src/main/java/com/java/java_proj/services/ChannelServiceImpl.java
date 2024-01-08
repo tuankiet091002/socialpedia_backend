@@ -80,6 +80,9 @@ public class ChannelServiceImpl implements ChannelService {
             channel.setCreatedBy(pf.createProjection(LResponseUserMinimal.class, entity.getCreatedBy()));
 
 
+            // fetch member number
+            channel.setMemberNum(channelMemberRepository.countByChannel(entity));
+
             // fetch top message and skip the pageable part
             List<Message> messageList = messageRepository.findByChannel("", entity, PageRequest.of(0, 1))
                     .getContent();
@@ -323,7 +326,8 @@ public class ChannelServiceImpl implements ChannelService {
         channelMemberRepository.save(channelMember);
     }
 
-    private ChannelMember findMemberRequest(Integer channelId, Integer userId) {
+    @Override
+    public ChannelMember findMemberRequest(Integer channelId, Integer userId) {
 
         // fetch channel from id
         Channel channel = channelRepository.findById(channelId)

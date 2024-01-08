@@ -5,6 +5,7 @@ import com.java.java_proj.dto.request.forupdate.URequestChannel;
 import com.java.java_proj.dto.request.forupdate.URequestChannelMember;
 import com.java.java_proj.dto.response.fordetail.DResponseChannel;
 import com.java.java_proj.dto.response.forlist.LResponseChatSpace;
+import com.java.java_proj.entities.ChannelMember;
 import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,5 +35,7 @@ public interface ChannelService {
     public void updateMemberPermission(Integer channelId, Integer memberId, URequestChannelMember requestChannel);
 
     public void unMember(Integer channelId, Integer memberId);
+
+    public ChannelMember findMemberRequest(Integer channelId, Integer userId);
 
 }

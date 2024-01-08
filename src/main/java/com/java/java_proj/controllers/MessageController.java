@@ -30,14 +30,12 @@ import java.util.List;
 public class MessageController {
 
     final private MessageService messageService;
-    final private SimpMessagingTemplate messagingTemplate;
     final private ObjectMapper objectMapper;
     final private Validator validator;
 
     @Autowired
-    public MessageController(MessageService messageService, SimpMessagingTemplate messagingTemplate, ObjectMapper objectMapper, Validator validator) {
+    public MessageController(MessageService messageService, ObjectMapper objectMapper, Validator validator) {
         this.messageService = messageService;
-        this.messagingTemplate = messagingTemplate;
         this.objectMapper = objectMapper;
         this.validator = validator;
     }

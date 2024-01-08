@@ -5,6 +5,7 @@ import com.java.java_proj.dto.request.forupdate.URequestUserPassword;
 import com.java.java_proj.dto.request.forupdate.URequestUserProfile;
 import com.java.java_proj.dto.request.security.RequestLogin;
 import com.java.java_proj.dto.request.security.RequestRefreshToken;
+import com.java.java_proj.dto.response.fordetail.DResponseResource;
 import com.java.java_proj.dto.response.fordetail.DResponseUser;
 import com.java.java_proj.dto.response.fordetail.DResponseUserPermission;
 import com.java.java_proj.dto.response.forlist.LResponseUser;
@@ -124,7 +125,8 @@ public class UserServiceImpl implements UserService {
         DResponseUser responseUser = modelMapper.map(user, DResponseUser.class);
         ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
         responseUser.setRole(pf.createProjection(DResponseUserPermission.class, user.getRole()));
-        responseUser.setFriends(userRepository.findFriends(user));
+        if (user.getAvatar() != null)
+            responseUser.setAvatar(pf.createProjection(DResponseResource.class, user.getAvatar()));
 
         return responseUser;
     }
@@ -154,8 +156,8 @@ public class UserServiceImpl implements UserService {
                 .modifiedDate(LocalDateTime.now())
                 .build();
 
-        // find role
-        UserPermission role = userPermissionRepository.findByName(requestUser.getRole());
+        // find user role
+        UserPermission role = userPermissionRepository.findByName("user");
         if (role == null) {
             throw new HttpException(HttpStatus.NOT_FOUND, "Role not found.");
         }
@@ -332,8 +334,8 @@ public class UserServiceImpl implements UserService {
 
         userFriendshipRepository.save(friendship);
 
-        // create notification and send socket message
-        notificationService.friendRequestSend(sender, receiver);
+//        // create notification and send socket message
+//        notificationService.friendRequestSend(sender, receiver);
     }
 
     @Override
@@ -345,16 +347,14 @@ public class UserServiceImpl implements UserService {
         // change request status
         if (friendship.getStatus() != RequestType.PENDING)
             throw new HttpException(HttpStatus.BAD_REQUEST, "Friend request is not pending");
+        if (!Objects.equals(friendship.getSender().getId(), userId))
+            throw new HttpException(HttpStatus.BAD_REQUEST, "Can't accept your own request");
         friendship.setStatus(RequestType.ACCEPTED);
 
         userFriendshipRepository.save(friendship);
 
-        // create notification and send socket message
-        if (Objects.equals(friendship.getReceiver().getId(), getOwner().getId())) {
-            notificationService.friendRequestSend(friendship.getReceiver(), friendship.getSender());
-        } else {
-            notificationService.friendRequestSend(friendship.getSender(), friendship.getReceiver());
-        }
+//        // create notification and send socket message
+//      notificationService.friendRequestSend(friendship.getSender(), friendship.getReceiver());
     }
 
     @Override

@@ -37,6 +37,15 @@ public class InboxController {
         return new ResponseEntity<>(inboxPage, new HttpHeaders(), HttpStatus.OK);
     }
 
+    @GetMapping("/{inboxId}")
+    @PreAuthorize("hasPermission('GLOBAL', 'CHANNEL', 'SELF')")
+    public ResponseEntity<LResponseChatSpace> getInboxProfile(@PathVariable Integer inboxId) {
+
+        LResponseChatSpace inbox = inboxService.getInboxProfile(inboxId);
+
+        return new ResponseEntity<>(inbox, HttpStatus.OK);
+    }
+
     @PostMapping("/{userId}")
     @PreAuthorize("hasPermission('GLOBAL', 'USER', 'SELF')")
     public ResponseEntity<Null> createInbox(@PathVariable Integer userId) {
@@ -48,9 +57,9 @@ public class InboxController {
 
     @PutMapping("/{userId}/profile")
     @PreAuthorize("hasPermission(#userId, 'USER', 'SELF')")
-    public ResponseEntity<Null> updateInboxName(@PathVariable Integer userId,
-                                                @Valid @RequestBody URequestInbox requestChannel,
-                                                BindingResult bindingResult) {
+    public ResponseEntity<Null> updateInboxProfile(@PathVariable Integer userId,
+                                                   @Valid @RequestBody URequestInbox requestChannel,
+                                                   BindingResult bindingResult) {
 
         // get validation error
         if (bindingResult.hasErrors()) {

@@ -20,6 +20,8 @@ public class LResponseChatSpace {
 
     private DResponseResource avatar;
 
+    private Integer memberNum;
+
     private LResponseMessage latestMessage;
 
     private LResponseUserMinimal createdBy;

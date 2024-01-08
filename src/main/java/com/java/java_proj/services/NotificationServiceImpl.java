@@ -63,7 +63,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         notificationRepository.save(notification);
 
-        messagingTemplate.convertAndSend("/user/" + target.getId());
+        messagingTemplate.convertAndSend("/user/" + target.getId(), "");
     }
 
     @Override
@@ -130,4 +130,5 @@ public class NotificationServiceImpl implements NotificationService {
     public void messageToInbox(Integer inboxId) {
         messagingTemplate.convertAndSend("/inbox/" + inboxId, "");
     }
+
 }

@@ -1,6 +1,5 @@
 package com.java.java_proj.dto.response.fordetail;
 
-import com.java.java_proj.dto.response.forlist.LResponseUser;
 import com.java.java_proj.dto.response.forlist.LResponseUserMinimal;
 import com.java.java_proj.entities.enums.MessageStatusType;
 import lombok.AllArgsConstructor;
@@ -30,5 +29,5 @@ public class DResponseMessage {
 
     public MessageStatusType status;
 
-    public List<LResponseUserMinimal> seenBy = new ArrayList<>();
+    public List<LResponseUserMinimal> seenBy;
 }

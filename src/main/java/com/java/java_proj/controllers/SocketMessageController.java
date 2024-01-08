@@ -1,27 +1,45 @@
 package com.java.java_proj.controllers;
 
 import com.java.java_proj.entities.miscs.SocketMessage;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.java.java_proj.services.templates.MessageService;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 @Controller
 public class SocketMessageController {
 
-    @Autowired
-    SimpMessagingTemplate messagingTemplate;
+    final private MessageService messageService;
 
-    @MessageMapping("/hello")
-    @SendTo("/channel/greetings")
-    public SocketMessage greeting(SocketMessage message) {
-        return new SocketMessage("Hello, " + message.getContent());
+    public SocketMessageController(MessageService messageService) {
+        this.messageService = messageService;
     }
 
-//    @MessageMapping("/channel/{channelId}")
-//    @SendTo("/channel/{channelId}")
-//    public SocketMessage channelFunction(SocketMessage message, @DestinationVariable Integer channelId) {
-//        return new SocketMessage("Hello, " + message.getContent());
-//    }
+
+    @MessageMapping("/channel/{channelId}/typing")
+    @SendTo("/channel/{channelId}")
+    public SocketMessage typeInChannel(@DestinationVariable Integer channelId, SocketMessage message) {
+        return new SocketMessage(SocketMessage.MessageType.TYPE, 0);
+    }
+
+    @MessageMapping("/channel/{channelId}/stopTyping")
+    @SendTo("/channel/{channelId}")
+    public SocketMessage stopTypeInChannel(@DestinationVariable Integer channelId, SocketMessage message) {
+        return new SocketMessage(SocketMessage.MessageType.TYPE, 0);
+    }
+
+    @MessageMapping("/channel/{channelId}/see/{messageId}")
+    public void seeChannelMessage(@DestinationVariable Integer channelId,
+                                  @DestinationVariable Integer messageId,
+                                  SocketMessage message) {
+        messageService.seeChannelMessage(channelId, message.getOwner(), messageId);
+    }
+
+    @MessageMapping("/inbox/{inboxId}/see/{messageId}")
+    public void seeInboxMessage(@DestinationVariable Integer inboxId,
+                                @DestinationVariable Integer messageId,
+                                SocketMessage message) {
+        messageService.seeInboxMessage(inboxId, message.getOwner(), messageId);
+    }
 }

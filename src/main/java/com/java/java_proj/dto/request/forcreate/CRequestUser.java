@@ -30,9 +30,6 @@ public class CRequestUser {
     @NotBlank(message = "Date of birth is required.")
     private String dob;
 
-    @NotBlank(message = "User type is required")
-    private String role;
-
     @NotNull(message = "Gender is required")
     private Boolean gender;
 

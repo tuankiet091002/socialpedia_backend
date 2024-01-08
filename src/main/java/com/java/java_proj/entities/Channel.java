@@ -21,7 +21,7 @@ public class Channel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ChatSpaceSequence")
-    @SequenceGenerator(name="ChatSpaceSequence", sequenceName = "space_seq")
+    @SequenceGenerator(name = "ChatSpaceSequence", sequenceName = "space_seq")
     private Integer id;
 
     @Column(name = "name")
@@ -38,7 +38,7 @@ public class Channel {
     private Resource avatar;
 
     @Builder.Default
-    @OneToMany(mappedBy = "channel", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "channel", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<ChannelMember> channelMembers = new ArrayList<>();
 
     @Builder.Default

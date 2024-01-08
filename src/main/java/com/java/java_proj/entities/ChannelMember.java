@@ -41,6 +41,6 @@ public class ChannelMember {
 
     @ManyToOne
     @JoinColumn(name = "last_seen_message")
-    private MessageLastSeen lastSeenMessage;
+    private Message lastSeenMessage;
 
 }

@@ -1,6 +1,5 @@
 package com.java.java_proj.dto.response.fordetail;
 
-import com.java.java_proj.dto.response.forlist.LResponseUser;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,7 +7,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 
 @AllArgsConstructor
@@ -29,11 +27,9 @@ public class DResponseUser {
 
     public DResponseUserPermission role;
 
-    public Boolean Gender;
+    public Boolean gender;
 
     public DResponseResource avatar;
-
-    public List<LResponseUser> friends;
 
     public LocalDateTime modifiedDate;
 }

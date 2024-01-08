@@ -20,4 +20,5 @@ public interface NotificationService {
     public void messageToChannel(Integer channelId);
 
     public void messageToInbox(Integer inboxId);
+
 }
