@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.http.HttpStatus;
@@ -59,8 +60,9 @@ public class InboxServiceImpl implements InboxService {
             ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
 
             // fetch top message and skip the pageable part
-            List<Message> messageList = messageRepository.findByInbox("", entity, PageRequest.of(0, 1))
-                    .getContent();
+            List<Message> messageList = messageRepository.findByInbox("", entity,
+                    PageRequest.of(0, 1,
+                            Sort.by("id").descending())).getContent();
             if (!messageList.isEmpty()) {
                 inbox.setLatestMessage(pf.createProjection(LResponseMessage.class, messageList.get(0)));
             }
@@ -93,8 +95,10 @@ public class InboxServiceImpl implements InboxService {
                 inbox.getFriendship().getSender().getAvatar()
                 : inbox.getFriendship().getReceiver().getAvatar();
 
-        ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
-        result.setAvatar(pf.createProjection(DResponseResource.class, avatar));
+        if (avatar != null) {
+            ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
+            result.setAvatar(pf.createProjection(DResponseResource.class, avatar));
+        }
 
         return result;
     }

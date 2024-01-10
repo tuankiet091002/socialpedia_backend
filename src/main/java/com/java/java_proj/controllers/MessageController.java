@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.DataBinder;
@@ -69,7 +68,7 @@ public class MessageController {
     @PostMapping("/channel/{channelId}")
     @PreAuthorize("hasPermission(#channelId, 'CHANNEL', 'CREATE')")
     public ResponseEntity<Null> sendMessageToChannel(@PathVariable Integer channelId, @RequestPart String content,
-                                                     @RequestPart List<MultipartFile> files) throws JsonProcessingException {
+                                                     @RequestPart(required = false) List<MultipartFile> files) throws JsonProcessingException {
 
         CRequestMessage requestMessage = objectMapper.readValue(content, CRequestMessage.class);
 
@@ -83,7 +82,7 @@ public class MessageController {
         }
 
         // check if file list is empty
-        if (files.size() == 1 || files.get(0).isEmpty()) {
+        if (files == null || (files.size() == 1 && files.get(0).isEmpty())) {
             requestMessage.setResourceFiles(new ArrayList<>());
         } else {
             requestMessage.setResourceFiles(files);

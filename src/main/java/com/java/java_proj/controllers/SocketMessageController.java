@@ -17,29 +17,26 @@ public class SocketMessageController {
     }
 
 
-    @MessageMapping("/channel/{channelId}/typing")
-    @SendTo("/channel/{channelId}")
-    public SocketMessage typeInChannel(@DestinationVariable Integer channelId, SocketMessage message) {
-        return new SocketMessage(SocketMessage.MessageType.TYPE, 0);
+    @MessageMapping("/space/{locationId}")
+    @SendTo("/space/{locationId}")
+    public SocketMessage typeInChannel(@DestinationVariable Integer locationId,
+                                       SocketMessage message) {
+
+        return message;
     }
 
-    @MessageMapping("/channel/{channelId}/stopTyping")
-    @SendTo("/channel/{channelId}")
-    public SocketMessage stopTypeInChannel(@DestinationVariable Integer channelId, SocketMessage message) {
-        return new SocketMessage(SocketMessage.MessageType.TYPE, 0);
-    }
 
-    @MessageMapping("/channel/{channelId}/see/{messageId}")
-    public void seeChannelMessage(@DestinationVariable Integer channelId,
-                                  @DestinationVariable Integer messageId,
-                                  SocketMessage message) {
-        messageService.seeChannelMessage(channelId, message.getOwner(), messageId);
-    }
-
-    @MessageMapping("/inbox/{inboxId}/see/{messageId}")
-    public void seeInboxMessage(@DestinationVariable Integer inboxId,
-                                @DestinationVariable Integer messageId,
-                                SocketMessage message) {
-        messageService.seeInboxMessage(inboxId, message.getOwner(), messageId);
-    }
+//    @MessageMapping("/channel/{channelId}/see/{messageId}")
+//    public void seeChannelMessage(@DestinationVariable Integer channelId,
+//                                  @DestinationVariable Integer messageId,
+//                                  SocketMessage message) {
+//        messageService.seeChannelMessage(channelId, message.getOwner(), messageId);
+//    }
+//
+//    @MessageMapping("/inbox/{inboxId}/see/{messageId}")
+//    public void seeInboxMessage(@DestinationVariable Integer inboxId,
+//                                @DestinationVariable Integer messageId,
+//                                SocketMessage message) {
+//        messageService.seeInboxMessage(inboxId, message.getOwner(), messageId);
+//    }
 }

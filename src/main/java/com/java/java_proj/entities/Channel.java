@@ -46,7 +46,7 @@ public class Channel {
     @JoinTable(name = "channel_messages",
             joinColumns = @JoinColumn(name = "channel_id"),
             inverseJoinColumns = @JoinColumn(name = "message_id"))
-    @OrderBy(value = "id DESC")
+    @OrderBy(value = "modifiedDate DESC")
     private List<Message> messages = new ArrayList<>();
 
     @ManyToOne

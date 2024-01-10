@@ -6,6 +6,7 @@ import com.java.java_proj.entities.Notification;
 import com.java.java_proj.entities.User;
 import com.java.java_proj.entities.enums.PermissionAccessType;
 import com.java.java_proj.entities.miscs.CustomUserDetail;
+import com.java.java_proj.entities.miscs.SocketMessage;
 import com.java.java_proj.exceptions.HttpException;
 import com.java.java_proj.repositories.NotificationRepository;
 import com.java.java_proj.services.templates.NotificationService;
@@ -99,7 +100,7 @@ public class NotificationServiceImpl implements NotificationService {
                         .isRead(false)
                         .build());
 
-            messagingTemplate.convertAndSend("/user/" + channelMember.getMember().getId(), "");
+            messagingTemplate.convertAndSend("/user/" + channelMember.getMember().getId(), channelMember.getMember().getName());
 
         });
     }
@@ -118,17 +119,19 @@ public class NotificationServiceImpl implements NotificationService {
 
         notificationRepository.save(notification);
 
-        messagingTemplate.convertAndSend("/user/" + target.getId(), "");
+        messagingTemplate.convertAndSend("/user/" + target.getId(), target.getName());
     }
 
     @Override
     public void messageToChannel(Integer channelId) {
-        messagingTemplate.convertAndSend("/channel/" + channelId, "");
+        messagingTemplate.convertAndSend("/space/" + channelId,
+                new SocketMessage(SocketMessage.MessageType.CHAT, ""));
     }
 
     @Override
     public void messageToInbox(Integer inboxId) {
-        messagingTemplate.convertAndSend("/inbox/" + inboxId, "");
+        messagingTemplate.convertAndSend("/space/" + inboxId,
+                new SocketMessage(SocketMessage.MessageType.CHAT, ""));
     }
 
 }

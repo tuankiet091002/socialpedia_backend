@@ -18,6 +18,6 @@ public class SocketMessage {
     }
 
     private MessageType type;
-    private Integer owner;
+    private String owner;
 
 }

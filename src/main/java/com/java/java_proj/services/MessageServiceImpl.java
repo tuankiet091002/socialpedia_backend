@@ -79,7 +79,6 @@ public class MessageServiceImpl implements MessageService {
 
             // loop and put each member into map
             if (member.getLastSeenMessage() != null) {
-                System.out.println(member.getMember().getName());
                 Integer lastMessageId = member.getLastSeenMessage().getId();
                 seenMap.merge(lastMessageId, List.of(member.getMember()),
                         (k, v) -> {
@@ -289,6 +288,7 @@ public class MessageServiceImpl implements MessageService {
             List<Resource> resourceList = entity.getResources();
             entity.setResources(null);
             DResponseMessage message = modelMapper.map(entity, DResponseMessage.class);
+            entity.setResources(resourceList);
 
             // remove deleted content
             if (message.getStatus() == MessageStatusType.INACTIVE) {
@@ -298,7 +298,9 @@ public class MessageServiceImpl implements MessageService {
 
             // convert missing fields
             ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
-            message.setResources(resourceList.stream().map(x -> pf.createProjection(DResponseResource.class, x)).toList());
+            if (entity.getResources() != null) {
+                message.setResources(entity.getResources().stream().map(x -> pf.createProjection(DResponseResource.class, x)).toList());
+            }
             message.setCreatedBy(pf.createProjection(LResponseUserMinimal.class, entity.getCreatedBy()));
 
             // set last seen message

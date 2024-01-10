@@ -76,19 +76,12 @@ public class ChannelServiceImpl implements ChannelService {
 
             // convert missing fields
             ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
-            channel.setAvatar(pf.createProjection(DResponseResource.class, entity.getAvatar()));
+            if (entity.getAvatar() != null)
+                channel.setAvatar(pf.createProjection(DResponseResource.class, entity.getAvatar()));
             channel.setCreatedBy(pf.createProjection(LResponseUserMinimal.class, entity.getCreatedBy()));
-
 
             // fetch member number
             channel.setMemberNum(channelMemberRepository.countByChannel(entity));
-
-            // fetch top message and skip the pageable part
-            List<Message> messageList = messageRepository.findByChannel("", entity, PageRequest.of(0, 1))
-                    .getContent();
-            if (!messageList.isEmpty()) {
-                channel.setLatestMessage(pf.createProjection(LResponseMessage.class, messageList.get(0)));
-            }
 
             return channel;
         });
@@ -113,11 +106,13 @@ public class ChannelServiceImpl implements ChannelService {
 
             // convert missing fields
             ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
-            channel.setAvatar(pf.createProjection(DResponseResource.class, entity.getAvatar()));
+            if (entity.getAvatar() != null)
+                channel.setAvatar(pf.createProjection(DResponseResource.class, entity.getAvatar()));
             channel.setCreatedBy(pf.createProjection(LResponseUserMinimal.class, entity.getCreatedBy()));
 
             // fetch top message and skip the pageable part
-            List<Message> messageList = messageRepository.findByChannel("", entity, PageRequest.of(0, 1))
+            List<Message> messageList = messageRepository.findByChannel("", entity,
+                            PageRequest.of(0, 1, Sort.by("id").descending()))
                     .getContent();
             if (!messageList.isEmpty()) {
                 channel.setLatestMessage(pf.createProjection(LResponseMessage.class, messageList.get(0)));
