@@ -25,18 +25,4 @@ public class SocketMessageController {
         return message;
     }
 
-
-//    @MessageMapping("/channel/{channelId}/see/{messageId}")
-//    public void seeChannelMessage(@DestinationVariable Integer channelId,
-//                                  @DestinationVariable Integer messageId,
-//                                  SocketMessage message) {
-//        messageService.seeChannelMessage(channelId, message.getOwner(), messageId);
-//    }
-//
-//    @MessageMapping("/inbox/{inboxId}/see/{messageId}")
-//    public void seeInboxMessage(@DestinationVariable Integer inboxId,
-//                                @DestinationVariable Integer messageId,
-//                                SocketMessage message) {
-//        messageService.seeInboxMessage(inboxId, message.getOwner(), messageId);
-//    }
 }

@@ -96,7 +96,7 @@ public class MessageController {
     @PostMapping("/inbox/{inboxId}")
     @PreAuthorize("hasPermission(#inboxId, 'INBOX', 'CREATE')")
     public ResponseEntity<Null> sendMessageToInbox(@PathVariable Integer inboxId, @RequestPart String content,
-                                                   @RequestPart List<MultipartFile> files) throws JsonProcessingException {
+                                                   @RequestPart(required = false) List<MultipartFile> files) throws JsonProcessingException {
 
         CRequestMessage requestMessage = objectMapper.readValue(content, CRequestMessage.class);
 
@@ -110,7 +110,7 @@ public class MessageController {
         }
 
         // check if file list is empty
-        if (files.size() == 1 || files.get(0).isEmpty()) {
+        if (files == null || (files.size() == 1 && files.get(0).isEmpty())) {
             requestMessage.setResourceFiles(new ArrayList<>());
         } else {
             requestMessage.setResourceFiles(files);

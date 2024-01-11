@@ -4,6 +4,7 @@ import com.java.java_proj.dto.response.forlist.LResponseNotification;
 import com.java.java_proj.entities.Channel;
 import com.java.java_proj.entities.Notification;
 import com.java.java_proj.entities.User;
+import com.java.java_proj.entities.enums.NotificationType;
 import com.java.java_proj.entities.enums.PermissionAccessType;
 import com.java.java_proj.entities.miscs.CustomUserDetail;
 import com.java.java_proj.entities.miscs.SocketMessage;
@@ -19,6 +20,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 @Service
 public class NotificationServiceImpl implements NotificationService {
@@ -59,7 +62,8 @@ public class NotificationServiceImpl implements NotificationService {
                 .title("Lời mời kết bạn mới đã gửi lời mời kết bạn")
                 .content(source.getName() + " đã gửi lời mời kết bạn.")
                 .target("user/" + source.getEmail())
-                .isRead(false)
+                .type(NotificationType.REQUEST)
+                .createdDate(LocalDateTime.now())
                 .build();
 
         notificationRepository.save(notification);
@@ -76,7 +80,8 @@ public class NotificationServiceImpl implements NotificationService {
                 .title("Kết bạn thành công")
                 .content(source.getName() + " đã đồng ý lời mời kết bạn.")
                 .target("user/" + source.getEmail())
-                .isRead(false)
+                .type(NotificationType.VIEW)
+                .createdDate(LocalDateTime.now())
                 .build();
 
         notificationRepository.save(notification);
@@ -97,7 +102,8 @@ public class NotificationServiceImpl implements NotificationService {
                         .title("Có lời mời vào nhóm")
                         .content(source.getName() + " đã gửi lời mời vào nhóm " + channel.getName() + ".")
                         .target("channel/" + channel.getId())
-                        .isRead(false)
+                        .type(NotificationType.REQUEST)
+                        .createdDate(LocalDateTime.now())
                         .build());
 
             messagingTemplate.convertAndSend("/user/" + channelMember.getMember().getId(), channelMember.getMember().getName());
@@ -114,7 +120,8 @@ public class NotificationServiceImpl implements NotificationService {
                 .title("Yêu cầu tham gia vào nhóm đã được chấp nhận")
                 .content("Yêu cầu tham gia" + channel.getName() + " đã đồng ý lời mời kết bạn.")
                 .target("channel/" + channel.getId())
-                .isRead(false)
+                .type(NotificationType.VIEW)
+                .createdDate(LocalDateTime.now())
                 .build();
 
         notificationRepository.save(notification);
@@ -125,13 +132,13 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void messageToChannel(Integer channelId) {
         messagingTemplate.convertAndSend("/space/" + channelId,
-                new SocketMessage(SocketMessage.MessageType.CHAT, ""));
+                new SocketMessage(SocketMessage.MessageType.CHAT, null));
     }
 
     @Override
     public void messageToInbox(Integer inboxId) {
         messagingTemplate.convertAndSend("/space/" + inboxId,
-                new SocketMessage(SocketMessage.MessageType.CHAT, ""));
+                new SocketMessage(SocketMessage.MessageType.CHAT, null));
     }
 
 }

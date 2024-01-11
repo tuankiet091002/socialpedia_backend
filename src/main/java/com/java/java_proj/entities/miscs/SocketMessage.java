@@ -1,5 +1,6 @@
 package com.java.java_proj.entities.miscs;
 
+import com.java.java_proj.dto.response.fordetail.DResponseUser;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,6 +19,7 @@ public class SocketMessage {
     }
 
     private MessageType type;
-    private String owner;
+
+    private DResponseUser owner;
 
 }

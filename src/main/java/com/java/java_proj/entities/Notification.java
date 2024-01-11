@@ -1,11 +1,14 @@
 package com.java.java_proj.entities;
 
 
+import com.java.java_proj.entities.enums.NotificationType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "notifications")
@@ -36,7 +39,10 @@ public class Notification {
     @Column(name = "target")
     private String target;
 
-    @Column(name = "is_read")
-    private Boolean isRead;
+    @Column(name = "type")
+    private NotificationType type;
+
+    @Column(name = "created_date")
+    private LocalDateTime createdDate;
 
 }

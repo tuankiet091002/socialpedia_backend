@@ -1,6 +1,9 @@
 package com.java.java_proj.dto.response.forlist;
 
 import com.java.java_proj.dto.response.fordetail.DResponseResource;
+import com.java.java_proj.entities.enums.NotificationType;
+
+import java.time.LocalDateTime;
 
 public interface LResponseNotification {
 
@@ -14,6 +17,8 @@ public interface LResponseNotification {
 
     public String getTarget();
 
-    public Boolean getIsRead();
+    public NotificationType getType();
+
+    public LocalDateTime getCreatedDate();
 }
 
