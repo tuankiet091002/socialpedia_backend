@@ -59,16 +59,16 @@ public class NotificationServiceImpl implements NotificationService {
         Notification notification = Notification.builder()
                 .user(target)
                 .avatar(source.getAvatar())
-                .title("Lời mời kết bạn mới đã gửi lời mời kết bạn")
-                .content(source.getName() + " đã gửi lời mời kết bạn.")
-                .target("user/" + source.getEmail())
+                .title("Lời mời kết bạn mới")
+                .content(String.format("%s đã gửi cho bạn lời mời kết bạn", source.getName()))
+                .destination("/user/" + source.getId())
                 .type(NotificationType.REQUEST)
                 .createdDate(LocalDateTime.now())
                 .build();
 
         notificationRepository.save(notification);
 
-        messagingTemplate.convertAndSend("/user/" + target.getId(), "");
+//        messagingTemplate.convertAndSend("/user/" + target.getId(), "");
     }
 
     @Override
@@ -78,8 +78,8 @@ public class NotificationServiceImpl implements NotificationService {
                 .user(target)
                 .avatar(source.getAvatar())
                 .title("Kết bạn thành công")
-                .content(source.getName() + " đã đồng ý lời mời kết bạn.")
-                .target("user/" + source.getEmail())
+                .content(String.format("<Link to='/user/%s'>%s</Link> đã đồng ý lời mời kết bạn", source.getEmail(), source.getName()))
+                .destination("/user/" + source.getId())
                 .type(NotificationType.VIEW)
                 .createdDate(LocalDateTime.now())
                 .build();
@@ -101,7 +101,7 @@ public class NotificationServiceImpl implements NotificationService {
                         .avatar(source.getAvatar())
                         .title("Có lời mời vào nhóm")
                         .content(source.getName() + " đã gửi lời mời vào nhóm " + channel.getName() + ".")
-                        .target("channel/" + channel.getId())
+                        .destination("channel/" + channel.getId())
                         .type(NotificationType.REQUEST)
                         .createdDate(LocalDateTime.now())
                         .build());
@@ -119,14 +119,14 @@ public class NotificationServiceImpl implements NotificationService {
                 .avatar(channel.getAvatar())
                 .title("Yêu cầu tham gia vào nhóm đã được chấp nhận")
                 .content("Yêu cầu tham gia" + channel.getName() + " đã đồng ý lời mời kết bạn.")
-                .target("channel/" + channel.getId())
+                .destination("channel/" + channel.getId())
                 .type(NotificationType.VIEW)
                 .createdDate(LocalDateTime.now())
                 .build();
 
         notificationRepository.save(notification);
 
-        messagingTemplate.convertAndSend("/user/" + target.getId(), target.getName());
+        messagingTemplate.convertAndSend("/user/" + target.getId(), "");
     }
 
     @Override

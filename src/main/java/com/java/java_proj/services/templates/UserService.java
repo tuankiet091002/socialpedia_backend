@@ -6,6 +6,7 @@ import com.java.java_proj.dto.request.forupdate.URequestUserProfile;
 import com.java.java_proj.dto.request.security.RequestLogin;
 import com.java.java_proj.dto.request.security.RequestRefreshToken;
 import com.java.java_proj.dto.response.fordetail.DResponseUser;
+import com.java.java_proj.dto.response.fordetail.DResponseUserFriendship;
 import com.java.java_proj.dto.response.forlist.LResponseUser;
 import com.java.java_proj.dto.response.security.ResponseJwt;
 import com.java.java_proj.dto.response.security.ResponseRefreshToken;
@@ -24,7 +25,9 @@ public interface UserService {
     Page<LResponseUser> getFriendList(String name, Integer page, Integer size,
                                       String orderBy, String orderDirection);
 
-    public DResponseUser getUserProfile(String userEmail);
+    public DResponseUser getUserProfile(Integer userId);
+
+    public DResponseUserFriendship getUserFriendship(Integer userId);
 
     public void register(CRequestUser requestUser);
 

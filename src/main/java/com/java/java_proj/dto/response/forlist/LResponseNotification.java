@@ -15,7 +15,7 @@ public interface LResponseNotification {
 
     public String getContent();
 
-    public String getTarget();
+    public String getDestination();
 
     public NotificationType getType();
 

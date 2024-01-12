@@ -7,6 +7,7 @@ import com.java.java_proj.dto.request.security.RequestLogin;
 import com.java.java_proj.dto.request.security.RequestRefreshToken;
 import com.java.java_proj.dto.response.fordetail.DResponseResource;
 import com.java.java_proj.dto.response.fordetail.DResponseUser;
+import com.java.java_proj.dto.response.fordetail.DResponseUserFriendship;
 import com.java.java_proj.dto.response.fordetail.DResponseUserPermission;
 import com.java.java_proj.dto.response.forlist.LResponseUser;
 import com.java.java_proj.dto.response.security.ResponseJwt;
@@ -44,6 +45,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -115,10 +117,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public DResponseUser getUserProfile(String userEmail) {
+    public DResponseUser getUserProfile(Integer userId) {
 
         // get raw entity
-        User user = userRepository.findByEmail(userEmail)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "User not found."));
 
         // map to dto
@@ -129,6 +131,30 @@ public class UserServiceImpl implements UserService {
             responseUser.setAvatar(pf.createProjection(DResponseResource.class, user.getAvatar()));
 
         return responseUser;
+    }
+
+    @Override
+    public DResponseUserFriendship getUserFriendship(Integer userId) {
+
+        User sender = getOwner();
+        User receiver = userRepository.findById(userId)
+                .orElseThrow(() -> new HttpException(HttpStatus.BAD_REQUEST, "User not found."));
+
+        // get friendship
+        Optional<UserFriendship> optionalUserFriendship = userFriendshipRepository.findByUser(sender, receiver);
+        if (optionalUserFriendship.isPresent()) {
+            // map to dto
+            UserFriendship userFriendship = optionalUserFriendship.get();
+            DResponseUserFriendship response = modelMapper.map(userFriendship, DResponseUserFriendship.class);
+
+            // set two id
+            response.setSenderId(userFriendship.getSender().getId());
+            response.setReceiverId(userFriendship.getReceiver().getId());
+
+            return response;
+        }
+        return null;
+        // find friendship then map
     }
 
     @Override
@@ -197,7 +223,7 @@ public class UserServiceImpl implements UserService {
         ResponseJwt response = new ResponseJwt();
         response.setToken(tokenProvider.generateToken((CustomUserDetail) authentication.getPrincipal()));
         response.setRefreshToken(refreshTokenService.createToken(user.getEmail()).getToken());
-        response.setUser(getUserProfile(requestLogin.getEmail()));
+        response.setUser(getUserProfile(user.getId()));
 
         return response;
     }
@@ -319,23 +345,30 @@ public class UserServiceImpl implements UserService {
         // need to be persisted
         User sender = userRepository.findById(getOwner().getId())
                 .orElseThrow(() -> new HttpException(HttpStatus.BAD_REQUEST, "User not found."));
-        ;
         User receiver = userRepository.findById(userId)
                 .orElseThrow(() -> new HttpException(HttpStatus.BAD_REQUEST, "User not found."));
 
         // create request
-        UserFriendship friendship = userFriendshipRepository.findByUser(sender, receiver)
-                .orElse(UserFriendship.builder()
-                        .sender(sender)
-                        .receiver(receiver)
-                        .status(RequestType.PENDING)
-                        .modifiedDate(LocalDateTime.now())
-                        .build());
+        Optional<UserFriendship> optionalUserFriendship = userFriendshipRepository.findByUser(sender, receiver);
+        if (optionalUserFriendship.isPresent()) {
+            // check old status
+            if (optionalUserFriendship.get().getStatus() != RequestType.REJECTED)
+                throw new HttpException(HttpStatus.BAD_REQUEST, "Invalid request.");
+            
+            // then delete
+            userFriendshipRepository.delete(optionalUserFriendship.get());
+        }
 
-        userFriendshipRepository.save(friendship);
+        // save new entity
+        userFriendshipRepository.save(UserFriendship.builder()
+                .sender(sender)
+                .receiver(receiver)
+                .status(RequestType.PENDING)
+                .modifiedDate(LocalDateTime.now())
+                .build());
 
-//        // create notification and send socket message
-//        notificationService.friendRequestSend(sender, receiver);
+        // create notification and send socket message
+        notificationService.friendRequestSend(sender, receiver);
     }
 
     @Override

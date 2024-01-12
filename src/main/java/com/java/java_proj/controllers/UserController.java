@@ -1,6 +1,7 @@
 package com.java.java_proj.controllers;
 
 import com.java.java_proj.dto.response.fordetail.DResponseUser;
+import com.java.java_proj.dto.response.fordetail.DResponseUserFriendship;
 import com.java.java_proj.dto.response.forlist.LResponseUser;
 import com.java.java_proj.exceptions.HttpException;
 import com.java.java_proj.services.templates.UserService;
@@ -73,13 +74,22 @@ public class UserController {
         return new ResponseEntity<>(userPage, new HttpHeaders(), HttpStatus.OK);
     }
 
-    @GetMapping("/{userEmail}")
+    @GetMapping("/{userId}")
     @PreAuthorize("hasPermission('GLOBAL', 'USER', 'SELF')")
-    public ResponseEntity<DResponseUser> getUserProfile(@PathVariable String userEmail) {
+    public ResponseEntity<DResponseUser> getUserProfile(@PathVariable Integer userId) {
 
-        DResponseUser user = userService.getUserProfile(userEmail);
+        DResponseUser user = userService.getUserProfile(userId);
 
         return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+
+    @GetMapping("/{userId}/friendship")
+    @PreAuthorize("hasPermission('GLOBAL', 'USER', 'SELF')")
+    public ResponseEntity<DResponseUserFriendship> getUserFriendship(@PathVariable Integer userId) {
+
+        DResponseUserFriendship friendship = userService.getUserFriendship(userId);
+
+        return new ResponseEntity<>(friendship, HttpStatus.OK);
     }
 
     @PutMapping("/{userId}/role")

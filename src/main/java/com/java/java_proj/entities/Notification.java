@@ -36,8 +36,8 @@ public class Notification {
     @Column(name = "content")
     private String content;
 
-    @Column(name = "target")
-    private String target;
+    @Column(name = "destination")
+    private String destination;
 
     @Column(name = "type")
     private NotificationType type;
