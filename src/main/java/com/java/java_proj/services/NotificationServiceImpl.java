@@ -6,6 +6,7 @@ import com.java.java_proj.entities.Notification;
 import com.java.java_proj.entities.User;
 import com.java.java_proj.entities.enums.NotificationType;
 import com.java.java_proj.entities.enums.PermissionAccessType;
+import com.java.java_proj.entities.enums.RequestType;
 import com.java.java_proj.entities.miscs.CustomUserDetail;
 import com.java.java_proj.entities.miscs.SocketMessage;
 import com.java.java_proj.exceptions.HttpException;
@@ -68,7 +69,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         notificationRepository.save(notification);
 
-//        messagingTemplate.convertAndSend("/user/" + target.getId(), "");
+        messagingTemplate.convertAndSend("/user/" + target.getId() + "/notification", new SocketMessage());
     }
 
     @Override
@@ -86,7 +87,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         notificationRepository.save(notification);
 
-        messagingTemplate.convertAndSend("/user/" + target.getId(), "");
+        messagingTemplate.convertAndSend("/user/" + target.getId() + "/notification", new SocketMessage());
     }
 
     @Override
@@ -94,20 +95,22 @@ public class NotificationServiceImpl implements NotificationService {
     public void channelRequestSend(User source, Channel channel) {
 
         channel.getChannelMembers().forEach(channelMember -> {
-            if (channelMember.getMemberPermission().getValue() >= PermissionAccessType.CREATE.getValue())
+            // loop all members with appropriate permission
+            if (channelMember.getMemberPermission().getValue() >= PermissionAccessType.CREATE.getValue() && channelMember.getStatus() == RequestType.ACCEPTED) {
 
+                // send notification
                 notificationRepository.save(Notification.builder()
                         .user(channelMember.getMember())
                         .avatar(source.getAvatar())
                         .title("Có lời mời vào nhóm")
                         .content(source.getName() + " đã gửi lời mời vào nhóm " + channel.getName() + ".")
-                        .destination("channel/" + channel.getId())
+                        .destination("/channel/" + channel.getId() + "/member/" + channelMember.getMember().getId())
                         .type(NotificationType.REQUEST)
                         .createdDate(LocalDateTime.now())
                         .build());
 
-            messagingTemplate.convertAndSend("/user/" + channelMember.getMember().getId(), channelMember.getMember().getName());
-
+                messagingTemplate.convertAndSend("/user/" + channelMember.getMember().getId() + "/notification", new SocketMessage());
+            }
         });
     }
 
@@ -117,16 +120,16 @@ public class NotificationServiceImpl implements NotificationService {
         Notification notification = Notification.builder()
                 .user(target)
                 .avatar(channel.getAvatar())
-                .title("Yêu cầu tham gia vào nhóm đã được chấp nhận")
-                .content("Yêu cầu tham gia" + channel.getName() + " đã đồng ý lời mời kết bạn.")
-                .destination("channel/" + channel.getId())
+                .title("Vào nhóm thành công")
+                .content("Yêu cầu tham gia vào nhóm " + channel.getName() + " của bạn đã được đồng ý.")
+                .destination("/channel/" + channel.getId())
                 .type(NotificationType.VIEW)
                 .createdDate(LocalDateTime.now())
                 .build();
 
         notificationRepository.save(notification);
 
-        messagingTemplate.convertAndSend("/user/" + target.getId(), "");
+        messagingTemplate.convertAndSend("/user/" + target.getId() + "/notification", new SocketMessage());
     }
 
     @Override

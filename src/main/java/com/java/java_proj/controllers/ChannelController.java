@@ -6,6 +6,7 @@ import com.java.java_proj.dto.request.forcreate.CRequestChannel;
 import com.java.java_proj.dto.request.forupdate.URequestChannel;
 import com.java.java_proj.dto.request.forupdate.URequestChannelMember;
 import com.java.java_proj.dto.response.fordetail.DResponseChannel;
+import com.java.java_proj.dto.response.fordetail.DResponseChannelMember;
 import com.java.java_proj.dto.response.forlist.LResponseChatSpace;
 import com.java.java_proj.exceptions.HttpException;
 import com.java.java_proj.services.templates.ChannelService;
@@ -44,12 +45,12 @@ public class ChannelController {
 
     @GetMapping("")
     @PreAuthorize("hasPermission('GLOBAL', 'CHANNEL', 'VIEW')")
-    public ResponseEntity<Page<LResponseChatSpace>> getChannelList(@RequestParam(value = "name", defaultValue = "") String name,
-                                                                   @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
-                                                                   @RequestParam(value = "pageSize", defaultValue = "10") Integer size,
-                                                                   @RequestParam(value = "orderBy", defaultValue = "id") String orderBy,
-                                                                   @RequestParam(value = "orderDirection", defaultValue = "DESC") String orderDirection) {
-
+    public ResponseEntity<Page<LResponseChatSpace>> getChannelList(
+            @RequestParam(value = "name", defaultValue = "") String name,
+            @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
+            @RequestParam(value = "pageSize", defaultValue = "10") Integer size,
+            @RequestParam(value = "orderBy", defaultValue = "id") String orderBy,
+            @RequestParam(value = "orderDirection", defaultValue = "DESC") String orderDirection) {
         List<String> allowedFields = Arrays.asList("id", "name");
         if (!allowedFields.contains(orderBy)) {
             throw new HttpException(HttpStatus.BAD_REQUEST, "Order by column " + orderBy + " is illegal!");
@@ -67,9 +68,10 @@ public class ChannelController {
 
     @GetMapping("/self")
     @PreAuthorize("hasPermission('GLOBAL', 'CHANNEL', 'SELF')")
-    public ResponseEntity<Page<LResponseChatSpace>> getPersonalChannelList(@RequestParam(value = "name", defaultValue = "") String name,
-                                                                           @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
-                                                                           @RequestParam(value = "pageSize", defaultValue = "10") Integer size) {
+    public ResponseEntity<Page<LResponseChatSpace>> getPersonalChannelList(
+            @RequestParam(value = "name", defaultValue = "") String name,
+            @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
+            @RequestParam(value = "pageSize", defaultValue = "10") Integer size) {
 
         Page<LResponseChatSpace> channelPage = channelService.getPersonalChannelList(name, page, size);
 
@@ -83,6 +85,15 @@ public class ChannelController {
         DResponseChannel channel = channelService.getChannelProfile(channelId);
 
         return new ResponseEntity<>(channel, HttpStatus.OK);
+    }
+
+    @GetMapping("/{channelId}/relation")
+    @PreAuthorize("hasPermission('GLOBAL', 'CHANNEL', 'SELF')")
+    public ResponseEntity<DResponseChannelMember> getChannelRelation(@PathVariable Integer channelId) {
+
+        DResponseChannelMember channelMember = channelService.getChannelRelation(channelId);
+
+        return new ResponseEntity<>(channelMember, HttpStatus.OK);
     }
 
     @PostMapping("")
@@ -113,9 +124,9 @@ public class ChannelController {
 
     @PutMapping("/{channelId}/profile")
     @PreAuthorize("hasPermission(#channelId, 'MEMBER', 'MODIFY')")
-    public ResponseEntity<Null> updateChannelProfile(@PathVariable Integer channelId,
-                                                     @Valid @RequestBody URequestChannel requestChannel,
-                                                     BindingResult bindingResult) {
+    public ResponseEntity<Null> updateChannelProfile(BindingResult bindingResult,
+                                                     @PathVariable Integer channelId,
+                                                     @Valid @RequestBody URequestChannel requestChannel) {
 
         // get validation error
         if (bindingResult.hasErrors()) {
@@ -193,12 +204,11 @@ public class ChannelController {
     }
 
 
-    @DeleteMapping("/{channelId}/member/{memberId}")
+    @DeleteMapping("/{channelId}/member/leave")
     @PreAuthorize("hasPermission(#channelId, 'MEMBER', 'MODIFY')")
-    public ResponseEntity<Null> unMember(@PathVariable Integer channelId,
-                                         @PathVariable Integer memberId) {
+    public ResponseEntity<Null> leaveChannel(@PathVariable Integer channelId) {
 
-        channelService.unMember(channelId, memberId);
+        channelService.leaveChannel(channelId);
 
         return new ResponseEntity<>(null, HttpStatus.OK);
     }

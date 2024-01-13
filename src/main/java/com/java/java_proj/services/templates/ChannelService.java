@@ -4,6 +4,7 @@ import com.java.java_proj.dto.request.forcreate.CRequestChannel;
 import com.java.java_proj.dto.request.forupdate.URequestChannel;
 import com.java.java_proj.dto.request.forupdate.URequestChannelMember;
 import com.java.java_proj.dto.response.fordetail.DResponseChannel;
+import com.java.java_proj.dto.response.fordetail.DResponseChannelMember;
 import com.java.java_proj.dto.response.forlist.LResponseChatSpace;
 import com.java.java_proj.entities.ChannelMember;
 import org.springframework.data.domain.Page;
@@ -16,7 +17,9 @@ public interface ChannelService {
 
     Page<LResponseChatSpace> getPersonalChannelList(String name, Integer page, Integer size);
 
-    DResponseChannel getChannelProfile(Integer id);
+    DResponseChannel getChannelProfile(Integer channelId);
+
+    DResponseChannelMember getChannelRelation(Integer channelId);
 
     public void createChannel(CRequestChannel requestChannel);
 
@@ -34,7 +37,7 @@ public interface ChannelService {
 
     public void updateMemberPermission(Integer channelId, Integer memberId, URequestChannelMember requestChannel);
 
-    public void unMember(Integer channelId, Integer memberId);
+    public void leaveChannel(Integer channelId);
 
     public ChannelMember findMemberRequest(Integer channelId, Integer userId);
 

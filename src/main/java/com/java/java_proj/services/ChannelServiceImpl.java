@@ -4,6 +4,7 @@ import com.java.java_proj.dto.request.forcreate.CRequestChannel;
 import com.java.java_proj.dto.request.forupdate.URequestChannel;
 import com.java.java_proj.dto.request.forupdate.URequestChannelMember;
 import com.java.java_proj.dto.response.fordetail.DResponseChannel;
+import com.java.java_proj.dto.response.fordetail.DResponseChannelMember;
 import com.java.java_proj.dto.response.fordetail.DResponseResource;
 import com.java.java_proj.dto.response.forlist.LResponseChatSpace;
 import com.java.java_proj.dto.response.forlist.LResponseMessage;
@@ -130,6 +131,19 @@ public class ChannelServiceImpl implements ChannelService {
     }
 
     @Override
+    public DResponseChannelMember getChannelRelation(Integer channelId) {
+
+        // fetch user
+        User user = userService.getOwner();
+
+        // check channel
+        Channel channel = channelRepository.findById(channelId)
+                .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Channel not found"));
+
+        return channelMemberRepository.findOneByChannelAndMember(channel, user).orElse(null);
+    }
+
+    @Override
     @Transactional
     public void createChannel(CRequestChannel requestChannel) {
 
@@ -246,13 +260,15 @@ public class ChannelServiceImpl implements ChannelService {
             throw new HttpException(HttpStatus.BAD_REQUEST, "Old member request's existed.");
         }
 
-        channelMember = (ChannelMember.builder()
-                .channel(channel)
-                .member(member)
-                .status(RequestType.PENDING)
-                .memberPermission(PermissionAccessType.VIEW)
-                .messagePermission(PermissionAccessType.VIEW)
-                .build());
+
+        if (channelMember == null)
+            channelMember = (ChannelMember.builder()
+                    .channel(channel)
+                    .member(member)
+                    .memberPermission(PermissionAccessType.VIEW)
+                    .messagePermission(PermissionAccessType.VIEW)
+                    .build());
+        channelMember.setStatus(RequestType.PENDING);
 
         channelMemberRepository.save(channelMember);
 
@@ -309,9 +325,9 @@ public class ChannelServiceImpl implements ChannelService {
 
     @Override
     @Transactional
-    public void unMember(Integer channelId, Integer memberId) {
+    public void leaveChannel(Integer channelId) {
 
-        ChannelMember channelMember = findMemberRequest(channelId, memberId);
+        ChannelMember channelMember = findMemberRequest(channelId, userService.getOwner().getId());
 
         // change request status
         if (channelMember.getStatus() != RequestType.ACCEPTED)
