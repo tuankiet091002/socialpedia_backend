@@ -1,7 +1,6 @@
 package com.java.java_proj.dto.response.fordetail;
 
 import com.java.java_proj.entities.enums.RequestType;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,5 +18,6 @@ public class DResponseUserFriendship {
     private Integer receiverId;
     private RequestType status;
     private LocalDateTime modifiedDate;
+    private Integer inboxId;
 
 }

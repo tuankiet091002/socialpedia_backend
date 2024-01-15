@@ -3,6 +3,7 @@ package com.java.java_proj.repositories;
 import com.java.java_proj.entities.Inbox;
 import com.java.java_proj.entities.User;
 import com.java.java_proj.entities.UserFriendship;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

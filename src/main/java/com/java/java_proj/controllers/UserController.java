@@ -53,11 +53,12 @@ public class UserController {
 
     @GetMapping("/friend")
     @PreAuthorize("hasPermission('GLOBAL', 'USER', 'SELF')")
-    public ResponseEntity<Page<LResponseUser>> getFriendList(@RequestParam(value = "name", defaultValue = "") String name,
-                                                             @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
-                                                             @RequestParam(value = "pageSize", defaultValue = "10") Integer size,
-                                                             @RequestParam(value = "orderBy", defaultValue = "dob") String orderBy,
-                                                             @RequestParam(value = "orderDirection", defaultValue = "DESC") String orderDirection) {
+    public ResponseEntity<Page<LResponseUser>> getFriendList(
+            @RequestParam(value = "name", defaultValue = "") String name,
+            @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
+            @RequestParam(value = "pageSize", defaultValue = "10") Integer size,
+            @RequestParam(value = "orderBy", defaultValue = "dob") String orderBy,
+            @RequestParam(value = "orderDirection", defaultValue = "DESC") String orderDirection) {
 
         List<String> allowedFields = Arrays.asList("id", "name", "email", "dob", "gender", "role");
         if (!allowedFields.contains(orderBy)) {

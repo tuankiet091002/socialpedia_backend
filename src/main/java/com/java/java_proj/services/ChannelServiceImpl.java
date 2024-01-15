@@ -306,6 +306,9 @@ public class ChannelServiceImpl implements ChannelService {
 
         channelMemberRepository.save(channelMember);
 
+        // seen all related notification
+        notificationService.seenByDestination("/channel/" + channelId + "/member/" + memberId);
+
     }
 
     @Override

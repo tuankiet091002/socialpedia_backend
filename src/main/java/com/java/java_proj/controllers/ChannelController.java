@@ -99,7 +99,7 @@ public class ChannelController {
     @PostMapping("")
     @PreAuthorize("hasPermission('GLOBAL', 'CHANNEL', 'SELF')")
     public ResponseEntity<Null> createChannel(@RequestPart String content,
-                                              @RequestPart MultipartFile file) throws JsonProcessingException {
+                                              @RequestPart(required = false) MultipartFile file) throws JsonProcessingException {
 
         CRequestChannel requestChannel = objectMapper.readValue(content, CRequestChannel.class);
 

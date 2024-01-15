@@ -79,12 +79,16 @@ public class NotificationServiceImpl implements NotificationService {
                 .user(target)
                 .avatar(source.getAvatar())
                 .title("Kết bạn thành công")
-                .content(String.format("<Link to='/user/%s'>%s</Link> đã đồng ý lời mời kết bạn", source.getEmail(), source.getName()))
+                .content(source.getName() + " đã đồng ý lời mời kết bạn")
                 .destination("/user/" + source.getId())
                 .type(NotificationType.VIEW)
                 .createdDate(LocalDateTime.now())
                 .build();
 
+        // seen all related message
+        seenByUserAndDestination(source, "/user/" + target.getId());
+
+        // create new notification
         notificationRepository.save(notification);
 
         messagingTemplate.convertAndSend("/user/" + target.getId() + "/notification", new SocketMessage());
@@ -129,6 +133,8 @@ public class NotificationServiceImpl implements NotificationService {
 
         notificationRepository.save(notification);
 
+        seenByDestination("/channel/" + channel.getId() + "/member/" + target.getId());
+
         messagingTemplate.convertAndSend("/user/" + target.getId() + "/notification", new SocketMessage());
     }
 
@@ -144,4 +150,18 @@ public class NotificationServiceImpl implements NotificationService {
                 new SocketMessage(SocketMessage.MessageType.CHAT, null));
     }
 
+    @Override
+    public void seenById(Integer id) {
+
+    }
+
+    @Override
+    public void seenByDestination(String destination) {
+        notificationRepository.seenByDestination(destination);
+    }
+
+    @Override
+    public void seenByUserAndDestination(User user, String destination) {
+        notificationRepository.seenByUserAndDestination(user, destination);
+    }
 }

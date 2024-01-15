@@ -16,6 +16,7 @@ import com.java.java_proj.entities.*;
 import com.java.java_proj.entities.enums.RequestType;
 import com.java.java_proj.entities.miscs.CustomUserDetail;
 import com.java.java_proj.exceptions.HttpException;
+import com.java.java_proj.repositories.InboxRepository;
 import com.java.java_proj.repositories.UserFriendshipRepository;
 import com.java.java_proj.repositories.UserPermissionRepository;
 import com.java.java_proj.repositories.UserRepository;
@@ -53,6 +54,7 @@ public class UserServiceImpl implements UserService {
     final private UserRepository userRepository;
     final private UserPermissionRepository userPermissionRepository;
     final private UserFriendshipRepository userFriendshipRepository;
+    final private InboxRepository inboxRepository;
     final private ResourceService resourceService;
     final private JwtTokenProvider tokenProvider;
     final private RefreshTokenService refreshTokenService;
@@ -63,10 +65,11 @@ public class UserServiceImpl implements UserService {
     final private DateFormatter dateFormatter;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, UserPermissionRepository userPermissionRepository, UserFriendshipRepository userFriendshipRepository, ResourceService resourceService, JwtTokenProvider tokenProvider, RefreshTokenService refreshTokenService, NotificationService notificationService, AuthenticationManager authenticationManager, BCryptPasswordEncoder bCryptPasswordEncoder, ModelMapper modelMapper, DateFormatter dateFormatter) {
+    public UserServiceImpl(UserRepository userRepository, UserPermissionRepository userPermissionRepository, UserFriendshipRepository userFriendshipRepository, InboxRepository inboxRepository, ResourceService resourceService, JwtTokenProvider tokenProvider, RefreshTokenService refreshTokenService, NotificationService notificationService, AuthenticationManager authenticationManager, BCryptPasswordEncoder bCryptPasswordEncoder, ModelMapper modelMapper, DateFormatter dateFormatter) {
         this.userRepository = userRepository;
         this.userPermissionRepository = userPermissionRepository;
         this.userFriendshipRepository = userFriendshipRepository;
+        this.inboxRepository = inboxRepository;
         this.resourceService = resourceService;
         this.tokenProvider = tokenProvider;
         this.refreshTokenService = refreshTokenService;
@@ -147,9 +150,12 @@ public class UserServiceImpl implements UserService {
             UserFriendship userFriendship = optionalUserFriendship.get();
             DResponseUserFriendship response = modelMapper.map(userFriendship, DResponseUserFriendship.class);
 
-            // set two id
+            // set other fields
             response.setSenderId(userFriendship.getSender().getId());
             response.setReceiverId(userFriendship.getReceiver().getId());
+            // get inbox
+            Inbox inbox = inboxRepository.findByFriendshipAndIsActive(userFriendship, true).orElse(null);
+            response.setInboxId(inbox != null ? inbox.getId() : null);
 
             return response;
         }
@@ -354,7 +360,7 @@ public class UserServiceImpl implements UserService {
             // check old status
             if (optionalUserFriendship.get().getStatus() != RequestType.REJECTED)
                 throw new HttpException(HttpStatus.BAD_REQUEST, "Invalid request.");
-            
+
             // then delete
             userFriendshipRepository.delete(optionalUserFriendship.get());
         }
@@ -386,8 +392,8 @@ public class UserServiceImpl implements UserService {
 
         userFriendshipRepository.save(friendship);
 
-//        // create notification and send socket message
-//      notificationService.friendRequestSend(friendship.getSender(), friendship.getReceiver());
+        // create notification and send socket message
+        notificationService.friendRequestAccepted(friendship.getReceiver(), friendship.getSender());
     }
 
     @Override
@@ -399,10 +405,15 @@ public class UserServiceImpl implements UserService {
         // change request status
         if (friendship.getStatus() != RequestType.PENDING)
             throw new HttpException(HttpStatus.BAD_REQUEST, "Friend request is not pending");
+        if (!Objects.equals(friendship.getReceiver().getId(), userId))
+            throw new HttpException(HttpStatus.BAD_REQUEST, "Can't reject your own request");
+
         friendship.setStatus(RequestType.REJECTED);
 
         userFriendshipRepository.save(friendship);
 
+        // seen all friend request message
+        notificationService.seenByUserAndDestination(friendship.getReceiver(), "/user/" + userId);
     }
 
     @Override
