@@ -1,6 +1,7 @@
 package com.java.java_proj.services;
 
 import com.java.java_proj.dto.request.forcreate.CRequestChannel;
+import com.java.java_proj.dto.request.forcreate.CRequestChannelMember;
 import com.java.java_proj.dto.request.forupdate.URequestChannel;
 import com.java.java_proj.dto.request.forupdate.URequestChannelMember;
 import com.java.java_proj.dto.response.fordetail.DResponseChannel;
@@ -35,6 +36,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class ChannelServiceImpl implements ChannelService {
@@ -64,8 +66,10 @@ public class ChannelServiceImpl implements ChannelService {
 
         // create pageable
         Pageable paging = orderDirection.equals("ASC")
-                ? PageRequest.of(page, size, Sort.by(orderBy).ascending())
-                : PageRequest.of(page, size, Sort.by(orderBy).descending());
+                ? PageRequest.of(page, size, Sort.by(
+                Objects.equals(orderBy, "createdBy") ? "createdBy.name" : orderBy).ascending())
+                : PageRequest.of(page, size, Sort.by(
+                Objects.equals(orderBy, "createdBy") ? "createdBy.name" : orderBy).descending());
 
         // fetch entity page
         Page<Channel> channelPage = channelRepository.findByNameContaining(name, paging);
@@ -90,6 +94,7 @@ public class ChannelServiceImpl implements ChannelService {
 
     @Override
     public Page<LResponseChatSpace> getPersonalChannelList(String name, Integer page, Integer size) {
+
         // fetch user
         User user = userService.getOwner();
 
@@ -149,9 +154,11 @@ public class ChannelServiceImpl implements ChannelService {
 
         // model map
         Channel channel = modelMapper.map(requestChannel, Channel.class);
+        // get user
+        User owner = userService.getOwner();
 
         // set normal field
-        channel.setCreatedBy(userService.getOwner());
+        channel.setCreatedBy(owner);
         channel.setCreatedDate(LocalDateTime.now());
         channel.setIsActive(true);
 
@@ -167,7 +174,16 @@ public class ChannelServiceImpl implements ChannelService {
         // save middle entities
         // intellij's recommended
         Channel finalChannel = channel;
-        requestChannel.getChannelMembersId().forEach(request -> {
+
+        // add creator to member list
+        List<CRequestChannelMember> memberList = requestChannel.getChannelMembersId();
+        memberList.add(CRequestChannelMember.builder()
+                .memberId(owner.getId())
+                .memberPermission(PermissionAccessType.MODIFY)
+                .memberPermission(PermissionAccessType.MODIFY)
+                .build());
+
+        memberList.forEach(request -> {
 
             // corresponding user
             User user = userRepository.findById(request.getMemberId())
@@ -308,7 +324,6 @@ public class ChannelServiceImpl implements ChannelService {
 
         // seen all related notification
         notificationService.seenByDestination("/channel/" + channelId + "/member/" + memberId);
-
     }
 
     @Override

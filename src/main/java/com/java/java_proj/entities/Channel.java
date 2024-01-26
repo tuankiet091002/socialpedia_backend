@@ -27,7 +27,7 @@ public class Channel {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "description")
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @Column(name = "is_active", columnDefinition = "boolean default true")
@@ -46,7 +46,7 @@ public class Channel {
     @JoinTable(name = "channel_messages",
             joinColumns = @JoinColumn(name = "channel_id"),
             inverseJoinColumns = @JoinColumn(name = "message_id"))
-    @OrderBy(value = "modifiedDate DESC")
+    @OrderBy(value = "id DESC")
     private List<Message> messages = new ArrayList<>();
 
     @ManyToOne

@@ -63,7 +63,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<Null> register(@RequestPart String content,
-                                         @RequestPart MultipartFile file) throws JsonProcessingException {
+                                         @RequestPart(required = false) MultipartFile file) throws JsonProcessingException {
 
         CRequestUser requestUser = objectMapper.readValue(content, CRequestUser.class);
 
@@ -76,7 +76,7 @@ public class AuthController {
             throw new HttpException(HttpStatus.BAD_REQUEST, bindingResult);
         }
         // check file
-        if (!file.isEmpty()) {
+        if (file == null || !file.isEmpty()) {
             requestUser.setAvatarFile(file);
         }
         userService.register(requestUser);

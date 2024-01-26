@@ -22,8 +22,7 @@ public interface UserService {
     Page<LResponseUser> getUserList(String name, Integer page, Integer size,
                                     String orderBy, String orderDirection);
 
-    Page<LResponseUser> getFriendList(String name, Integer page, Integer size,
-                                      String orderBy, String orderDirection);
+    Page<LResponseUser> getFriendList(String name, Integer page, Integer size);
 
     public DResponseUser getUserProfile(Integer userId);
 

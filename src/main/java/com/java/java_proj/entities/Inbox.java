@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,4 +51,11 @@ public class Inbox {
             inverseJoinColumns = @JoinColumn(name = "message_id"))
     @OrderBy(value = "id DESC")
     private List<Message> messages = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "modified_by")
+    private User modifiedBy;
+
+    @Column(name = "modified_date", columnDefinition = "DATETIME")
+    private LocalDateTime modifiedDate;
 }

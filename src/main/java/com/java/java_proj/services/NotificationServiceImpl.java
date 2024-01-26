@@ -108,7 +108,7 @@ public class NotificationServiceImpl implements NotificationService {
                         .avatar(source.getAvatar())
                         .title("Có lời mời vào nhóm")
                         .content(source.getName() + " đã gửi lời mời vào nhóm " + channel.getName() + ".")
-                        .destination("/channel/" + channel.getId() + "/member/" + channelMember.getMember().getId())
+                        .destination("/channel/" + channel.getId() + "/member/" + source.getId())
                         .type(NotificationType.REQUEST)
                         .createdDate(LocalDateTime.now())
                         .build());

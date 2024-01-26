@@ -129,16 +129,19 @@ public class MessageServiceImpl implements MessageService {
                 .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Channel not found."));
 
         // build message
+        User owner = userService.getOwner();
         Message message = Message.builder()
                 .content(requestMessage.getContent())
                 .resources(requestMessage.getResourceFiles().stream()
                         .map(resourceService::addFile)
                         .collect(Collectors.toList()))
-                .createdBy(userService.getOwner())
+                .createdBy(owner)
                 .modifiedDate(LocalDateTime.now())
                 .status(MessageStatusType.ACTIVE)
                 .build();
         channel.getMessages().add(message);
+        channel.setModifiedBy(owner);
+        channel.setModifiedDate(LocalDateTime.now());
 
         channelRepository.save(channel);
 
@@ -155,16 +158,19 @@ public class MessageServiceImpl implements MessageService {
                 .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Inbox not found."));
 
         // build message
+        User owner = userService.getOwner();
         Message message = Message.builder()
                 .content(requestMessage.getContent())
                 .resources(requestMessage.getResourceFiles().stream()
                         .map(resourceService::addFile)
                         .collect(Collectors.toList()))
-                .createdBy(userService.getOwner())
+                .createdBy(owner)
                 .modifiedDate(LocalDateTime.now())
                 .status(MessageStatusType.ACTIVE)
                 .build();
         inbox.getMessages().add(message);
+        inbox.setModifiedBy(owner);
+        inbox.setModifiedDate(LocalDateTime.now());
 
         inboxRepository.save(inbox);
 

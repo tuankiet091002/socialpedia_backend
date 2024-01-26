@@ -51,7 +51,8 @@ public class ChannelController {
             @RequestParam(value = "pageSize", defaultValue = "10") Integer size,
             @RequestParam(value = "orderBy", defaultValue = "id") String orderBy,
             @RequestParam(value = "orderDirection", defaultValue = "DESC") String orderDirection) {
-        List<String> allowedFields = Arrays.asList("id", "name");
+
+        List<String> allowedFields = Arrays.asList("id", "name", "createdBy", "createdDate");
         if (!allowedFields.contains(orderBy)) {
             throw new HttpException(HttpStatus.BAD_REQUEST, "Order by column " + orderBy + " is illegal!");
         }
@@ -113,7 +114,7 @@ public class ChannelController {
         }
 
         // set avatar if exist
-        if (!file.isEmpty()) {
+        if (file == null || !file.isEmpty()) {
             requestChannel.setAvatarFile(file);
         }
 

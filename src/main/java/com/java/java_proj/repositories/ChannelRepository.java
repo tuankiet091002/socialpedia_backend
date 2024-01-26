@@ -1,7 +1,6 @@
 package com.java.java_proj.repositories;
 
 import com.java.java_proj.dto.response.fordetail.DResponseChannel;
-import com.java.java_proj.dto.response.fordetail.DResponseMessage;
 import com.java.java_proj.entities.Channel;
 import com.java.java_proj.entities.User;
 import org.springframework.data.domain.Page;
@@ -17,7 +16,7 @@ public interface ChannelRepository extends JpaRepository<Channel, Integer> {
 
     Page<Channel> findByNameContaining(String name, Pageable pageable);
 
-    @Query("SELECT m.channel FROM ChannelMember m " +
+    @Query("SELECT m.channel as status FROM ChannelMember m " +
             "WHERE m.member = :user " +
             "AND m.status = 'ACCEPTED' " +
             "AND m.channel.name LIKE CONCAT('%',:name, '%') " +

@@ -104,16 +104,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<LResponseUser> getFriendList(String name, Integer page, Integer size, String orderBy, String orderDirection) {
+    public Page<LResponseUser> getFriendList(String name, Integer page, Integer size) {
         // get owner
         User user = getOwner();
 
         // if orderBy = role, need to access field of child class (Permission.role)
-        Pageable paging = orderDirection.equals("ASC")
-                ? PageRequest.of(page, size, Sort.by(
-                Objects.equals(orderBy, "role") ? "role.name" : orderBy).ascending())
-                : PageRequest.of(page, size, Sort.by(
-                Objects.equals(orderBy, "role") ? "role.name" : orderBy).descending());
+        Pageable paging = PageRequest.of(page, size);
 
         return userRepository.findFriendsByName(name, user, paging);
     }
@@ -405,7 +401,7 @@ public class UserServiceImpl implements UserService {
         // change request status
         if (friendship.getStatus() != RequestType.PENDING)
             throw new HttpException(HttpStatus.BAD_REQUEST, "Friend request is not pending");
-        if (!Objects.equals(friendship.getReceiver().getId(), userId))
+        if (!Objects.equals(friendship.getSender().getId(), userId))
             throw new HttpException(HttpStatus.BAD_REQUEST, "Can't reject your own request");
 
         friendship.setStatus(RequestType.REJECTED);

@@ -36,7 +36,7 @@ public class UserController {
                                                            @RequestParam(value = "orderBy", defaultValue = "dob") String orderBy,
                                                            @RequestParam(value = "orderDirection", defaultValue = "DESC") String orderDirection) {
 
-        List<String> allowedFields = Arrays.asList("id", "name", "email", "dob", "gender", "role");
+        List<String> allowedFields = Arrays.asList("id", "name", "email", "phone", "dob", "gender", "role");
         if (!allowedFields.contains(orderBy)) {
             throw new HttpException(HttpStatus.BAD_REQUEST, "Order by column " + orderBy + " is illegal!");
         }
@@ -56,21 +56,9 @@ public class UserController {
     public ResponseEntity<Page<LResponseUser>> getFriendList(
             @RequestParam(value = "name", defaultValue = "") String name,
             @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
-            @RequestParam(value = "pageSize", defaultValue = "10") Integer size,
-            @RequestParam(value = "orderBy", defaultValue = "dob") String orderBy,
-            @RequestParam(value = "orderDirection", defaultValue = "DESC") String orderDirection) {
+            @RequestParam(value = "pageSize", defaultValue = "10") Integer size) {
 
-        List<String> allowedFields = Arrays.asList("id", "name", "email", "dob", "gender", "role");
-        if (!allowedFields.contains(orderBy)) {
-            throw new HttpException(HttpStatus.BAD_REQUEST, "Order by column " + orderBy + " is illegal!");
-        }
-
-        List<String> allowedSort = Arrays.asList("ASC", "DESC");
-        if (!allowedSort.contains(orderDirection)) {
-            throw new HttpException(HttpStatus.BAD_REQUEST, "Sort Direction " + orderDirection + " is illegal!");
-        }
-
-        Page<LResponseUser> userPage = userService.getFriendList(name, page, size, orderBy, orderDirection);
+        Page<LResponseUser> userPage = userService.getFriendList(name, page, size);
 
         return new ResponseEntity<>(userPage, new HttpHeaders(), HttpStatus.OK);
     }

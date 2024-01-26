@@ -24,6 +24,5 @@ public class CRequestChannel {
 
     private MultipartFile avatarFile;
 
-    @NotEmpty(message = "At least one additional member beside you is required.")
     private List<CRequestChannelMember> channelMembersId;
 }

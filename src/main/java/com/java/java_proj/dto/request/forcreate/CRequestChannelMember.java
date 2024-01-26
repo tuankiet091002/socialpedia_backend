@@ -3,15 +3,15 @@ package com.java.java_proj.dto.request.forcreate;
 import com.java.java_proj.entities.enums.PermissionAccessType;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
+@Data
+@Builder
 public class CRequestChannelMember {
 
     @NotNull(message = "Member is required.")
