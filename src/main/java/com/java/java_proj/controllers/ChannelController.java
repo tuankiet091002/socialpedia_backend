@@ -125,9 +125,9 @@ public class ChannelController {
 
     @PutMapping("/{channelId}/profile")
     @PreAuthorize("hasPermission(#channelId, 'MEMBER', 'MODIFY')")
-    public ResponseEntity<Null> updateChannelProfile(BindingResult bindingResult,
-                                                     @PathVariable Integer channelId,
-                                                     @Valid @RequestBody URequestChannel requestChannel) {
+    public ResponseEntity<Null> updateChannelProfile(
+            @PathVariable Integer channelId,
+            @Valid @RequestBody URequestChannel requestChannel, BindingResult bindingResult) {
 
         // get validation error
         if (bindingResult.hasErrors()) {

@@ -10,6 +10,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "channel_members")
 @IdClass(ChannelMemberCompositeKey.class)
@@ -42,5 +45,8 @@ public class ChannelMember {
     @ManyToOne
     @JoinColumn(name = "last_seen_message")
     private Message lastSeenMessage;
+
+    @Column(name = "joined_date", columnDefinition = "DATE")
+    private LocalDate joinedDate;
 
 }
