@@ -12,6 +12,8 @@ public interface DResponseChannelMember {
 
     public RequestType getStatus();
 
+    public PermissionAccessType getChannelPermission();
+
     public PermissionAccessType getMessagePermission();
 
     public PermissionAccessType getMemberPermission();

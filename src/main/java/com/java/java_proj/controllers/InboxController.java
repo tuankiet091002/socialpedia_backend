@@ -27,7 +27,6 @@ public class InboxController {
     }
 
     @GetMapping("")
-    @PreAuthorize("hasPermission('GLOBAL', 'USER', 'SELF')")
     public ResponseEntity<Page<LResponseChatSpace>> getInboxList(@RequestParam(value = "name", defaultValue = "") String name,
                                                                  @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
                                                                  @RequestParam(value = "pageSize", defaultValue = "10") Integer size) {
@@ -38,7 +37,6 @@ public class InboxController {
     }
 
     @GetMapping("/{inboxId}")
-    @PreAuthorize("hasPermission('GLOBAL', 'CHANNEL', 'SELF')")
     public ResponseEntity<LResponseChatSpace> getInboxProfile(@PathVariable Integer inboxId) {
 
         LResponseChatSpace inbox = inboxService.getInboxProfile(inboxId);
@@ -47,7 +45,6 @@ public class InboxController {
     }
 
     @PostMapping("/{userId}")
-    @PreAuthorize("hasPermission('GLOBAL', 'USER', 'SELF')")
     public ResponseEntity<Null> createInbox(@PathVariable Integer userId) {
 
         inboxService.createInbox(userId);
@@ -56,7 +53,7 @@ public class InboxController {
     }
 
     @PutMapping("/{userId}/profile")
-    @PreAuthorize("hasPermission(#userId, 'USER', 'SELF')")
+    @PreAuthorize("hasPermission(#userId, 'USER', 'MODIFIY')")
     public ResponseEntity<Null> updateInboxProfile(@PathVariable Integer userId,
                                                    @Valid @RequestBody URequestInbox requestChannel,
                                                    BindingResult bindingResult) {

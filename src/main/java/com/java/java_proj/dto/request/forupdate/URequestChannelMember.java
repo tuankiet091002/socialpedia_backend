@@ -13,6 +13,9 @@ import lombok.Setter;
 @Setter
 public class URequestChannelMember {
 
+    @NotNull(message = "Channel Permission is required")
+    private PermissionAccessType channelPermission;
+
     @NotNull(message = "Message Permission is required")
     private PermissionAccessType messagePermission;
 

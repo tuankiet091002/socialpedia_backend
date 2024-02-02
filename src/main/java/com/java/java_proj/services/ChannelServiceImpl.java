@@ -179,7 +179,8 @@ public class ChannelServiceImpl implements ChannelService {
         List<CRequestChannelMember> memberList = requestChannel.getChannelMembersId();
         memberList.add(CRequestChannelMember.builder()
                 .memberId(owner.getId())
-                .memberPermission(PermissionAccessType.MODIFY)
+                .channelPermission(PermissionAccessType.MODIFY)
+                .messagePermission(PermissionAccessType.MODIFY)
                 .memberPermission(PermissionAccessType.MODIFY)
                 .build());
 
@@ -193,8 +194,9 @@ public class ChannelServiceImpl implements ChannelService {
                     .member(user)
                     .channel(finalChannel)
                     .status(RequestType.ACCEPTED)
+                    .channelPermission(PermissionAccessType.VIEW)
                     .memberPermission(PermissionAccessType.VIEW)
-                    .messagePermission(PermissionAccessType.VIEW)
+                    .messagePermission(PermissionAccessType.CREATE)
                     .lastSeenMessage(null)
                     .build());
         });
@@ -281,8 +283,9 @@ public class ChannelServiceImpl implements ChannelService {
             channelMember = (ChannelMember.builder()
                     .channel(channel)
                     .member(member)
+                    .channelPermission(PermissionAccessType.VIEW)
                     .memberPermission(PermissionAccessType.VIEW)
-                    .messagePermission(PermissionAccessType.VIEW)
+                    .messagePermission(PermissionAccessType.CREATE)
                     .build());
         channelMember.setStatus(RequestType.PENDING);
 
@@ -335,12 +338,13 @@ public class ChannelServiceImpl implements ChannelService {
         // change permission
         if (channelMember.getStatus() != RequestType.ACCEPTED)
             throw new HttpException(HttpStatus.BAD_REQUEST, "User is not a member.");
+        channelMember.setChannelPermission(requestChannel.getChannelPermission());
         channelMember.setMessagePermission(requestChannel.getMessagePermission());
         channelMember.setMemberPermission(requestChannel.getMemberPermission());
 
         channelMemberRepository.save(channelMember);
     }
-
+    
     @Override
     @Transactional
     public void leaveChannel(Integer channelId) {

@@ -68,7 +68,6 @@ public class ChannelController {
     }
 
     @GetMapping("/self")
-    @PreAuthorize("hasPermission('GLOBAL', 'CHANNEL', 'SELF')")
     public ResponseEntity<Page<LResponseChatSpace>> getPersonalChannelList(
             @RequestParam(value = "name", defaultValue = "") String name,
             @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
@@ -80,7 +79,6 @@ public class ChannelController {
     }
 
     @GetMapping("/{channelId}")
-    @PreAuthorize("hasPermission('GLOBAL', 'CHANNEL', 'SELF')")
     public ResponseEntity<DResponseChannel> getChannelProfile(@PathVariable Integer channelId) {
 
         DResponseChannel channel = channelService.getChannelProfile(channelId);
@@ -89,7 +87,6 @@ public class ChannelController {
     }
 
     @GetMapping("/{channelId}/relation")
-    @PreAuthorize("hasPermission('GLOBAL', 'CHANNEL', 'SELF')")
     public ResponseEntity<DResponseChannelMember> getChannelRelation(@PathVariable Integer channelId) {
 
         DResponseChannelMember channelMember = channelService.getChannelRelation(channelId);
@@ -98,7 +95,6 @@ public class ChannelController {
     }
 
     @PostMapping("")
-    @PreAuthorize("hasPermission('GLOBAL', 'CHANNEL', 'SELF')")
     public ResponseEntity<Null> createChannel(@RequestPart String content,
                                               @RequestPart(required = false) MultipartFile file) throws JsonProcessingException {
 
@@ -124,7 +120,7 @@ public class ChannelController {
     }
 
     @PutMapping("/{channelId}/profile")
-    @PreAuthorize("hasPermission(#channelId, 'MEMBER', 'MODIFY')")
+    @PreAuthorize("hasPermission(#channelId, 'CHANNEL', 'MODIFY')")
     public ResponseEntity<Null> updateChannelProfile(
             @PathVariable Integer channelId,
             @Valid @RequestBody URequestChannel requestChannel, BindingResult bindingResult) {
@@ -140,7 +136,7 @@ public class ChannelController {
     }
 
     @PutMapping("/{channelId}/avatar")
-    @PreAuthorize("hasPermission(#channelId, 'MEMBER', 'MODIFY')")
+    @PreAuthorize("hasPermission(#channelId, 'CHANNEL', 'MODIFY')")
     public ResponseEntity<Null> updateChannelAvatar(@PathVariable Integer channelId, @RequestPart MultipartFile file) {
 
         channelService.updateChannelAvatar(channelId, file);
@@ -150,7 +146,7 @@ public class ChannelController {
 
     @DeleteMapping("/{channelId}")
     @PreAuthorize("hasPermission('GLOBAL', 'CHANNEL', 'MODIFY') " +
-            "or hasPermission(#channelId, 'MEMBER', 'MODIFY')")
+            "or hasPermission(#channelId, 'CHANNEL', 'MODIFY')")
     public ResponseEntity<Null> disableChannel(@PathVariable Integer channelId) {
 
         channelService.disableChannel(channelId);
@@ -159,7 +155,6 @@ public class ChannelController {
     }
 
     @PostMapping("/{channelId}/member")
-    @PreAuthorize("hasPermission('GLOBAL', 'CHANNEL', 'SELF')")
     public ResponseEntity<Null> createChannelRequest(@PathVariable Integer channelId) {
 
         channelService.createChannelRequest(channelId);
@@ -168,7 +163,7 @@ public class ChannelController {
     }
 
     @PutMapping("/{channelId}/member/{memberId}/accept")
-    @PreAuthorize("hasPermission(#channelId, 'MEMBER', 'CREATE')")
+    @PreAuthorize("hasPermission(#channelId, 'CHANNEL-MEMBER', 'CREATE')")
     public ResponseEntity<Null> acceptChannelRequest(@PathVariable Integer channelId,
                                                      @PathVariable Integer memberId) {
 
@@ -178,7 +173,7 @@ public class ChannelController {
     }
 
     @PutMapping("/{channelId}/member/{memberId}/reject")
-    @PreAuthorize("hasPermission(#channelId, 'MEMBER', 'CREATE')")
+    @PreAuthorize("hasPermission(#channelId, 'CHANNEL-MEMBER', 'CREATE')")
     public ResponseEntity<Null> rejectChannelRequest(@PathVariable Integer channelId,
                                                      @PathVariable Integer memberId) {
 
@@ -188,7 +183,7 @@ public class ChannelController {
     }
 
     @PutMapping("/{channelId}/member/{memberId}")
-    @PreAuthorize("hasPermission(#channelId, 'MEMBER', 'MODIFY')")
+    @PreAuthorize("hasPermission(#channelId, 'CHANNEL-MEMBER', 'MODIFY')")
     public ResponseEntity<Null> updateMemberPermission(@PathVariable Integer channelId,
                                                        @PathVariable Integer memberId,
                                                        @Valid @RequestBody URequestChannelMember requestChannel,
@@ -206,7 +201,7 @@ public class ChannelController {
 
 
     @DeleteMapping("/{channelId}/member/leave")
-    @PreAuthorize("hasPermission(#channelId, 'MEMBER', 'MODIFY')")
+    @PreAuthorize("hasPermission(#channelId, 'CHANNEL-MEMBER', 'SELF')")
     public ResponseEntity<Null> leaveChannel(@PathVariable Integer channelId) {
 
         channelService.leaveChannel(channelId);

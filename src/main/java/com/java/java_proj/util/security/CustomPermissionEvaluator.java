@@ -1,7 +1,9 @@
 package com.java.java_proj.util.security;
 
+import com.java.java_proj.entities.enums.PermissionAccessType;
 import org.springframework.security.access.PermissionEvaluator;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 
 import java.io.Serializable;
 
@@ -30,16 +32,15 @@ public class CustomPermissionEvaluator implements PermissionEvaluator {
 
     private boolean hasPrivilege(Authentication auth, String targetField, String permission) {
 
-//        for (GrantedAuthority grantedAuth : auth.getAuthorities()) {
-//            // target field equal and enum have higher value than required
-//            if (grantedAuth.getAuthority().startsWith(targetField) &&
-//                    PermissionAccessType.valueOf(grantedAuth.getAuthority().split("_")[2]).getValue()
-//                            >= PermissionAccessType.valueOf(permission).getValue()) {
-//                return true;
-//            }
-//        }
-//        return false;
-
-        return true;
+        for (GrantedAuthority grantedAuth : auth.getAuthorities()) {
+            // target field equal and enum have higher value than required
+            if (grantedAuth.getAuthority().startsWith(targetField) &&
+                    PermissionAccessType.valueOf(grantedAuth.getAuthority().split("_")[2]).getValue()
+                            >= PermissionAccessType.valueOf(permission).getValue()) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 }

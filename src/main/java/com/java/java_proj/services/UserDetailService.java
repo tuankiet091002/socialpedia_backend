@@ -1,11 +1,11 @@
 package com.java.java_proj.services;
 
-import com.java.java_proj.dto.response.forlist.LResponseUser;
 import com.java.java_proj.entities.ChannelMember;
 import com.java.java_proj.entities.User;
 import com.java.java_proj.entities.miscs.CustomUserDetail;
 import com.java.java_proj.exceptions.HttpException;
 import com.java.java_proj.repositories.ChannelMemberRepository;
+import com.java.java_proj.repositories.InboxRepository;
 import com.java.java_proj.repositories.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -18,10 +18,12 @@ import java.util.List;
 public class UserDetailService implements UserDetailsService {
 
     final private UserRepository userRepository;
+    final private InboxRepository inboxRepository;
     final private ChannelMemberRepository channelMemberRepository;
 
-    public UserDetailService(UserRepository userRepository, ChannelMemberRepository channelMemberRepository) {
+    public UserDetailService(UserRepository userRepository, InboxRepository inboxRepository, ChannelMemberRepository channelMemberRepository) {
         this.userRepository = userRepository;
+        this.inboxRepository = inboxRepository;
         this.channelMemberRepository = channelMemberRepository;
     }
 
@@ -31,7 +33,8 @@ public class UserDetailService implements UserDetailsService {
         // fetch data
         User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "User not found."));
-        List<LResponseUser> friends = userRepository.findFriends(user);
+        List<Integer> friends = userRepository.findFriendIdList(user);
+        List<Integer> inboxes = inboxRepository.findInboxIdList(user);
         List<ChannelMember> channels = channelMemberRepository.findByMember(user);
 
         return CustomUserDetail.builder()

@@ -3,12 +3,12 @@ package com.java.java_proj.repositories;
 import com.java.java_proj.entities.Inbox;
 import com.java.java_proj.entities.User;
 import com.java.java_proj.entities.UserFriendship;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface InboxRepository extends JpaRepository<Inbox, Integer> {
@@ -19,6 +19,9 @@ public interface InboxRepository extends JpaRepository<Inbox, Integer> {
             "AND i.name LIKE CONCAT('%', :name, '%')" +
             "AND i.isActive = TRUE")
     Page<Inbox> findByNameAndUser(String name, User user, Pageable pageable);
+
+    @Query("SELECT i.id FROM Inbox i INNER JOIN UserFriendship f ON i.friendship = f WHERE f.status = 'ACCEPTED' AND f.sender = :user OR f.receiver = :user AND i.isActive = TRUE")
+    List<Integer> findInboxIdList(User user);
 
     Optional<Inbox> findByFriendshipAndIsActive(UserFriendship friendship, Boolean status);
 

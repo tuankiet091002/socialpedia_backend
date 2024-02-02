@@ -16,7 +16,6 @@ import jakarta.validation.constraints.Null;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.DataBinder;
 import org.springframework.validation.Validator;
@@ -86,7 +85,6 @@ public class AuthController {
     }
 
     @PutMapping("/profile")
-    @PreAuthorize("hasPermission('GLOBAL', 'USER', 'SELF')")
     public ResponseEntity<Null> updateUserProfile(@Valid @RequestBody URequestUserProfile requestUser,
                                                   BindingResult bindingResult) {
         // get validation error
@@ -100,7 +98,6 @@ public class AuthController {
     }
 
     @PutMapping(value = "/password")
-    @PreAuthorize("hasPermission('GLOBAL', 'USER', 'SELF')")
     public ResponseEntity<Null> updateUserPassword(@RequestBody URequestUserPassword requestUserPassword) {
 
         userService.updateUserPassword(requestUserPassword);
@@ -109,7 +106,6 @@ public class AuthController {
     }
 
     @PutMapping(value = "/avatar")
-    @PreAuthorize("hasPermission('GLOBAL', 'USER', 'SELF')")
     public ResponseEntity<Null> updateUserAvatar(@RequestPart MultipartFile file) {
 
         // get validation error

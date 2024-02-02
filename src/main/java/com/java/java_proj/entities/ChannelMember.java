@@ -11,7 +11,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "channel_members")
@@ -28,13 +27,16 @@ public class ChannelMember {
     private Channel channel;
 
     @Id
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User member;
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private RequestType status;
+
+    @Column(name = "channel_permission")
+    private PermissionAccessType channelPermission;
 
     @Column(name = "message_permission")
     private PermissionAccessType messagePermission;

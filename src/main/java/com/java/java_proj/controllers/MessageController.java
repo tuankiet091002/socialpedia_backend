@@ -66,7 +66,7 @@ public class MessageController {
     }
 
     @PostMapping("/channel/{channelId}")
-    @PreAuthorize("hasPermission(#channelId, 'CHANNEL', 'CREATE')")
+    @PreAuthorize("hasPermission(#channelId, 'CHANNEL-MESSAGE', 'CREATE')")
     public ResponseEntity<Null> sendMessageToChannel(@PathVariable Integer channelId, @RequestPart String content,
                                                      @RequestPart(required = false) List<MultipartFile> files) throws JsonProcessingException {
 
@@ -123,7 +123,7 @@ public class MessageController {
 
     @PutMapping("/{locationId}/content")
     @PreAuthorize("hasPermission(#locationId, 'INBOX', 'CREATE') " +
-            " or hasPermission(#locationId, 'CHANNEL', 'CREATE')")
+            " or hasPermission(#locationId, 'CHANNEL-MESSAGE', 'CREATE')")
     public ResponseEntity<Null> updateMessageContent(@PathVariable Integer locationId,
                                                      @Valid @RequestBody URequestMessageProfile requestMessage,
                                                      BindingResult bindingResult) {
@@ -140,7 +140,7 @@ public class MessageController {
 
     @PutMapping("/{locationId}/status")
     @PreAuthorize("hasPermission(#locationId, 'INBOX', 'MODIFY') " +
-            " or hasPermission(#locationId, 'CHANNEL', 'MODIFY')")
+            " or hasPermission(#locationId, 'CHANNEL-MESSAGE', 'MODIFY')")
     public ResponseEntity<Null> updateMessageStatus(@PathVariable Integer locationId,
                                                     @Valid @RequestBody URequestMessageStatus requestMessage,
                                                     BindingResult bindingResult) {
@@ -156,8 +156,8 @@ public class MessageController {
     }
 
     @DeleteMapping("/{locationId}/{messageId}")
-    @PreAuthorize("hasPermission(#locationId, 'INBOX', 'CREATE') " +
-            " or hasPermission(#locationId, 'CHANNEL', 'CREATE')")
+    @PreAuthorize("hasPermission(#locationId, 'INBOX', 'MODIFY') " +
+            " or hasPermission(#locationId, 'CHANNEL-MESSAGE', 'MODIFY')")
     // delete self
     public ResponseEntity<Null> deleteMessage(@PathVariable Integer locationId,
                                               @PathVariable Integer messageId) {

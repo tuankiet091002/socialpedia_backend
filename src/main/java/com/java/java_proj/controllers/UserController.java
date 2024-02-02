@@ -52,7 +52,6 @@ public class UserController {
     }
 
     @GetMapping("/friend")
-    @PreAuthorize("hasPermission('GLOBAL', 'USER', 'SELF')")
     public ResponseEntity<Page<LResponseUser>> getFriendList(
             @RequestParam(value = "name", defaultValue = "") String name,
             @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
@@ -64,7 +63,6 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    @PreAuthorize("hasPermission('GLOBAL', 'USER', 'SELF')")
     public ResponseEntity<DResponseUser> getUserProfile(@PathVariable Integer userId) {
 
         DResponseUser user = userService.getUserProfile(userId);
@@ -73,7 +71,6 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/friendship")
-    @PreAuthorize("hasPermission('GLOBAL', 'USER', 'SELF')")
     public ResponseEntity<DResponseUserFriendship> getUserFriendship(@PathVariable Integer userId) {
 
         DResponseUserFriendship friendship = userService.getUserFriendship(userId);
@@ -102,7 +99,6 @@ public class UserController {
     }
 
     @PostMapping("/{userId}/friend")
-    @PreAuthorize("hasPermission('GLOBAL', 'USER', 'SELF')")
     public ResponseEntity<Null> createFriendRequest(@PathVariable Integer userId) {
 
         userService.createFriendRequest(userId);
@@ -111,7 +107,6 @@ public class UserController {
     }
 
     @PutMapping("/{userId}/friend/accept")
-    @PreAuthorize("hasPermission('GLOBAL', 'USER', 'SELF')")
     public ResponseEntity<Null> acceptFriendRequest(@PathVariable Integer userId) {
 
         userService.acceptFriendRequest(userId);
@@ -120,7 +115,6 @@ public class UserController {
     }
 
     @PutMapping("/{userId}/friend/reject")
-    @PreAuthorize("hasPermission('GLOBAL', 'USER', 'SELF')")
     public ResponseEntity<Null> rejectFriendRequest(@PathVariable Integer userId) {
 
         userService.rejectFriendRequest(userId);
@@ -129,7 +123,6 @@ public class UserController {
     }
 
     @DeleteMapping("/{userId}/friend")
-    @PreAuthorize("hasPermission('GLOBAL', 'USER', 'SELF')")
     public ResponseEntity<Null> unFriend(@PathVariable Integer userId) {
 
         userService.unFriend(userId);

@@ -28,10 +28,10 @@ public interface UserRepository extends JpaRepository<User, Integer> {
             "AND u.name LIKE CONCAT('%',:name, '%')")
     Page<LResponseUser> findFriendsByName(String name, User user, Pageable paging);
 
-    @Query(value = "SELECT u from User u " +
+    @Query(value = "SELECT u.id from User u " +
             "WHERE u IN (SELECT s.receiver FROM UserFriendship s WHERE s.sender = :user AND s.status = 'ACCEPTED')" +
             "OR u IN (SELECT r.sender FROM UserFriendship r WHERE r.receiver = :user AND r.status = 'ACCEPTED')")
-    List<LResponseUser> findFriends(User user);
+    List<Integer> findFriendIdList(User user);
 
 }
 

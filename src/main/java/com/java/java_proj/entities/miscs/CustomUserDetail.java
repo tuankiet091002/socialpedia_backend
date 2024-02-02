@@ -1,6 +1,5 @@
 package com.java.java_proj.entities.miscs;
 
-import com.java.java_proj.dto.response.forlist.LResponseUser;
 import com.java.java_proj.entities.ChannelMember;
 import com.java.java_proj.entities.User;
 import lombok.AllArgsConstructor;
@@ -23,7 +22,8 @@ import java.util.List;
 public class CustomUserDetail implements UserDetails {
 
     private User user;
-    private List<LResponseUser> friends;
+    private List<Integer> friends;
+    private List<Integer> inboxes;
     private List<ChannelMember> channels;
 
     @Override
@@ -35,15 +35,20 @@ public class CustomUserDetail implements UserDetails {
         authorities.add(new SimpleGrantedAuthority("GLOBAL_USER_" + user.getRole().getUserPermission().toString()));
         authorities.add(new SimpleGrantedAuthority("GLOBAL_CHANNEL_" + user.getRole().getChannelPermission().toString()));
 
-        // inbox privilege
-        friends.forEach(friend -> {
-            authorities.add(new SimpleGrantedAuthority(friend.getId() + "_USER_SELF"));
+        // friendship privilege
+        friends.forEach(friendId -> {
+            authorities.add(new SimpleGrantedAuthority(friendId + "_USER_MODIFY"));
+        });
+
+        // specific inbox privilege
+        inboxes.forEach(friendId -> {
+            authorities.add(new SimpleGrantedAuthority(friendId + "_INBOX_MODIFY"));
         });
 
         // channel privilege
         channels.forEach(channel -> {
-            authorities.add(new SimpleGrantedAuthority(channel.getChannel().getId() + "_MEMBER_" + channel.getMemberPermission().toString()));
-            authorities.add(new SimpleGrantedAuthority(channel.getChannel().getId() + "_MESSAGE_" + channel.getMessagePermission().toString()));
+            authorities.add(new SimpleGrantedAuthority(channel.getChannel().getId() + "CHANNEL-MEMBER_" + channel.getMemberPermission().toString()));
+            authorities.add(new SimpleGrantedAuthority(channel.getChannel().getId() + "_CHANNEL-MESSAGE_" + channel.getMessagePermission().toString()));
         });
 
         return authorities;
