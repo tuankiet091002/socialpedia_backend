@@ -73,23 +73,7 @@ public class MessageServiceImpl implements MessageService {
         // fetch entity page
         Page<Message> messagePage = messageRepository.findByChannel(content, channel, pageable);
 
-        // create seem list
-        HashMap<Integer, List<User>> seenMap = new HashMap<>();
-        channel.getChannelMembers().forEach(member -> {
-
-            // loop and put each member into map
-            if (member.getLastSeenMessage() != null) {
-                Integer lastMessageId = member.getLastSeenMessage().getId();
-                seenMap.merge(lastMessageId, List.of(member.getMember()),
-                        (k, v) -> {
-                            List<User> newList = new ArrayList<>(k);
-                            newList.add(member.getMember());
-                            return newList;
-                        });
-            }
-
-        });
-        return mapToDTO(messagePage, seenMap);
+        return mapToDTO(messagePage);
     }
 
     @Override
@@ -105,19 +89,7 @@ public class MessageServiceImpl implements MessageService {
         // fetch entity page
         Page<Message> messagePage = messageRepository.findByInbox(content, inbox, pageable);
 
-        // create seem list
-        HashMap<Integer, List<User>> seenMap = new HashMap<>();
-
-        // get other side's last seen message
-        if (Objects.equals(inbox.getFriendship().getReceiver().getId(), userService.getOwner().getId())) {
-            if (inbox.getSenderLastSeen() != null)
-                seenMap.put(inbox.getSenderLastSeen().getId(), List.of(inbox.getFriendship().getSender()));
-        } else {
-            if (inbox.getReceiverLastSeen() != null)
-                seenMap.put(inbox.getSenderLastSeen().getId(), List.of(inbox.getFriendship().getSender()));
-        }
-
-        return mapToDTO(messagePage, seenMap);
+        return mapToDTO(messagePage);
     }
 
     @Override
@@ -252,8 +224,6 @@ public class MessageServiceImpl implements MessageService {
         if (channelMember.getStatus() != RequestType.ACCEPTED)
             throw new HttpException(HttpStatus.BAD_REQUEST, "Membership is invalid.");
 
-        // set message
-        channelMember.setLastSeenMessage(message);
         channelMemberRepository.save(channelMember);
     }
 
@@ -286,15 +256,11 @@ public class MessageServiceImpl implements MessageService {
         inboxRepository.save(inbox);
     }
 
-    private Page<DResponseMessage> mapToDTO(Page<Message> messagePage, HashMap<Integer, List<User>> seenMap) {
+    private Page<DResponseMessage> mapToDTO(Page<Message> messagePage) {
 
         return messagePage.map(entity -> {
 
-            // skip resource list to bypass model mapper exception
-            List<Resource> resourceList = entity.getResources();
-            entity.setResources(null);
             DResponseMessage message = modelMapper.map(entity, DResponseMessage.class);
-            entity.setResources(resourceList);
 
             // remove deleted content
             if (message.getStatus() == MessageStatusType.INACTIVE) {
@@ -304,18 +270,8 @@ public class MessageServiceImpl implements MessageService {
 
             // convert missing fields
             ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
-            if (entity.getResources() != null) {
-                message.setResources(entity.getResources().stream().map(x -> pf.createProjection(DResponseResource.class, x)).toList());
-            }
             message.setCreatedBy(pf.createProjection(LResponseUserMinimal.class, entity.getCreatedBy()));
 
-            // set last seen message
-            if (seenMap.containsKey(message.getId())) {
-                message.setSeenBy(seenMap.get(message.getId()).stream()
-                        .map(x -> pf.createProjection(LResponseUserMinimal.class, x))
-                        .toList());
-            } else
-                message.setSeenBy(new ArrayList<>());
 
             return message;
         });

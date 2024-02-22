@@ -20,7 +20,9 @@ public class DResponseMessage {
 
     public String content;
 
-    public List<DResponseResource> resources;
+    public List<DResponseResourceClass> resources;
+
+    public List<DResponseMessage> replies;
 
     public LResponseUserMinimal createdBy;
 

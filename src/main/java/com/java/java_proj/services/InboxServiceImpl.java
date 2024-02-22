@@ -1,6 +1,7 @@
 package com.java.java_proj.services;
 
 import com.java.java_proj.dto.request.forupdate.URequestInbox;
+import com.java.java_proj.dto.response.fordetail.DResponseInbox;
 import com.java.java_proj.dto.response.fordetail.DResponseResource;
 import com.java.java_proj.dto.response.forlist.LResponseChatSpace;
 import com.java.java_proj.dto.response.forlist.LResponseMessage;
@@ -81,14 +82,14 @@ public class InboxServiceImpl implements InboxService {
 
     @Override
     @Transactional
-    public LResponseChatSpace getInboxProfile(Integer inboxId) {
+    public DResponseInbox getInboxProfile(Integer inboxId) {
 
         // get entity
         Inbox inbox = inboxRepository.findById(inboxId)
                 .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Inbox not found."));
 
         // map to dto
-        LResponseChatSpace result = modelMapper.map(inbox, LResponseChatSpace.class);
+        DResponseInbox result = modelMapper.map(inbox, DResponseInbox.class);
 
         // get opposite's avatar as inbox's avatar
         Resource avatar = inbox.getFriendship().getSender() == userService.getOwner() ?
@@ -99,6 +100,10 @@ public class InboxServiceImpl implements InboxService {
             ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
             result.setAvatar(pf.createProjection(DResponseResource.class, avatar));
         }
+
+        // get opposite account's last seen message
+        result.setLastSeenMessageId(inbox.getFriendship().getSender() == userService.getOwner() ?
+                inbox.getSenderLastSeen().getId() : inbox.getReceiverLastSeen().getId());
 
         return result;
     }

@@ -1,6 +1,7 @@
 package com.java.java_proj.controllers;
 
 import com.java.java_proj.dto.request.forupdate.URequestInbox;
+import com.java.java_proj.dto.response.fordetail.DResponseInbox;
 import com.java.java_proj.dto.response.forlist.LResponseChatSpace;
 import com.java.java_proj.exceptions.HttpException;
 import com.java.java_proj.services.templates.InboxService;
@@ -37,9 +38,9 @@ public class InboxController {
     }
 
     @GetMapping("/{inboxId}")
-    public ResponseEntity<LResponseChatSpace> getInboxProfile(@PathVariable Integer inboxId) {
+    public ResponseEntity<DResponseInbox> getInboxProfile(@PathVariable Integer inboxId) {
 
-        LResponseChatSpace inbox = inboxService.getInboxProfile(inboxId);
+        DResponseInbox inbox = inboxService.getInboxProfile(inboxId);
 
         return new ResponseEntity<>(inbox, HttpStatus.OK);
     }

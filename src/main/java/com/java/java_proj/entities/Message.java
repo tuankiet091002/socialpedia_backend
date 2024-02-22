@@ -35,6 +35,14 @@ public class Message {
     private List<Resource> resources = new ArrayList<>();
 
     @ManyToOne
+    @JoinColumn(name = "reply_to")
+    private Message replyTo;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "replyTo")
+    private List<Message> replies = new ArrayList<>();
+
+    @ManyToOne
     @JoinColumn(name = "created_by")
     private User createdBy;
 

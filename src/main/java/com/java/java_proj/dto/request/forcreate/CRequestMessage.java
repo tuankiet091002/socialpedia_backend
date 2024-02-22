@@ -19,5 +19,7 @@ public class CRequestMessage {
     @NotBlank(message = "Message content is required.")
     private String content;
 
+    private Integer replyTo;
+
     private List<MultipartFile> resourceFiles = new ArrayList<>();
 }

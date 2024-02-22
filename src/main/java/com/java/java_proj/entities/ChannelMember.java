@@ -44,10 +44,6 @@ public class ChannelMember {
     @Column(name = "member_permission")
     private PermissionAccessType memberPermission;
 
-    @ManyToOne
-    @JoinColumn(name = "last_seen_message")
-    private Message lastSeenMessage;
-
     @Column(name = "joined_date", columnDefinition = "DATE")
     private LocalDate joinedDate;
 

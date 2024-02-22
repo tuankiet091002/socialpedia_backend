@@ -197,7 +197,6 @@ public class ChannelServiceImpl implements ChannelService {
                     .channelPermission(PermissionAccessType.VIEW)
                     .memberPermission(PermissionAccessType.VIEW)
                     .messagePermission(PermissionAccessType.CREATE)
-                    .lastSeenMessage(null)
                     .build());
         });
     }
