@@ -6,10 +6,8 @@ import com.java.java_proj.dto.request.forupdate.URequestChannel;
 import com.java.java_proj.dto.request.forupdate.URequestChannelMember;
 import com.java.java_proj.dto.response.fordetail.DResponseChannel;
 import com.java.java_proj.dto.response.fordetail.DResponseChannelMember;
-import com.java.java_proj.dto.response.fordetail.DResponseResource;
 import com.java.java_proj.dto.response.forlist.LResponseChatSpace;
 import com.java.java_proj.dto.response.forlist.LResponseMessage;
-import com.java.java_proj.dto.response.forlist.LResponseUserMinimal;
 import com.java.java_proj.entities.*;
 import com.java.java_proj.entities.enums.PermissionAccessType;
 import com.java.java_proj.entities.enums.RequestType;
@@ -28,8 +26,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.projection.ProjectionFactory;
-import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -79,12 +75,6 @@ public class ChannelServiceImpl implements ChannelService {
             // map to dto
             LResponseChatSpace channel = modelMapper.map(entity, LResponseChatSpace.class);
 
-            // convert missing fields
-            ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
-            if (entity.getAvatar() != null)
-                channel.setAvatar(pf.createProjection(DResponseResource.class, entity.getAvatar()));
-            channel.setCreatedBy(pf.createProjection(LResponseUserMinimal.class, entity.getCreatedBy()));
-
             // fetch member number
             channel.setMemberNum(channelMemberRepository.countByChannel(entity));
 
@@ -110,18 +100,12 @@ public class ChannelServiceImpl implements ChannelService {
             // map to dto
             LResponseChatSpace channel = modelMapper.map(entity, LResponseChatSpace.class);
 
-            // convert missing fields
-            ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
-            if (entity.getAvatar() != null)
-                channel.setAvatar(pf.createProjection(DResponseResource.class, entity.getAvatar()));
-            channel.setCreatedBy(pf.createProjection(LResponseUserMinimal.class, entity.getCreatedBy()));
-
             // fetch top message and skip the pageable part
             List<Message> messageList = messageRepository.findByChannel("", entity,
                             PageRequest.of(0, 1, Sort.by("id").descending()))
                     .getContent();
             if (!messageList.isEmpty()) {
-                channel.setLatestMessage(pf.createProjection(LResponseMessage.class, messageList.get(0)));
+                channel.setLatestMessage(modelMapper.map(messageList.get(0), LResponseMessage.class));
             }
 
             return channel;
@@ -343,7 +327,7 @@ public class ChannelServiceImpl implements ChannelService {
 
         channelMemberRepository.save(channelMember);
     }
-    
+
     @Override
     @Transactional
     public void leaveChannel(Integer channelId) {

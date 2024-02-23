@@ -3,6 +3,7 @@ package com.java.java_proj.services;
 import com.java.java_proj.dto.request.forupdate.URequestInbox;
 import com.java.java_proj.dto.response.fordetail.DResponseInbox;
 import com.java.java_proj.dto.response.fordetail.DResponseResource;
+import com.java.java_proj.dto.response.fordetail.DResponseResourceClass;
 import com.java.java_proj.dto.response.forlist.LResponseChatSpace;
 import com.java.java_proj.dto.response.forlist.LResponseMessage;
 import com.java.java_proj.entities.*;
@@ -73,8 +74,9 @@ public class InboxServiceImpl implements InboxService {
                     entity.getFriendship().getSender().getAvatar()
                     : entity.getFriendship().getReceiver().getAvatar();
 
-            if (avatar != null)
-                inbox.setAvatar(pf.createProjection(DResponseResource.class, avatar));
+            if (avatar != null) {
+                inbox.setAvatar(modelMapper.map(avatar, DResponseResourceClass.class));
+            }
 
             return inbox;
         });
@@ -97,8 +99,7 @@ public class InboxServiceImpl implements InboxService {
                 : inbox.getFriendship().getReceiver().getAvatar();
 
         if (avatar != null) {
-            ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
-            result.setAvatar(pf.createProjection(DResponseResource.class, avatar));
+            result.setAvatar(modelMapper.map(avatar, DResponseResourceClass.class));
         }
 
         // get opposite account's last seen message

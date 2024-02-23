@@ -67,8 +67,7 @@ public class MessageController {
 
     @PostMapping("/channel/{channelId}")
     @PreAuthorize("hasPermission(#channelId, 'CHANNEL-MESSAGE', 'CREATE')")
-    public ResponseEntity<Null> sendMessageToChannel(@PathVariable Integer channelId, @RequestPart String content,
-                                                     @RequestPart(required = false) List<MultipartFile> files) throws JsonProcessingException {
+    public ResponseEntity<Null> sendMessageToChannel(@PathVariable Integer channelId, @RequestPart String content, @RequestPart(required = false) List<MultipartFile> files) throws JsonProcessingException {
 
         CRequestMessage requestMessage = objectMapper.readValue(content, CRequestMessage.class);
 

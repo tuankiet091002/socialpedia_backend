@@ -41,6 +41,7 @@ public class UserDetailService implements UserDetailsService {
                 .user(user)
                 .friends(friends)
                 .channels(channels)
+                .inboxes(inboxes)
                 .build();
     }
 }

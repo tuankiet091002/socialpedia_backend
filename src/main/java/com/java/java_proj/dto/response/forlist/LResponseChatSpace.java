@@ -1,6 +1,7 @@
 package com.java.java_proj.dto.response.forlist;
 
 import com.java.java_proj.dto.response.fordetail.DResponseResource;
+import com.java.java_proj.dto.response.fordetail.DResponseResourceClass;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,13 +19,13 @@ public class LResponseChatSpace {
 
     private String name;
 
-    private DResponseResource avatar;
+    private DResponseResourceClass avatar;
 
     private Integer memberNum;
 
     private LResponseMessage latestMessage;
 
-    private LResponseUserMinimal createdBy;
+    private LResponseUserMinimalClass createdBy;
 
     private LocalDateTime createdDate;
 

@@ -4,8 +4,6 @@ import com.java.java_proj.dto.request.forcreate.CRequestMessage;
 import com.java.java_proj.dto.request.forupdate.URequestMessageProfile;
 import com.java.java_proj.dto.request.forupdate.URequestMessageStatus;
 import com.java.java_proj.dto.response.fordetail.DResponseMessage;
-import com.java.java_proj.dto.response.fordetail.DResponseResource;
-import com.java.java_proj.dto.response.forlist.LResponseUserMinimal;
 import com.java.java_proj.entities.*;
 import com.java.java_proj.entities.enums.MessageStatusType;
 import com.java.java_proj.entities.enums.RequestType;
@@ -22,15 +20,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.projection.ProjectionFactory;
-import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -115,6 +109,13 @@ public class MessageServiceImpl implements MessageService {
         channel.setModifiedBy(owner);
         channel.setModifiedDate(LocalDateTime.now());
 
+        // process replied message
+        if (requestMessage.getReplyTo() != null) {
+            Message repliedMessage = messageRepository.findByIdAndChannel(requestMessage.getReplyTo(), channel).orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Replied message not found"));
+
+            message.setReplyTo(repliedMessage);
+        }
+
         channelRepository.save(channel);
 
         // create notification and send socket message
@@ -143,6 +144,13 @@ public class MessageServiceImpl implements MessageService {
         inbox.getMessages().add(message);
         inbox.setModifiedBy(owner);
         inbox.setModifiedDate(LocalDateTime.now());
+
+        // process replied message
+        if (requestMessage.getReplyTo() != null) {
+            Message repliedMessage = messageRepository.findByIdAndInbox(requestMessage.getReplyTo(), inbox).orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Replied message not found"));
+
+            message.setReplyTo(repliedMessage);
+        }
 
         inboxRepository.save(inbox);
 
@@ -263,17 +271,24 @@ public class MessageServiceImpl implements MessageService {
             DResponseMessage message = modelMapper.map(entity, DResponseMessage.class);
 
             // remove deleted content
-            if (message.getStatus() == MessageStatusType.INACTIVE) {
-                message.setResources(new ArrayList<>());
-                message.setContent(null);
-            }
-
-            // convert missing fields
-            ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
-            message.setCreatedBy(pf.createProjection(LResponseUserMinimal.class, entity.getCreatedBy()));
-
+            setDeletedContent(message);
 
             return message;
         });
     }
+
+    public void setDeletedContent(DResponseMessage message) {
+
+        // main message
+        if (message.getStatus() == MessageStatusType.INACTIVE) {
+            message.setResources(new ArrayList<>());
+            message.setContent(null);
+        }
+
+        // children
+        if (!message.getReplies().isEmpty())
+            message.getReplies().forEach(this::setDeletedContent);
+
+    }
+
 }

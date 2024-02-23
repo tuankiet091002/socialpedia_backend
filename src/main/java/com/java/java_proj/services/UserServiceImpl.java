@@ -5,10 +5,8 @@ import com.java.java_proj.dto.request.forupdate.URequestUserPassword;
 import com.java.java_proj.dto.request.forupdate.URequestUserProfile;
 import com.java.java_proj.dto.request.security.RequestLogin;
 import com.java.java_proj.dto.request.security.RequestRefreshToken;
-import com.java.java_proj.dto.response.fordetail.DResponseResource;
 import com.java.java_proj.dto.response.fordetail.DResponseUser;
 import com.java.java_proj.dto.response.fordetail.DResponseUserFriendship;
-import com.java.java_proj.dto.response.fordetail.DResponseUserPermission;
 import com.java.java_proj.dto.response.forlist.LResponseUser;
 import com.java.java_proj.dto.response.security.ResponseJwt;
 import com.java.java_proj.dto.response.security.ResponseRefreshToken;
@@ -33,8 +31,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.projection.ProjectionFactory;
-import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -122,14 +118,7 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "User not found."));
 
-        // map to dto
-        DResponseUser responseUser = modelMapper.map(user, DResponseUser.class);
-        ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
-        responseUser.setRole(pf.createProjection(DResponseUserPermission.class, user.getRole()));
-        if (user.getAvatar() != null)
-            responseUser.setAvatar(pf.createProjection(DResponseResource.class, user.getAvatar()));
-
-        return responseUser;
+        return modelMapper.map(user, DResponseUser.class);
     }
 
     @Override

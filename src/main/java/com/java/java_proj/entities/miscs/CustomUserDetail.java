@@ -47,10 +47,10 @@ public class CustomUserDetail implements UserDetails {
 
         // channel privilege
         channels.forEach(channel -> {
-            authorities.add(new SimpleGrantedAuthority(channel.getChannel().getId() + "CHANNEL-MEMBER_" + channel.getMemberPermission().toString()));
+            authorities.add(new SimpleGrantedAuthority(channel.getChannel().getId() + "_CHANNEL-MEMBER_" + channel.getMemberPermission().toString()));
             authorities.add(new SimpleGrantedAuthority(channel.getChannel().getId() + "_CHANNEL-MESSAGE_" + channel.getMessagePermission().toString()));
         });
-
+        
         return authorities;
     }
 

@@ -2,6 +2,7 @@ package com.java.java_proj.dto.response.forlist;
 
 import com.java.java_proj.dto.response.fordetail.DResponseResource;
 import com.java.java_proj.dto.response.fordetail.DResponseUserPermission;
+import com.java.java_proj.dto.response.fordetail.DResponseUserPermissionClass;
 
 import java.time.LocalDate;
 

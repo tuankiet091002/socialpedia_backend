@@ -1,6 +1,6 @@
 package com.java.java_proj.dto.response.fordetail;
 
-import com.java.java_proj.dto.response.forlist.LResponseUserMinimal;
+import com.java.java_proj.dto.response.forlist.LResponseUserMinimalClass;
 import com.java.java_proj.entities.enums.MessageStatusType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,11 +24,9 @@ public class DResponseMessage {
 
     public List<DResponseMessage> replies;
 
-    public LResponseUserMinimal createdBy;
+    public LResponseUserMinimalClass createdBy;
 
     public LocalDateTime modifiedDate;
 
     public MessageStatusType status;
-
-    public List<LResponseUserMinimal> seenBy;
 }

@@ -1,6 +1,5 @@
 package com.java.java_proj;
 
-import com.java.java_proj.dto.response.fordetail.DResponseUserPermission;
 import com.java.java_proj.entities.UserPermission;
 import com.java.java_proj.entities.enums.PermissionAccessType;
 import com.java.java_proj.repositories.UserPermissionRepository;
@@ -17,7 +16,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.io.IOException;
-import java.util.List;
 
 @SpringBootApplication
 @OpenAPIDefinition(
@@ -62,33 +60,10 @@ public class JavaProjApplication implements CommandLineRunner {
         this.autoUserPermission();
     }
 
-//    private void autoEmailContent() {
-//        List<Email> email = emailRepository.findAll();
-//
-//        // check if email's exist
-//        if (email.isEmpty()) {
-//            Email emailAdd = Email.builder().subject("[FAMS] - Tài khoản được tạo thành công")
-//                    .body("<p>Hi, %s, </p>" +
-//                            "<p>Tài khoản đăng nhập vào hệ thống FAMS của bạn đã được tạo thành công. </p>" +
-//                            "<p>Vui lòng truy cập hệ thống theo thông tin sau: </p>" +
-//                            "<ul>" +
-//                            "<li>Username: %s</li>" +
-//                            "<li>Password: %s</li></ul>" +
-//                            "<p><b>Lưu ý</b>: Vui lòng thay đổi mật khẩu sau khi đăng nhập.</p>")
-//                    .build();
-//
-//            emailRepository.save(emailAdd);
-//            System.out.println("Custom email service content added!");
-//        }
-//
-//
-//    }
-
     private void autoUserPermission() {
-        List<DResponseUserPermission> userPermissionList = userPermissionRepository.findAllBy();
 
         // check if user permission's exist
-        if (userPermissionList.isEmpty()) {
+        if (userPermissionRepository.count() == 0) {
             UserPermission admin = UserPermission.builder()
                     .name("admin")
                     .userPermission(PermissionAccessType.MODIFY)

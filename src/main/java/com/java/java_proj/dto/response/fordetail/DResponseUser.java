@@ -25,11 +25,11 @@ public class DResponseUser {
 
     public LocalDate dob;
 
-    public DResponseUserPermission role;
+    public DResponseUserPermissionClass role;
 
     public Boolean gender;
 
-    public DResponseResource avatar;
+    public DResponseResourceClass avatar;
 
     public LocalDateTime modifiedDate;
 }
