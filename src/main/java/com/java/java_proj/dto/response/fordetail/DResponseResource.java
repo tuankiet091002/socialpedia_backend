@@ -9,5 +9,7 @@ public interface DResponseResource {
 
     public String getFileType();
 
+    public Long getFileSize();
+
     public String getUrl();
 }

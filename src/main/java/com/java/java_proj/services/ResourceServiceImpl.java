@@ -38,12 +38,14 @@ public class ResourceServiceImpl implements ResourceService {
             String generatedName = fileService.save(file);
             String imageUrl = fileService.getImageUrl(generatedName);
             String fileType = FilenameUtils.getExtension(file.getOriginalFilename());
+            Long size = file.getSize();
 
             // create entity
             Resource resource = Resource.builder()
                     .filename(file.getOriginalFilename())
                     .generatedName(generatedName)
                     .fileType(fileType)
+                    .fileSize(size)
                     .url(imageUrl)
                     .build();
 

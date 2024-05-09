@@ -2,7 +2,6 @@ package com.java.java_proj.services;
 
 import com.java.java_proj.dto.request.forupdate.URequestInbox;
 import com.java.java_proj.dto.response.fordetail.DResponseInbox;
-import com.java.java_proj.dto.response.fordetail.DResponseResource;
 import com.java.java_proj.dto.response.fordetail.DResponseResourceClass;
 import com.java.java_proj.dto.response.forlist.LResponseChatSpace;
 import com.java.java_proj.dto.response.forlist.LResponseMessage;

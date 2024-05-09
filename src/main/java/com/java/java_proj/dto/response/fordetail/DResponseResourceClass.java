@@ -17,5 +17,7 @@ public class DResponseResourceClass {
 
     public String fileType;
 
+    public Long fileSize ;
+
     public String url;
 }

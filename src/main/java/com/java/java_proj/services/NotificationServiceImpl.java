@@ -27,8 +27,8 @@ import java.time.LocalDateTime;
 @Service
 public class NotificationServiceImpl implements NotificationService {
 
-    private final NotificationRepository notificationRepository;
-    private final SimpMessagingTemplate messagingTemplate;
+    final private NotificationRepository notificationRepository;
+    final private SimpMessagingTemplate messagingTemplate;
 
     @Autowired
     public NotificationServiceImpl(NotificationRepository notificationRepository, SimpMessagingTemplate messagingTemplate) {
