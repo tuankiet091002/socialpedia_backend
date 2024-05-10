@@ -9,6 +9,6 @@ import java.util.Optional;
 
 @Repository
 public interface ResourceRepository extends JpaRepository<Resource, Integer> {
-    Optional<DResponseResource> findOneById(Integer id);
+    Optional<Resource> findOneById(Integer id);
 
 }

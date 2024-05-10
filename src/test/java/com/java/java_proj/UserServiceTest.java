@@ -9,7 +9,7 @@ import com.java.java_proj.services.templates.NotificationService;
 import com.java.java_proj.services.templates.RefreshTokenService;
 import com.java.java_proj.services.templates.ResourceService;
 import com.java.java_proj.util.DateFormatter;
-import com.java.java_proj.util.security.JwtTokenProvider;
+import com.java.java_proj.util.JwtTokenProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

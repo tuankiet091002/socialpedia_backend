@@ -3,21 +3,29 @@ package com.java.java_proj.dto.response.fordetail;
 import com.java.java_proj.dto.response.forlist.LResponseUserMinimal;
 import com.java.java_proj.entities.enums.PermissionAccessType;
 import com.java.java_proj.entities.enums.RequestType;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
-public interface DResponseChannelMember {
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+@Builder
+public class DResponseChannelMember {
 
-    public LResponseUserMinimal getMember();
+    private LResponseUserMinimal member;
 
-    public RequestType getStatus();
+    private RequestType status;
 
-    public PermissionAccessType getChannelPermission();
+    private PermissionAccessType channelPermission;
 
-    public PermissionAccessType getMessagePermission();
+    private PermissionAccessType messagePermission;
 
-    public PermissionAccessType getMemberPermission();
+    private PermissionAccessType memberPermission;
 
-    public LocalDate getJoinedDate();
+    private LocalDate joinedDate;
 
 }

@@ -2,23 +2,31 @@ package com.java.java_proj.dto.response.forlist;
 
 import com.java.java_proj.dto.response.fordetail.DResponseResource;
 import com.java.java_proj.entities.enums.NotificationType;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-public interface LResponseNotification {
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+@Builder
+public class LResponseNotification {
 
-    public Integer getId();
+    private Integer id;
 
-    public DResponseResource getAvatar();
+    private DResponseResource avatar;
 
-    public String getTitle();
+    private String title;
 
-    public String getContent();
+    private String content;
 
-    public String getDestination();
+    private String destination;
 
-    public NotificationType getType();
+    private NotificationType type;
 
-    public LocalDateTime getCreatedDate();
+    private LocalDateTime createdDate;
 }
 

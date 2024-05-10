@@ -16,7 +16,7 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE refresh_tokens SET active = false WHERE user_id = ?1", nativeQuery = true)
+    @Query(value = "UPDATE RefreshToken t SET t.isActive = false WHERE t.user.id = :userId")
     void deActiveUserToken(int userId);
 
 }

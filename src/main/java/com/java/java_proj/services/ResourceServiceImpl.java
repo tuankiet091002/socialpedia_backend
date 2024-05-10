@@ -6,6 +6,7 @@ import com.java.java_proj.exceptions.HttpException;
 import com.java.java_proj.repositories.ResourceRepository;
 import com.java.java_proj.services.templates.ResourceService;
 import org.apache.commons.io.FilenameUtils;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,17 +18,22 @@ public class ResourceServiceImpl implements ResourceService {
 
     final private FirebaseFileService fileService;
     final private ResourceRepository resourceRepository;
+    final private ModelMapper modelMapper;
 
-    public ResourceServiceImpl(FirebaseFileService fileService, ResourceRepository resourceRepository) {
+    public ResourceServiceImpl(FirebaseFileService fileService, ResourceRepository resourceRepository, ModelMapper modelMapper) {
         this.fileService = fileService;
         this.resourceRepository = resourceRepository;
+        this.modelMapper = modelMapper;
     }
 
 
     @Override
     public DResponseResource findById(Integer id) {
-        return resourceRepository.findOneById(id)
+
+        Resource resource = resourceRepository.findOneById(id)
                 .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Resource not found"));
+
+        return modelMapper.map(resource, DResponseResource.class);
     }
 
     @Override

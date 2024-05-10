@@ -16,7 +16,7 @@ public interface ChannelMemberRepository extends JpaRepository<ChannelMember, Ch
 
     Optional<ChannelMember> findByChannelAndMember(Channel channel, User user);
 
-    Optional<DResponseChannelMember> findOneByChannelAndMember(Channel channel, User user);
+    Optional<ChannelMember> findOneByChannelAndMember(Channel channel, User user);
 
     Integer countByChannel(Channel channel);
 

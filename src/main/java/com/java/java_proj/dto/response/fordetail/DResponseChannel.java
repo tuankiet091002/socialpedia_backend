@@ -1,28 +1,36 @@
 package com.java.java_proj.dto.response.fordetail;
 
 import com.java.java_proj.dto.response.forlist.LResponseUserMinimal;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-public interface DResponseChannel {
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+@Builder
+public class DResponseChannel {
 
-    public Integer getId();
+    private Integer id;
 
-    public String getName();
+    private String name;
 
-    public String getDescription();
+    private String description;
 
-    public DResponseResource getAvatar();
+    private DResponseResource avatar;
 
-    public List<DResponseChannelMember> getChannelMembers();
+    private List<DResponseChannelMember> channelMembers;
 
-    public LResponseUserMinimal getCreatedBy();
+    private LResponseUserMinimal createdBy;
 
-    public LocalDateTime getCreatedDate();
+    private LocalDateTime createdDate;
 
-    public LResponseUserMinimal getModifiedBy();
+    private LResponseUserMinimal modifiedBy;
 
-    public LocalDateTime getModifiedDate();
+    private LocalDateTime modifiedDate;
 
 }

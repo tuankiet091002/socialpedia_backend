@@ -115,8 +115,9 @@ public class ChannelServiceImpl implements ChannelService {
     @Override
     public DResponseChannel getChannelProfile(Integer id) {
 
-        return channelRepository.findOneById(id)
-                .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Channel not found."));
+        Channel channel = channelRepository.findOneById(id).orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Channel not found."));
+
+        return modelMapper.map(channel, DResponseChannel.class);
     }
 
     @Override
@@ -129,7 +130,9 @@ public class ChannelServiceImpl implements ChannelService {
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Channel not found"));
 
-        return channelMemberRepository.findOneByChannelAndMember(channel, user).orElse(null);
+        ChannelMember channelMemer = channelMemberRepository.findOneByChannelAndMember(channel, user).orElse(null);
+
+        return modelMapper.map(channelMemer, DResponseChannelMember.class);
     }
 
     @Override

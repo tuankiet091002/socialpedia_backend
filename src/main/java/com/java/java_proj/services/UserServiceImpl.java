@@ -23,7 +23,7 @@ import com.java.java_proj.services.templates.RefreshTokenService;
 import com.java.java_proj.services.templates.ResourceService;
 import com.java.java_proj.services.templates.UserService;
 import com.java.java_proj.util.DateFormatter;
-import com.java.java_proj.util.security.JwtTokenProvider;
+import com.java.java_proj.util.JwtTokenProvider;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,18 +96,18 @@ public class UserServiceImpl implements UserService {
                 : PageRequest.of(page, size, Sort.by(
                 Objects.equals(orderBy, "role") ? "role.name" : orderBy).descending());
 
-        return userRepository.findByNameContaining(name, paging);
+        return userRepository.findByNameContaining(name, paging).map(user -> modelMapper.map(user, LResponseUser.class));
     }
 
     @Override
     public Page<LResponseUser> getFriendList(String name, Integer page, Integer size) {
         // get owner
-        User user = getOwner();
+        User owner = getOwner();
 
         // if orderBy = role, need to access field of child class (Permission.role)
         Pageable paging = PageRequest.of(page, size);
 
-        return userRepository.findFriendsByName(name, user, paging);
+        return userRepository.findFriendsByName(name, owner, paging).map(user -> modelMapper.map(user, LResponseUser.class));
     }
 
     @Override

@@ -13,6 +13,7 @@ import com.java.java_proj.exceptions.HttpException;
 import com.java.java_proj.repositories.NotificationRepository;
 import com.java.java_proj.services.templates.NotificationService;
 import jakarta.transaction.Transactional;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,11 +30,13 @@ public class NotificationServiceImpl implements NotificationService {
 
     final private NotificationRepository notificationRepository;
     final private SimpMessagingTemplate messagingTemplate;
+    final private ModelMapper modelMapper;
 
     @Autowired
-    public NotificationServiceImpl(NotificationRepository notificationRepository, SimpMessagingTemplate messagingTemplate) {
+    public NotificationServiceImpl(NotificationRepository notificationRepository, SimpMessagingTemplate messagingTemplate, ModelMapper modelMapper) {
         this.notificationRepository = notificationRepository;
         this.messagingTemplate = messagingTemplate;
+        this.modelMapper = modelMapper;
     }
 
     // prevent circled dependency
@@ -51,7 +54,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         Pageable pageable = PageRequest.of(page, size);
 
-        return notificationRepository.findByUserOrderByIdDesc(getOwner(), pageable);
+        return notificationRepository.findByUserOrderByIdDesc(getOwner(), pageable).map(notification -> modelMapper.map(notification, LResponseNotification.class));
     }
 
     @Override

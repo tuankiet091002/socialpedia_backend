@@ -15,9 +15,13 @@ import java.time.LocalDateTime;
 public class DResponseUserFriendship {
 
     private Integer senderId;
+
     private Integer receiverId;
+
     private RequestType status;
+
     private LocalDateTime modifiedDate;
+
     private Integer inboxId;
 
 }

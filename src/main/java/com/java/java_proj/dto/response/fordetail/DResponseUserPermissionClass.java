@@ -12,9 +12,9 @@ import lombok.NoArgsConstructor;
 @Builder
 public class DResponseUserPermissionClass {
 
-    public String name;
+    private String name;
 
-    public PermissionAccessType userPermission;
+    private PermissionAccessType userPermission;
 
-    public PermissionAccessType channelPermission;
+    private PermissionAccessType channelPermission;
 }

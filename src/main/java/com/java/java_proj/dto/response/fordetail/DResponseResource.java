@@ -1,15 +1,23 @@
 package com.java.java_proj.dto.response.fordetail;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public interface DResponseResource {
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+@Builder
+public class DResponseResource {
 
-    public Integer getId();
+    private Integer id;
 
-    public String getFilename();
+    private String filename;
 
-    public String getFileType();
+    private String fileType;
 
-    public Long getFileSize();
+    private Long fileSize;
 
-    public String getUrl();
+    private String url;
 }

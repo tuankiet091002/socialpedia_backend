@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, Integer> {
 
-    Page<LResponseNotification> findByUserOrderByIdDesc(User user, Pageable pageable);
+    Page<Notification> findByUserOrderByIdDesc(User user, Pageable pageable);
 
     @Modifying
     @Query("UPDATE Notification n SET n.type = 2 WHERE n.user = :user AND n.destination = :destination")

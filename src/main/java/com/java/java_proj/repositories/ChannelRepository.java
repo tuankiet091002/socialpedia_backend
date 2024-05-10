@@ -24,7 +24,7 @@ public interface ChannelRepository extends JpaRepository<Channel, Integer> {
     Page<Channel> findPersonalChannelList(String name, User user, Pageable pageable);
 
     @Query("SELECT c FROM Channel c JOIN FETCH c.channelMembers WHERE c.id = :id AND c.isActive = TRUE")
-    Optional<DResponseChannel> findOneById(Integer id);
+    Optional<Channel> findOneById(Integer id);
 
 }
 

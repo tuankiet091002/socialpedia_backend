@@ -11,13 +11,13 @@ import lombok.NoArgsConstructor;
 @Builder
 public class DResponseResourceClass {
 
-    public Integer id;
+    private Integer id;
 
-    public String filename;
+    private String filename;
 
-    public String fileType;
+    private String fileType;
 
-    public Long fileSize ;
+    private Long fileSize ;
 
-    public String url;
+    private String url;
 }

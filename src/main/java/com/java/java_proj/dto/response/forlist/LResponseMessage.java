@@ -14,10 +14,10 @@ import java.time.LocalDateTime;
 @Builder
 public class LResponseMessage {
 
-    public Integer id;
+    private Integer id;
 
-    public String content;
+    private String content;
 
-    public LocalDateTime modifiedDate;
+    private LocalDateTime modifiedDate;
 
 }

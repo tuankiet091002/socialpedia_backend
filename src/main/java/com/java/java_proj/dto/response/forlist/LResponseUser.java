@@ -2,25 +2,32 @@ package com.java.java_proj.dto.response.forlist;
 
 import com.java.java_proj.dto.response.fordetail.DResponseResource;
 import com.java.java_proj.dto.response.fordetail.DResponseUserPermission;
-import com.java.java_proj.dto.response.fordetail.DResponseUserPermissionClass;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
-public interface LResponseUser {
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+@Builder
+public class LResponseUser {
 
-    public Integer getId();
+    private Integer id;
 
-    public String getName();
+    private String name;
 
-    public String getEmail();
+    private String email;
 
-    public DResponseResource getAvatar();
+    private DResponseResource avatar;
 
-    public String getPhone();
+    private String phone;
 
-    public LocalDate getDob();
+    private LocalDate dob;
 
-    public DResponseUserPermission getRole();
+    private DResponseUserPermission role;
 
-    public Boolean getGender();
+    private Boolean gender;
 }

@@ -1,12 +1,20 @@
 package com.java.java_proj.dto.response.fordetail;
 
 import com.java.java_proj.entities.enums.PermissionAccessType;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public interface DResponseUserPermission {
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+@Builder
+public class DResponseUserPermission {
 
-    public String getName();
+    private String name;
 
-    public PermissionAccessType getUserPermission();
+    private PermissionAccessType userPermission;
 
-    public PermissionAccessType getChannelPermission();
+    private PermissionAccessType channelPermission;
 }
