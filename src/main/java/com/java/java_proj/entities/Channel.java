@@ -1,6 +1,7 @@
 package com.java.java_proj.entities;
 
 
+import com.java.java_proj.util.AttributeEncryptor;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,9 +26,11 @@ public class Channel {
     private Integer id;
 
     @Column(name = "name")
+    @Convert(converter = AttributeEncryptor.class)
     private String name;
 
     @Column(name = "description", columnDefinition = "TEXT")
+    @Convert(converter = AttributeEncryptor.class)
     private String description;
 
     @Column(name = "is_active", columnDefinition = "boolean default true")

@@ -1,6 +1,7 @@
 package com.java.java_proj.entities;
 
 
+import com.java.java_proj.util.AttributeEncryptor;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,22 +23,27 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Convert(converter = AttributeEncryptor.class)
     private Integer id;
 
     @Column(name = "name", nullable = false)
+    @Convert(converter = AttributeEncryptor.class)
     private String name;
 
     @Column(name = "email", length = 150, nullable = false, unique = true)
+    @Convert(converter = AttributeEncryptor.class)
     private String email;
 
     @Column(name = "password", nullable = false)
+    @Convert(converter = AttributeEncryptor.class)
     private String password;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role")
     private UserPermission role;
 
-    @Column(name = "phone", length = 20, nullable = false, unique = true)
+    @Column(name = "phone", nullable = false, unique = true)
+    @Convert(converter = AttributeEncryptor.class)
     private String phone;
 
     @Column(name = "dob", nullable = false, columnDefinition = "DATE")

@@ -1,7 +1,7 @@
 package com.java.java_proj.entities;
 
-
 import com.java.java_proj.entities.enums.MessageStatusType;
+import com.java.java_proj.util.AttributeEncryptor;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,6 +25,7 @@ public class Message {
     private Integer id;
 
     @Column(name = "content", columnDefinition = "TEXT")
+    @Convert(converter = AttributeEncryptor.class)
     private String content;
 
     @Builder.Default

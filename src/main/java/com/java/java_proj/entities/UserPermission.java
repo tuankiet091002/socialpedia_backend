@@ -1,6 +1,7 @@
 package com.java.java_proj.entities;
 
 import com.java.java_proj.entities.enums.PermissionAccessType;
+import com.java.java_proj.util.AttributeEncryptor;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,13 +22,14 @@ public class UserPermission {
     private Integer id;
 
     @Column(unique = true, nullable = false)
+    @Convert(converter = AttributeEncryptor.class)
     private String name;
 
     @Column(name = "channel_permission")
     @Enumerated(EnumType.STRING)
     private PermissionAccessType channelPermission;
 
-    @Column(name = "user_permmission")
+    @Column(name = "user_permission")
     @Enumerated(EnumType.STRING)
     private PermissionAccessType userPermission;
 

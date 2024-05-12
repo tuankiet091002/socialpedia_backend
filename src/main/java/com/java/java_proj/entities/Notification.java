@@ -2,6 +2,7 @@ package com.java.java_proj.entities;
 
 
 import com.java.java_proj.entities.enums.NotificationType;
+import com.java.java_proj.util.AttributeEncryptor;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,12 +32,15 @@ public class Notification {
     private Resource avatar;
 
     @Column(name = "title")
+    @Convert(converter = AttributeEncryptor.class)
     private String title;
 
     @Column(name = "content")
+    @Convert(converter = AttributeEncryptor.class)
     private String content;
 
     @Column(name = "destination")
+    @Convert(converter = AttributeEncryptor.class)
     private String destination;
 
     @Column(name = "type")
