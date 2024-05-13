@@ -17,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface UserService {
 
-    User getOwner();
+   public User getOwner();
 
     Page<LResponseUser> getUserList(String name, Integer page, Integer size,
                                     String orderBy, String orderDirection);

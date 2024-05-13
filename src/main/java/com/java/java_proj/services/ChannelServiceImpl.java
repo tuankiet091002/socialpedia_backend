@@ -22,6 +22,7 @@ import com.java.java_proj.services.templates.ResourceService;
 import com.java.java_proj.services.templates.UserService;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -130,9 +131,11 @@ public class ChannelServiceImpl implements ChannelService {
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Channel not found"));
 
-        ChannelMember channelMemer = channelMemberRepository.findOneByChannelAndMember(channel, user).orElse(null);
+        ChannelMember channelMember = channelMemberRepository.findByChannelAndMember(channel, user).orElse(null);
+        if (channelMember == null)
+            return null;
 
-        return modelMapper.map(channelMemer, DResponseChannelMember.class);
+        return modelMapper.map(channelMember, DResponseChannelMember.class);
     }
 
     @Override

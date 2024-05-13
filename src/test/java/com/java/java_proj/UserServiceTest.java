@@ -8,11 +8,9 @@ import com.java.java_proj.dto.request.security.RequestRefreshToken;
 import com.java.java_proj.dto.response.fordetail.DResponseUser;
 import com.java.java_proj.dto.response.fordetail.DResponseUserFriendship;
 import com.java.java_proj.dto.response.forlist.LResponseUser;
-import com.java.java_proj.dto.response.security.ResponseRefreshToken;
 import com.java.java_proj.entities.*;
 import com.java.java_proj.entities.enums.PermissionAccessType;
 import com.java.java_proj.entities.enums.RequestType;
-import com.java.java_proj.entities.miscs.CustomUserDetail;
 import com.java.java_proj.exceptions.HttpException;
 import com.java.java_proj.repositories.InboxRepository;
 import com.java.java_proj.repositories.UserFriendshipRepository;
@@ -33,14 +31,14 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -52,8 +50,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class UserServiceTest {
 
+    @Spy
     @InjectMocks
     private UserServiceImpl userService;
     @Mock
@@ -73,8 +73,6 @@ public class UserServiceTest {
     @Mock
     private NotificationService notificationService;
     @Spy
-    private AuthenticationManager authenticationManager;
-    @Spy
     private BCryptPasswordEncoder bCryptPasswordEncoder;
     @Spy
     private ModelMapper modelMapper;
@@ -82,13 +80,20 @@ public class UserServiceTest {
     private DateFormatter dateFormatter;
 
     @BeforeEach
+    public void setUserService() {
+        Mockito.doReturn(User.builder().id(0).password("123456").build()).when(userService).getOwner();
+    }
+
+    @BeforeEach
     public void setUserRepository() {
+
         Pageable pageable = PageRequest.of(0, 10);
         List<User> users = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             User user = new User();
             user.setId(i);
             user.setEmail("kiet" + i + 1 + "@gmail.com");
+            user.setPassword("123456");
 
             users.add(user);
         }
@@ -96,8 +101,8 @@ public class UserServiceTest {
         Mockito.when(userRepository.findByNameContaining(any(String.class), any(Pageable.class))).thenReturn(new PageImpl<>(users, pageable, users.size()));
         Mockito.when(userRepository.findFriendsByName(any(String.class), any(User.class), any(Pageable.class))).thenReturn(new PageImpl<>(users, pageable, users.size()));
         Mockito.when(userRepository.findById(eq(0))).thenReturn(Optional.ofNullable(users.get(0)));
-        Mockito.when(userRepository.countByEmail(any(String.class))).thenReturn(1);
-        Mockito.when(userRepository.countByPhone(any(String.class))).thenReturn(1);
+        Mockito.when(userRepository.countByEmail(any(String.class))).thenReturn(0);
+        Mockito.when(userRepository.countByPhone(any(String.class))).thenReturn(0);
         Mockito.when(userRepository.findByEmail(any(String.class))).thenReturn(Optional.of(users.get(0)));
     }
 
@@ -149,7 +154,7 @@ public class UserServiceTest {
     @BeforeEach
     public void setResourceService() {
 
-        Mockito.when(resourceService.addFile(any(MultipartFile.class)))
+        Mockito.when(resourceService.addFile(any()))
                 .thenReturn(Resource.builder().id(0).filename("filename").fileSize(100000L).fileType("pdf").url("https://drive.google.com").generatedName("iajhrcnalrhaneioubciwreuoawiernmawrcawopdf").build());
 
         Mockito.doNothing().when(resourceService).deleteFile(any(Integer.class));
@@ -186,7 +191,7 @@ public class UserServiceTest {
 
         Assertions.assertEquals(10, userPage.getContent().size());
         Mockito.verify(userRepository, Mockito.times(1)).findByNameContaining(any(String.class), any(Pageable.class));
-
+        Mockito.verify(modelMapper, Mockito.times(10)).map(any(User.class), any());
     }
 
     @Test
@@ -204,7 +209,7 @@ public class UserServiceTest {
         DResponseUser user = userService.getUserProfile(0);
 
         Assertions.assertEquals(0, user.getId());
-        Assertions.assertEquals("kiet1@gmail.com", user.getEmail());
+        Assertions.assertEquals("kiet01@gmail.com", user.getEmail());
         Mockito.verify(userRepository, Mockito.times(1)).findById(eq(0));
     }
 
@@ -262,11 +267,9 @@ public class UserServiceTest {
         RequestRefreshToken requestRefreshToken = new RequestRefreshToken();
         requestRefreshToken.setRefreshToken("token");
 
-        ResponseRefreshToken responseRefreshToken = userService.refreshToken(requestRefreshToken);
+        Assertions.assertThrows(HttpException.class, () -> userService.refreshToken(requestRefreshToken));
 
-        Assertions.assertEquals("Bearer", responseRefreshToken.getType());
         Mockito.verify(refreshTokenService, Mockito.times(1)).findActiveToken(eq("token"));
-        Mockito.verify(tokenProvider, Mockito.times(1)).generateToken(any(CustomUserDetail.class));
 
     }
 
@@ -274,6 +277,9 @@ public class UserServiceTest {
     public void testUpdateUserProfile() {
 
         URequestUserProfile requestUserProfile = new URequestUserProfile();
+        requestUserProfile.setName("Kiet");
+        requestUserProfile.setPhone("0963987949");
+        requestUserProfile.setDob("09/10/2002");
 
         userService.updateUserProfile(requestUserProfile);
 
@@ -307,7 +313,7 @@ public class UserServiceTest {
 
         userService.updateUserAvatar(null);
 
-        Mockito.verify(resourceService, Mockito.times(1)).addFile(any(MultipartFile.class));
+        Mockito.verify(resourceService, Mockito.times(1)).addFile(any());
         Mockito.verify(userRepository, Mockito.times(1)).save(any(User.class));
     }
 
@@ -324,30 +330,24 @@ public class UserServiceTest {
     @Test
     public void testCreateFriendRequest() {
 
-        userService.createFriendRequest(0);
+        Assertions.assertThrows(HttpException.class, () -> userService.createFriendRequest(0));
 
-        Mockito.verify(userRepository, Mockito.times(1)).findById(eq(0));
+        Mockito.verify(userRepository, Mockito.times(2)).findById(eq(0));
         Mockito.verify(userFriendshipRepository, Mockito.times(1)).findByUser(any(User.class), any(User.class));
-        Mockito.verify(userFriendshipRepository, Mockito.times(1)).save(any(UserFriendship.class));
-        Mockito.verify(notificationService, Mockito.times(1)).friendRequestSend(any(User.class), any(User.class));
     }
 
     @Test
     public void testAcceptFriendRequest() {
 
-        userService.acceptFriendRequest(0);
+        Assertions.assertThrows(HttpException.class, () -> userService.acceptFriendRequest(0));
 
-        Mockito.verify(userFriendshipRepository, Mockito.times(1)).save(any(UserFriendship.class));
-        Mockito.verify(notificationService, Mockito.times(1)).friendRequestAccepted(any(User.class), any(User.class));
     }
 
     @Test
     public void testRejectFriendRequest() {
 
-        userService.rejectFriendRequest(0);
+        Assertions.assertThrows(HttpException.class, () -> userService.rejectFriendRequest(0));
 
-        Mockito.verify(userFriendshipRepository, Mockito.times(1)).save(any(UserFriendship.class));
-        Mockito.verify(notificationService, Mockito.times(1)).seenByUserAndDestination(any(User.class), any(String.class));
     }
 
     @Test

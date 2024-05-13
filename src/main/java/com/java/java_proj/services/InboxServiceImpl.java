@@ -18,12 +18,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.projection.ProjectionFactory;
-import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class InboxServiceImpl implements InboxService {
@@ -57,19 +56,16 @@ public class InboxServiceImpl implements InboxService {
             // map to dto
             LResponseChatSpace inbox = modelMapper.map(entity, LResponseChatSpace.class);
 
-            // convert missing fields
-            ProjectionFactory pf = new SpelAwareProxyProjectionFactory();
-
             // fetch top message and skip the pageable part
             List<Message> messageList = messageRepository.findByInbox("", entity,
                     PageRequest.of(0, 1,
                             Sort.by("id").descending())).getContent();
             if (!messageList.isEmpty()) {
-                inbox.setLatestMessage(pf.createProjection(LResponseMessage.class, messageList.get(0)));
+                inbox.setLatestMessage(modelMapper.map(messageList.get(0), LResponseMessage.class));
             }
 
             // get opposite's avatar as inbox's avatar
-            Resource avatar = entity.getFriendship().getSender() == userService.getOwner() ?
+            Resource avatar = Objects.equals(entity.getFriendship().getSender().getId(), user.getId()) ?
                     entity.getFriendship().getSender().getAvatar()
                     : entity.getFriendship().getReceiver().getAvatar();
 

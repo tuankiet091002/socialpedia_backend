@@ -40,7 +40,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     // prevent circled dependency
-    private User getOwner() {
+    public User getOwner() {
         try {
             return ((CustomUserDetail) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
         } catch (Exception e) {

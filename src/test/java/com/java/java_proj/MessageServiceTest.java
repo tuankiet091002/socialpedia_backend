@@ -23,6 +23,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -38,6 +40,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class MessageServiceTest {
 
     @InjectMocks
@@ -67,18 +70,18 @@ public class MessageServiceTest {
             Message message = new Message();
             message.setId(i);
             message.setContent("Message " + i);
+            message.setCreatedBy(User.builder().id(0).build());
 
             messages.add(message);
         }
 
-        Mockito.when(messageRepository.findByChannel(null, any(Channel.class), any(Pageable.class))).thenReturn(new PageImpl<>(messages, pageable, messages.size()));
+        Mockito.when(messageRepository.findByChannel(any(String.class), any(Channel.class), any(Pageable.class))).thenReturn(new PageImpl<>(messages, pageable, messages.size()));
         Mockito.when(messageRepository.findByInbox(any(String.class), any(Inbox.class), any(Pageable.class))).thenReturn(new PageImpl<>(messages, pageable, messages.size()));
         Mockito.when(messageRepository.findByIdAndChannel(any(Integer.class), any(Channel.class))).thenReturn(Optional.of(messages.get(0)));
         Mockito.when(messageRepository.findByIdAndInbox(any(Integer.class), any(Inbox.class))).thenReturn(Optional.of(messages.get(0)));
         Mockito.when(messageRepository.countByLocation(any(Message.class), any(Integer.class))).thenReturn(1);
         Mockito.when(messageRepository.findById(any(Integer.class))).thenReturn(Optional.of(messages.get(0)));
     }
-
 
     @BeforeEach
     public void setChannelRepository() {
@@ -89,7 +92,7 @@ public class MessageServiceTest {
     @BeforeEach
     public void setInboxRepository() {
 
-        Mockito.when(inboxRepository.findById(any(Integer.class))).thenReturn(Optional.of(Inbox.builder().id(0).build()));
+        Mockito.when(inboxRepository.findById(any(Integer.class))).thenReturn(Optional.of(Inbox.builder().id(0).isActive(true).friendship(UserFriendship.builder().sender(User.builder().id(0).build()).receiver(User.builder().id(1).build()).build()).build()));
     }
 
     @BeforeEach
@@ -124,7 +127,7 @@ public class MessageServiceTest {
 
         Assertions.assertEquals(10, messages.getContent().size());
         Mockito.verify(channelRepository, Mockito.times(1)).findById(eq(0));
-        Mockito.verify(messageRepository, Mockito.times(1)).findByChannel(null, any(Channel.class), PageRequest.of(0, 10));
+        Mockito.verify(messageRepository, Mockito.times(1)).findByChannel(eq(""), any(Channel.class), any(Pageable.class));
     }
 
     @Test
@@ -134,7 +137,7 @@ public class MessageServiceTest {
 
         Assertions.assertEquals(10, messages.getContent().size());
         Mockito.verify(inboxRepository, Mockito.times(1)).findById(eq(0));
-        Mockito.verify(messageRepository, Mockito.times(1)).findByInbox(null, any(Inbox.class), PageRequest.of(0, 10));
+        Mockito.verify(messageRepository, Mockito.times(1)).findByInbox(eq(""), any(Inbox.class), any(Pageable.class));
     }
 
     @Test
@@ -158,7 +161,7 @@ public class MessageServiceTest {
         CRequestMessage requestMessage = new CRequestMessage();
         requestMessage.setContent("Message");
 
-        messageService.sendMessageToChannel(0, requestMessage);
+        messageService.sendMessageToInbox(0, requestMessage);
 
         Mockito.verify(inboxRepository, Mockito.times(1)).findById(eq(0));
         Mockito.verify(userService, Mockito.times(1)).getOwner();

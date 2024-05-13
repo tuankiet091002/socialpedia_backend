@@ -83,7 +83,6 @@ public class UserServiceImpl implements UserService {
         } catch (Exception e) {
             throw new HttpException(HttpStatus.NOT_FOUND, "Current user not found.");
         }
-
     }
 
     @Override

@@ -17,7 +17,10 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -31,6 +34,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class InboxServiceTest {
 
     @InjectMocks
@@ -49,16 +53,22 @@ public class InboxServiceTest {
         Pageable pageable = PageRequest.of(0, 10);
         List<Inbox> inboxes = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
-            Inbox inbox = new Inbox();
-            inbox.setId(i);
-            inbox.setName("Channel " + i);
-            inbox.setIsActive(true);
+            Inbox inbox = Inbox.builder()
+                    .id(i)
+                    .isActive(true)
+                    .friendship(UserFriendship.builder()
+                            .sender(User.builder().id(0).build())
+                            .receiver(User.builder().id(1).build()).build())
+                    .senderLastSeen(Message.builder().id(0).build())
+                    .receiverLastSeen(Message.builder().id(1).build())
+                    .build();
 
             inboxes.add(inbox);
         }
 
         Mockito.when(inboxRepository.findByNameAndUser(any(String.class), any(User.class), any(Pageable.class))).thenReturn(new PageImpl<>(inboxes, pageable, inboxes.size()));
-        Mockito.doNothing().when(inboxRepository).save(any(Inbox.class));
+        Mockito.when(inboxRepository.findById(any(Integer.class))).thenReturn(Optional.of(inboxes.get(0)));
+        Mockito.when(inboxRepository.save(any(Inbox.class))).thenReturn(null);
         Mockito.when(inboxRepository.findByFriendshipAndIsActive(any(UserFriendship.class), eq(true))).thenReturn(Optional.ofNullable(inboxes.get(0)));
     }
 
@@ -66,12 +76,19 @@ public class InboxServiceTest {
     public void setMessageRepository() {
         Message message = Message.builder().id(0).build();
 
-        Mockito.when(messageRepository.findByInbox("", any(Inbox.class), any(Pageable.class))).thenReturn(new PageImpl<>(List.of(message), PageRequest.of(0, 10), 1));
+        Mockito.when(messageRepository.findByInbox(any(String.class), any(Inbox.class), any(Pageable.class))).thenReturn(new PageImpl<>(List.of(message), PageRequest.of(0, 10), 1));
     }
 
     @BeforeEach
     public void setUserService() {
         Mockito.when(userService.getOwner()).thenReturn(User.builder().id(0).build());
+        Mockito.when(userService.findFriendship(any(Integer.class))).thenReturn(UserFriendship.builder().sender(User.builder().id(0).build()).receiver(User.builder().id(1).build()).build());
+    }
+
+    @BeforeEach
+    public void setModelMapper() {
+        modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        modelMapper.getConfiguration().setAmbiguityIgnored(true);
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -85,7 +102,7 @@ public class InboxServiceTest {
         Assertions.assertEquals(10, inboxPage.getContent().size());
         Mockito.verify(userService, Mockito.times(1)).getOwner();
         Mockito.verify(inboxRepository, Mockito.times(1)).findByNameAndUser(any(String.class), any(User.class), any(Pageable.class));
-        Mockito.verify(modelMapper, Mockito.times(10)).map(any(Channel.class), any());
+        Mockito.verify(modelMapper, Mockito.times(10)).map(any(Inbox.class), any());
         Mockito.verify(messageRepository, Mockito.times(10)).findByInbox(any(String.class), any(Inbox.class), any(Pageable.class));
     }
 
@@ -96,7 +113,7 @@ public class InboxServiceTest {
 
         Assertions.assertEquals(0, channel.getId());
         Mockito.verify(inboxRepository, Mockito.times(1)).findById(eq(0));
-        Mockito.verify(modelMapper, Mockito.times(10)).map(any(Channel.class), any());
+        Mockito.verify(modelMapper, Mockito.times(1)).map(any(Inbox.class), any());
     }
 
     @Test

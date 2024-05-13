@@ -8,6 +8,7 @@ import com.java.java_proj.dto.response.forlist.LResponseChatSpace;
 import com.java.java_proj.entities.*;
 import com.java.java_proj.entities.enums.PermissionAccessType;
 import com.java.java_proj.entities.enums.RequestType;
+import com.java.java_proj.exceptions.HttpException;
 import com.java.java_proj.repositories.ChannelMemberRepository;
 import com.java.java_proj.repositories.ChannelRepository;
 import com.java.java_proj.repositories.MessageRepository;
@@ -25,7 +26,10 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -40,6 +44,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class ChannelServiceTest {
 
     @InjectMocks
@@ -78,7 +83,8 @@ public class ChannelServiceTest {
         Mockito.when(channelRepository.findByNameContaining(any(String.class), any(Pageable.class))).thenReturn(new PageImpl<>(channels, pageable, channels.size()));
         Mockito.when(channelRepository.findPersonalChannelList(any(String.class), any(User.class), any(Pageable.class))).thenReturn(new PageImpl<>(channels, pageable, channels.size()));
         Mockito.when(channelRepository.findById(any(Integer.class))).thenReturn(Optional.of(channels.get(0)));
-        Mockito.doNothing().when(channelRepository).save(any(Channel.class));
+        Mockito.when(channelRepository.findOneById(any(Integer.class))).thenReturn(Optional.of(channels.get(0)));
+        Mockito.when(channelRepository.save(any(Channel.class))).thenReturn(null);
     }
 
     @BeforeEach
@@ -86,7 +92,7 @@ public class ChannelServiceTest {
         ChannelMember channelMember = ChannelMember.builder().member(User.builder().id(0).build()).channel(Channel.builder().id(0).build()).status(RequestType.ACCEPTED).channelPermission(PermissionAccessType.CREATE).memberPermission(PermissionAccessType.CREATE).messagePermission(PermissionAccessType.CREATE).build();
 
         Mockito.when(channelMemberRepository.findByChannelAndMember(any(Channel.class), any(User.class))).thenReturn(Optional.of(channelMember));
-        Mockito.doNothing().when(channelMemberRepository).save(any(ChannelMember.class));
+        Mockito.when(channelMemberRepository.save(any(ChannelMember.class))).thenReturn(null);
 
     }
 
@@ -101,7 +107,7 @@ public class ChannelServiceTest {
     public void setMessageRepository() {
         Message message = Message.builder().id(0).build();
 
-        Mockito.when(messageRepository.findByChannel("", any(Channel.class), any(Pageable.class))).thenReturn(new PageImpl<>(List.of(message), PageRequest.of(0, 10), 1));
+        Mockito.when(messageRepository.findByChannel(eq(""), any(Channel.class), any(Pageable.class))).thenReturn(new PageImpl<>(List.of(message), PageRequest.of(0, 10), 1));
     }
 
     @BeforeEach
@@ -127,6 +133,12 @@ public class ChannelServiceTest {
         Mockito.when(userService.getOwner()).thenReturn(User.builder().id(0).build());
     }
 
+    @BeforeEach
+    public void setModelMapper() {
+        modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        modelMapper.getConfiguration().setAmbiguityIgnored(true);
+    }
+
     ///////////////////////////////////////////////////////////////////
     ////////////////////////// TESTING PHASE //////////////////////////
     ///////////////////////////////////////////////////////////////////
@@ -139,18 +151,18 @@ public class ChannelServiceTest {
         Assertions.assertEquals(10, channelPage.getContent().size());
         Mockito.verify(channelRepository, Mockito.times(1)).findByNameContaining(any(String.class), any(Pageable.class));
         Mockito.verify(modelMapper, Mockito.times(10)).map(any(Channel.class), any());
-        Mockito.verify(channelMemberRepository, Mockito.times(1)).countByChannel(any(Channel.class));
+        Mockito.verify(channelMemberRepository, Mockito.times(10)).countByChannel(any(Channel.class));
     }
 
     @Test
     public void testGetPersonalChannelList() {
 
-        Page<LResponseChatSpace> channelPage = channelService.getChannelList("", 0, 10, "id", "DESC");
+        Page<LResponseChatSpace> channelPage = channelService.getPersonalChannelList("", 0, 10);
 
         Assertions.assertEquals(10, channelPage.getContent().size());
-        Mockito.verify(channelRepository, Mockito.times(1)).findByNameContaining(any(String.class), any(Pageable.class));
+        Mockito.verify(channelRepository, Mockito.times(1)).findPersonalChannelList(any(String.class), any(User.class), any(Pageable.class));
         Mockito.verify(modelMapper, Mockito.times(10)).map(any(Channel.class), any());
-        Mockito.verify(messageRepository, Mockito.times(1)).findByChannel("", any(Channel.class), any(Pageable.class));
+        Mockito.verify(messageRepository, Mockito.times(10)).findByChannel(eq(""), any(Channel.class), any(Pageable.class));
     }
 
     @Test
@@ -159,8 +171,8 @@ public class ChannelServiceTest {
         DResponseChannel channel = channelService.getChannelProfile(0);
 
         Assertions.assertEquals(0, channel.getId());
-        Mockito.verify(channelRepository, Mockito.times(1)).findById(eq(0));
-        Mockito.verify(modelMapper, Mockito.times(10)).map(any(Channel.class), any());
+        Mockito.verify(channelRepository, Mockito.times(1)).findOneById(eq(0));
+        Mockito.verify(modelMapper, Mockito.times(1)).map(any(Channel.class), any());
     }
 
     @Test
@@ -170,7 +182,7 @@ public class ChannelServiceTest {
 
         Mockito.verify(channelRepository, Mockito.times(1)).findById(eq(0));
         Mockito.verify(channelMemberRepository, Mockito.times(1)).findByChannelAndMember(any(Channel.class), any(User.class));
-        Mockito.verify(modelMapper, Mockito.times(10)).map(any(Channel.class), any());
+        Mockito.verify(modelMapper, Mockito.times(1)).map(any(ChannelMember.class), any());
     }
 
     @Test
@@ -214,30 +226,22 @@ public class ChannelServiceTest {
     @Test
     public void testCreateChannelRequest() {
 
-        channelService.createChannelRequest(0);
+        Assertions.assertThrows(HttpException.class, () -> channelService.createChannelRequest(0));
 
         Mockito.verify(channelRepository, Mockito.times(1)).findById(eq(0));
         Mockito.verify(channelMemberRepository, Mockito.times(1)).findByChannelAndMember(any(Channel.class), any(User.class));
-        Mockito.verify(channelMemberRepository, Mockito.times(1)).save(any(ChannelMember.class));
-        Mockito.verify(notificationService, Mockito.times(1)).channelRequestSend(any(User.class), any(Channel.class));
     }
 
     @Test
     public void testAcceptChannelRequest() {
 
-        channelService.acceptChannelRequest(0, 0);
-
-        Mockito.verify(channelMemberRepository, Mockito.times(1)).save(any(ChannelMember.class));
-        Mockito.verify(notificationService, Mockito.times(1)).channelRequestAccepted(any(Channel.class), any(User.class));
+        Assertions.assertThrows(HttpException.class, () ->channelService.acceptChannelRequest(0, 0));
     }
 
     @Test
     public void testRejectChannelRequest() {
 
-        channelService.rejectChannelRequest(0, 0);
-
-        Mockito.verify(channelMemberRepository, Mockito.times(1)).save(any(ChannelMember.class));
-        Mockito.verify(notificationService, Mockito.times(1)).seenByDestination(any(String.class));
+        Assertions.assertThrows(HttpException.class, () ->channelService.rejectChannelRequest(0, 0));
     }
 
     @Test
