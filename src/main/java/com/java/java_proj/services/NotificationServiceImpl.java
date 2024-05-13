@@ -154,11 +154,6 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public void seenById(Integer id) {
-
-    }
-
-    @Override
     public void seenByDestination(String destination) {
         notificationRepository.seenByDestination(destination);
     }

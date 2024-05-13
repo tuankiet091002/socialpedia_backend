@@ -6,13 +6,14 @@ import com.java.java_proj.dto.request.forupdate.URequestMessageStatus;
 import com.java.java_proj.dto.response.fordetail.DResponseMessage;
 import com.java.java_proj.entities.*;
 import com.java.java_proj.entities.enums.MessageStatusType;
-import com.java.java_proj.entities.enums.RequestType;
 import com.java.java_proj.exceptions.HttpException;
-import com.java.java_proj.repositories.ChannelMemberRepository;
 import com.java.java_proj.repositories.ChannelRepository;
 import com.java.java_proj.repositories.InboxRepository;
 import com.java.java_proj.repositories.MessageRepository;
-import com.java.java_proj.services.templates.*;
+import com.java.java_proj.services.templates.MessageService;
+import com.java.java_proj.services.templates.NotificationService;
+import com.java.java_proj.services.templates.ResourceService;
+import com.java.java_proj.services.templates.UserService;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,24 +34,20 @@ public class MessageServiceImpl implements MessageService {
 
     final private MessageRepository messageRepository;
     final private ChannelRepository channelRepository;
-    final private ChannelMemberRepository channelMemberRepository;
     final private InboxRepository inboxRepository;
     final private ResourceService resourceService;
     final private UserService userService;
     final private NotificationService notificationService;
-    final private ChannelService channelService;
     final private ModelMapper modelMapper;
 
     @Autowired
-    public MessageServiceImpl(MessageRepository messageRepository, ChannelRepository channelRepository, ChannelMemberRepository channelMemberRepository, InboxRepository inboxRepository, ResourceService resourceService, UserService userService, NotificationService notificationService, ChannelService channelService, ModelMapper modelMapper) {
+    public MessageServiceImpl(MessageRepository messageRepository, ChannelRepository channelRepository, InboxRepository inboxRepository, ResourceService resourceService, UserService userService, NotificationService notificationService, ModelMapper modelMapper) {
         this.messageRepository = messageRepository;
         this.channelRepository = channelRepository;
-        this.channelMemberRepository = channelMemberRepository;
         this.inboxRepository = inboxRepository;
         this.resourceService = resourceService;
         this.userService = userService;
         this.notificationService = notificationService;
-        this.channelService = channelService;
         this.modelMapper = modelMapper;
     }
 
@@ -213,26 +210,6 @@ public class MessageServiceImpl implements MessageService {
         message.setModifiedDate(LocalDateTime.now());
 
         messageRepository.save(message);
-    }
-
-    @Override
-    @Transactional
-    public void seeChannelMessage(Integer channelId, Integer messageId, Integer ownerId) {
-
-        // check message
-        Message message = messageRepository.findById(messageId)
-                .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Message not found."));
-
-        // check if message belong to that location
-        if (messageRepository.countByLocation(message, channelId) == 0)
-            throw new HttpException(HttpStatus.FORBIDDEN, "Message don't belong to that location.");
-
-        // check channel and member
-        ChannelMember channelMember = channelService.findMemberRequest(channelId, ownerId);
-        if (channelMember.getStatus() != RequestType.ACCEPTED)
-            throw new HttpException(HttpStatus.BAD_REQUEST, "Membership is invalid.");
-
-        channelMemberRepository.save(channelMember);
     }
 
     @Override
