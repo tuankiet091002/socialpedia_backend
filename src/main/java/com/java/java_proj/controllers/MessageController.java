@@ -11,6 +11,8 @@ import com.java.java_proj.services.templates.MessageService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Null;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,32 +43,35 @@ public class MessageController {
 
     @GetMapping("/channel/{channelId}")
     @PreAuthorize("hasPermission(#channelId, 'CHANNEL', 'VIEW')")
+    @Cacheable(value="messagePageCache")
     public ResponseEntity<Page<DResponseMessage>> getMessagesFromChannel(@PathVariable Integer channelId,
                                                                          @RequestParam(value = "content", defaultValue = "") String content,
-                                                                         @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
-                                                                         @RequestParam(value = "pageSize", defaultValue = "10") Integer size) {
+                                                                         @RequestParam(value = "pageNo", defaultValue = "0") Integer pageNo,
+                                                                         @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
 
 
-        Page<DResponseMessage> messagePage = messageService.getMessagesFromChannel(channelId, content, page, size);
+        Page<DResponseMessage> messagePage = messageService.getMessagesFromChannel(channelId, content, pageNo, pageSize);
 
         return new ResponseEntity<>(messagePage, HttpStatus.OK);
     }
 
     @GetMapping("/inbox/{inboxId}")
     @PreAuthorize("hasPermission(#inboxId, 'INBOX', 'VIEW')")
+    @Cacheable(value="messagePageCache")
     public ResponseEntity<Page<DResponseMessage>> getMessagesFromInbox(@PathVariable Integer inboxId,
                                                                        @RequestParam(value = "content", defaultValue = "") String content,
-                                                                       @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
-                                                                       @RequestParam(value = "pageSize", defaultValue = "10") Integer size) {
+                                                                       @RequestParam(value = "pageNo", defaultValue = "0") Integer pageNo,
+                                                                       @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
 
 
-        Page<DResponseMessage> messagePage = messageService.getMessagesFromInbox(inboxId, content, page, size);
+        Page<DResponseMessage> messagePage = messageService.getMessagesFromInbox(inboxId, content, pageNo, pageSize);
 
         return new ResponseEntity<>(messagePage, HttpStatus.OK);
     }
 
     @PostMapping("/channel/{channelId}")
     @PreAuthorize("hasPermission(#channelId, 'CHANNEL-MESSAGE', 'CREATE')")
+    @CacheEvict(value="messagePageCache", allEntries = true)
     public ResponseEntity<Null> sendMessageToChannel(@PathVariable Integer channelId, @RequestPart String content, @RequestPart(required = false) List<MultipartFile> files) throws JsonProcessingException {
 
         CRequestMessage requestMessage = objectMapper.readValue(content, CRequestMessage.class);
@@ -94,6 +99,7 @@ public class MessageController {
 
     @PostMapping("/inbox/{inboxId}")
     @PreAuthorize("hasPermission(#inboxId, 'INBOX', 'CREATE')")
+    @CacheEvict(value="messagePageCache", allEntries = true)
     public ResponseEntity<Null> sendMessageToInbox(@PathVariable Integer inboxId, @RequestPart String content,
                                                    @RequestPart(required = false) List<MultipartFile> files) throws JsonProcessingException {
 
@@ -123,6 +129,7 @@ public class MessageController {
     @PutMapping("/{locationId}/content")
     @PreAuthorize("hasPermission(#locationId, 'INBOX', 'CREATE') " +
             " or hasPermission(#locationId, 'CHANNEL-MESSAGE', 'CREATE')")
+    @CacheEvict(value="messagePageCache", allEntries = true)
     public ResponseEntity<Null> updateMessageContent(@PathVariable Integer locationId,
                                                      @Valid @RequestBody URequestMessageProfile requestMessage,
                                                      BindingResult bindingResult) {
@@ -140,6 +147,7 @@ public class MessageController {
     @PutMapping("/{locationId}/status")
     @PreAuthorize("hasPermission(#locationId, 'INBOX', 'MODIFY') " +
             " or hasPermission(#locationId, 'CHANNEL-MESSAGE', 'MODIFY')")
+    @CacheEvict(value="messagePageCache", allEntries = true)
     public ResponseEntity<Null> updateMessageStatus(@PathVariable Integer locationId,
                                                     @Valid @RequestBody URequestMessageStatus requestMessage,
                                                     BindingResult bindingResult) {
@@ -157,7 +165,7 @@ public class MessageController {
     @DeleteMapping("/{locationId}/{messageId}")
     @PreAuthorize("hasPermission(#locationId, 'INBOX', 'MODIFY') " +
             " or hasPermission(#locationId, 'CHANNEL-MESSAGE', 'MODIFY')")
-    // delete self
+    @CacheEvict(value="messagePageCache", allEntries = true)
     public ResponseEntity<Null> deleteMessage(@PathVariable Integer locationId,
                                               @PathVariable Integer messageId) {
 

@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
 
 import java.io.IOException;
 
@@ -41,6 +42,7 @@ import java.io.IOException;
         bearerFormat = "JWT",
         scheme = "bearer"
 )
+@EnableCaching
 public class JavaProjApplication implements CommandLineRunner {
 
     private final UserPermissionRepository userPermissionRepository;

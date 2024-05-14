@@ -7,6 +7,9 @@ import com.java.java_proj.exceptions.HttpException;
 import com.java.java_proj.services.templates.UserService;
 import jakarta.validation.constraints.Null;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -30,9 +33,10 @@ public class UserController {
 
     @GetMapping("")
     @PreAuthorize("hasPermission('GLOBAL', 'USER', 'VIEW')")
+    @Cacheable(value = "userPageCache")
     public ResponseEntity<Page<LResponseUser>> getUserList(@RequestParam(value = "name", defaultValue = "") String name,
-                                                           @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
-                                                           @RequestParam(value = "pageSize", defaultValue = "10") Integer size,
+                                                           @RequestParam(value = "pageNo", defaultValue = "0") Integer pageNo,
+                                                           @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
                                                            @RequestParam(value = "orderBy", defaultValue = "dob") String orderBy,
                                                            @RequestParam(value = "orderDirection", defaultValue = "DESC") String orderDirection) {
 
@@ -46,7 +50,7 @@ public class UserController {
             throw new HttpException(HttpStatus.BAD_REQUEST, "Sort Direction " + orderDirection + " is illegal!");
         }
 
-        Page<LResponseUser> userPage = userService.getUserList(name, page, size, orderBy, orderDirection);
+        Page<LResponseUser> userPage = userService.getUserList(name, pageNo, pageSize, orderBy, orderDirection);
 
         return new ResponseEntity<>(userPage, new HttpHeaders(), HttpStatus.OK);
     }
@@ -63,6 +67,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
+    @Cacheable(value = "userCache", key = "#userId")
     public ResponseEntity<DResponseUser> getUserProfile(@PathVariable Integer userId) {
 
         DResponseUser user = userService.getUserProfile(userId);
@@ -80,9 +85,9 @@ public class UserController {
 
     @PutMapping("/{userId}/role")
     @PreAuthorize("hasPermission('GLOBAL', 'USER', 'MODIFY')")
+    @CacheEvict(value = "userCache", key = "#userId")
     public ResponseEntity<Null> updateUserRole(@PathVariable Integer userId,
                                                @RequestParam(value = "role") String role) {
-
 
         userService.updateUserRole(userId, role);
 
@@ -91,6 +96,10 @@ public class UserController {
 
     @DeleteMapping("/{userId}")
     @PreAuthorize("hasPermission('GLOBAL', 'USER', 'MODIFY')")
+    @Caching(evict = {
+            @CacheEvict(value = "userCache", key = "#userId"),
+            @CacheEvict(value = "userPageCache", allEntries = true)
+    })
     public ResponseEntity<Null> disableUser(@PathVariable Integer userId) {
 
         userService.disableUser(userId);
