@@ -12,14 +12,15 @@ import com.java.java_proj.dto.response.security.ResponseJwt;
 import com.java.java_proj.dto.response.security.ResponseRefreshToken;
 import com.java.java_proj.entities.User;
 import com.java.java_proj.entities.UserFriendship;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface UserService {
 
-   public User getOwner();
-
-    Page<LResponseUser> getUserList(String name, Integer page, Integer size,
+    public User getOwner();
+    
+    Page<LResponseUser> getUserList(String name, Integer pageNo, Integer pageSize,
                                     String orderBy, String orderDirection);
 
     Page<LResponseUser> getFriendList(String name, Integer page, Integer size);

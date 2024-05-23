@@ -1,5 +1,6 @@
 package com.java.java_proj.services;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.java.java_proj.dto.request.forcreate.CRequestUser;
 import com.java.java_proj.dto.request.forupdate.URequestUserPassword;
 import com.java.java_proj.dto.request.forupdate.URequestUserProfile;
@@ -27,6 +28,7 @@ import com.java.java_proj.util.JwtTokenProvider;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -86,13 +88,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<LResponseUser> getUserList(String name, Integer page, Integer size, String orderBy, String orderDirection) {
+    @Cacheable(value = "userPageCache", key="{#name, #pageNo, #pageSize, #orderBy, #orderDirection}" )
+    public Page<LResponseUser> getUserList(String name, Integer pageNo, Integer pageSize, String orderBy, String orderDirection) {
 
         // if orderBy = role, need to access field of child class (Permission.role)
         Pageable paging = orderDirection.equals("ASC")
-                ? PageRequest.of(page, size, Sort.by(
+                ? PageRequest.of(pageNo, pageSize, Sort.by(
                 Objects.equals(orderBy, "role") ? "role.name" : orderBy).ascending())
-                : PageRequest.of(page, size, Sort.by(
+                : PageRequest.of(pageNo, pageSize, Sort.by(
                 Objects.equals(orderBy, "role") ? "role.name" : orderBy).descending());
 
         return userRepository.findByNameContaining(name, paging).map(user -> modelMapper.map(user, LResponseUser.class));
@@ -111,6 +114,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    @Cacheable(value="userPageCache", key = "#userId")
     public DResponseUser getUserProfile(Integer userId) {
 
         // get raw entity

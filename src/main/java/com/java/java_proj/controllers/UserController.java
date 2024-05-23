@@ -11,6 +11,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/user")
@@ -33,7 +35,6 @@ public class UserController {
 
     @GetMapping("")
     @PreAuthorize("hasPermission('GLOBAL', 'USER', 'VIEW')")
-    @Cacheable(value = "userPageCache")
     public ResponseEntity<Page<LResponseUser>> getUserList(@RequestParam(value = "name", defaultValue = "") String name,
                                                            @RequestParam(value = "pageNo", defaultValue = "0") Integer pageNo,
                                                            @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
@@ -67,7 +68,6 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    @Cacheable(value = "userCache", key = "#userId")
     public ResponseEntity<DResponseUser> getUserProfile(@PathVariable Integer userId) {
 
         DResponseUser user = userService.getUserProfile(userId);

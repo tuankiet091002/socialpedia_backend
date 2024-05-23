@@ -1,5 +1,6 @@
 package com.java.java_proj.dto.response.forlist;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.java.java_proj.dto.response.fordetail.DResponseResource;
 import com.java.java_proj.dto.response.fordetail.DResponseUserPermission;
 import lombok.AllArgsConstructor;
@@ -13,6 +14,10 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Data
 @Builder
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.MINIMAL_CLASS,
+        property = "@class"
+)
 public class LResponseUser {
 
     private Integer id;

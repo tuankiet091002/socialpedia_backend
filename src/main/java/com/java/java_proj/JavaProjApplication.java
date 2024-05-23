@@ -42,7 +42,6 @@ import java.io.IOException;
         bearerFormat = "JWT",
         scheme = "bearer"
 )
-@EnableCaching
 public class JavaProjApplication implements CommandLineRunner {
 
     private final UserPermissionRepository userPermissionRepository;

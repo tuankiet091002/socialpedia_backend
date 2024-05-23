@@ -25,7 +25,6 @@ public class Inbox {
     private Integer id;
 
     @Column(name = "name")
-    @Convert(converter = AttributeEncryptor.class)
     private String name;
 
     @ManyToOne

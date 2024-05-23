@@ -27,7 +27,6 @@ public class User {
     private Integer id;
 
     @Column(name = "name", nullable = false)
-    @Convert(converter = AttributeEncryptor.class)
     private String name;
 
     @Column(name = "email", length = 150, nullable = false, unique = true)
@@ -43,7 +42,6 @@ public class User {
     private UserPermission role;
 
     @Column(name = "phone", nullable = false, unique = true)
-    @Convert(converter = AttributeEncryptor.class)
     private String phone;
 
     @Column(name = "dob", nullable = false, columnDefinition = "DATE")

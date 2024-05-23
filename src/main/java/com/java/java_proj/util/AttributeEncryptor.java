@@ -8,7 +8,9 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
@@ -18,9 +20,10 @@ import java.util.Objects;
 @Converter
 public class AttributeEncryptor implements AttributeConverter<String, String> {
     private static final String AES = "AES";
-    private static final String CIPHER_MODE = "AES/ECB/PKCS5Padding";
+    private static final String CIPHER_MODE = "AES/CBC/PKCS5Padding";
     private static final String KEY_PATH = "spring.security.secret-key";
     private final Key key;
+    private final IvParameterSpec iv = new IvParameterSpec("0123456789101112".getBytes());
 
     public AttributeEncryptor(Environment environment) {
         String secretKey = Objects.requireNonNull(environment.getProperty(KEY_PATH));
@@ -34,10 +37,11 @@ public class AttributeEncryptor implements AttributeConverter<String, String> {
     public String convertToDatabaseColumn(String attribute) {
         try {
             Cipher cipher = Cipher.getInstance(CIPHER_MODE);
-            cipher.init(Cipher.ENCRYPT_MODE, key);
+            cipher.init(Cipher.ENCRYPT_MODE, key, iv);
+
             return Base64.getEncoder().encodeToString(cipher.doFinal(attribute.getBytes()));
         } catch (IllegalBlockSizeException | BadPaddingException | InvalidKeyException | NoSuchAlgorithmException |
-                 NoSuchPaddingException e) {
+                 NoSuchPaddingException | InvalidAlgorithmParameterException e) {
             throw new IllegalStateException(e);
         }
     }
@@ -46,10 +50,10 @@ public class AttributeEncryptor implements AttributeConverter<String, String> {
     public String convertToEntityAttribute(String dbData) {
         try {
             Cipher cipher = Cipher.getInstance(CIPHER_MODE);
-            cipher.init(Cipher.DECRYPT_MODE, key);
+            cipher.init(Cipher.DECRYPT_MODE, key, iv);
             return new String(cipher.doFinal(Base64.getDecoder().decode(dbData)));
-        } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException |
-                 NoSuchPaddingException e) {
+        } catch (IllegalBlockSizeException | BadPaddingException | InvalidKeyException | NoSuchAlgorithmException |
+                 NoSuchPaddingException | InvalidAlgorithmParameterException e) {
             throw new IllegalStateException(e);
         }
     }
