@@ -51,7 +51,7 @@ public class PageDeserializer extends JsonDeserializer<PageImpl<?>> {
             }
         }
 
-        return new PageImpl<>(content, PageRequest.of(pageNumber, pageSize, Sort.by(orderList)), total);
+        return new PageImpl<>((List<?>) content.get(1), PageRequest.of(pageNumber, pageSize, Sort.by(orderList)), total);
     }
 
 }

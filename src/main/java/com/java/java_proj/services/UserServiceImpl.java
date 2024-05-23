@@ -1,6 +1,5 @@
 package com.java.java_proj.services;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.java.java_proj.dto.request.forcreate.CRequestUser;
 import com.java.java_proj.dto.request.forupdate.URequestUserPassword;
 import com.java.java_proj.dto.request.forupdate.URequestUserProfile;
@@ -28,6 +27,7 @@ import com.java.java_proj.util.JwtTokenProvider;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -47,6 +47,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Service
+@CacheConfig(cacheNames = "users")
 public class UserServiceImpl implements UserService {
 
     final private UserRepository userRepository;
@@ -57,13 +58,17 @@ public class UserServiceImpl implements UserService {
     final private JwtTokenProvider tokenProvider;
     final private RefreshTokenService refreshTokenService;
     final private NotificationService notificationService;
+    final private RedisService redisService;
     final private AuthenticationManager authenticationManager;
     final private BCryptPasswordEncoder bCryptPasswordEncoder;
     final private ModelMapper modelMapper;
     final private DateFormatter dateFormatter;
 
+    @jakarta.annotation.Resource
+    private UserService self;
+
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, UserPermissionRepository userPermissionRepository, UserFriendshipRepository userFriendshipRepository, InboxRepository inboxRepository, ResourceService resourceService, JwtTokenProvider tokenProvider, RefreshTokenService refreshTokenService, NotificationService notificationService, AuthenticationManager authenticationManager, BCryptPasswordEncoder bCryptPasswordEncoder, ModelMapper modelMapper, DateFormatter dateFormatter) {
+    public UserServiceImpl(UserRepository userRepository, UserPermissionRepository userPermissionRepository, UserFriendshipRepository userFriendshipRepository, InboxRepository inboxRepository, ResourceService resourceService, JwtTokenProvider tokenProvider, RefreshTokenService refreshTokenService, NotificationService notificationService, RedisService redisService, AuthenticationManager authenticationManager, BCryptPasswordEncoder bCryptPasswordEncoder, ModelMapper modelMapper, DateFormatter dateFormatter) {
         this.userRepository = userRepository;
         this.userPermissionRepository = userPermissionRepository;
         this.userFriendshipRepository = userFriendshipRepository;
@@ -72,6 +77,7 @@ public class UserServiceImpl implements UserService {
         this.tokenProvider = tokenProvider;
         this.refreshTokenService = refreshTokenService;
         this.notificationService = notificationService;
+        this.redisService = redisService;
         this.authenticationManager = authenticationManager;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.modelMapper = modelMapper;
@@ -88,7 +94,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Cacheable(value = "userPageCache", key="{#name, #pageNo, #pageSize, #orderBy, #orderDirection}" )
+    @Cacheable(key = "'page-' + {#pageNo, #pageSize, #orderBy, #orderDirection}", condition = "#name.isEmpty()")
     public Page<LResponseUser> getUserList(String name, Integer pageNo, Integer pageSize, String orderBy, String orderDirection) {
 
         // if orderBy = role, need to access field of child class (Permission.role)
@@ -102,19 +108,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<LResponseUser> getFriendList(String name, Integer page, Integer size) {
+    public Page<LResponseUser> getFriendList(String name, Integer pageNo, Integer pageSize) {
         // get owner
         User owner = getOwner();
 
         // if orderBy = role, need to access field of child class (Permission.role)
-        Pageable paging = PageRequest.of(page, size);
+        Pageable paging = PageRequest.of(pageNo, pageSize);
 
         return userRepository.findFriendsByName(name, owner, paging).map(user -> modelMapper.map(user, LResponseUser.class));
     }
 
     @Override
+    @Cacheable(key = "#userId")
     @Transactional
-    @Cacheable(value="userPageCache", key = "#userId")
     public DResponseUser getUserProfile(Integer userId) {
 
         // get raw entity
@@ -217,7 +223,7 @@ public class UserServiceImpl implements UserService {
         ResponseJwt response = new ResponseJwt();
         response.setToken(tokenProvider.generateToken((CustomUserDetail) authentication.getPrincipal()));
         response.setRefreshToken(refreshTokenService.createToken(user.getEmail()).getToken());
-        response.setUser(getUserProfile(user.getId()));
+        response.setUser(self.getUserProfile(user.getId()));
 
         return response;
     }
@@ -265,6 +271,10 @@ public class UserServiceImpl implements UserService {
         user.setModifiedDate(LocalDateTime.now());
 
         userRepository.save(user);
+
+        // evict personal and global cache
+        redisService.evictKey("users", getOwner().getId().toString());
+        redisService.evictKeysByPrefix("users", "page-");
     }
 
     @Override
@@ -280,6 +290,9 @@ public class UserServiceImpl implements UserService {
             throw new HttpException(HttpStatus.NOT_FOUND, "Role not found.");
         }
         user.setRole(newRole);
+
+        // evict global cache only
+        redisService.evictKeysByPrefix("users", "page-");
 
         userRepository.save(user);
     }
@@ -318,6 +331,10 @@ public class UserServiceImpl implements UserService {
 
         if (oldResource != null)
             resourceService.deleteFile(oldResource);
+
+        // evict personal and global cache
+        redisService.evictKey("users", user.getId().toString());
+        redisService.evictKeysByPrefix("users", "page-");
     }
 
     @Override
@@ -330,6 +347,9 @@ public class UserServiceImpl implements UserService {
         user.setIsActive(false);
 
         userRepository.save(user);
+
+        // evict global cache
+        redisService.evictKeysByPrefix("users", "page-");
     }
 
     @Override

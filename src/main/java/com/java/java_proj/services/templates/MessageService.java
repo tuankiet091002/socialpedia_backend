@@ -8,9 +8,9 @@ import org.springframework.data.domain.Page;
 
 public interface MessageService {
 
-    public Page<DResponseMessage> getMessagesFromChannel(Integer channelId, String content, Integer page, Integer size);
+    public Page<DResponseMessage> getMessagesFromChannel(Integer channelId, String content, Integer pageNo, Integer pageSize);
 
-    public Page<DResponseMessage> getMessagesFromInbox(Integer inboxId, String content, Integer page, Integer size);
+    public Page<DResponseMessage> getMessagesFromInbox(Integer inboxId, String content, Integer pageNo, Integer pageSize);
 
     public void sendMessageToChannel(Integer locationId, CRequestMessage requestMessage);
 

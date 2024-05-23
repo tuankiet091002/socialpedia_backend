@@ -12,10 +12,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface ChannelService {
 
-    Page<LResponseChatSpace> getChannelList(String name, Integer page, Integer size,
+    Page<LResponseChatSpace> getChannelList(String name, Integer pageNo, Integer pageSize,
                                             String orderBy, String orderDirection);
 
-    Page<LResponseChatSpace> getPersonalChannelList(String name, Integer page, Integer size);
+    Page<LResponseChatSpace> getPersonalChannelList(String name, Integer pageNo, Integer pageSize);
 
     DResponseChannel getChannelProfile(Integer channelId);
 

@@ -17,6 +17,8 @@ import com.java.java_proj.services.templates.UserService;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +32,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
+@CacheConfig(cacheNames = "messages")
 public class MessageServiceImpl implements MessageService {
 
     final private MessageRepository messageRepository;
@@ -38,28 +41,31 @@ public class MessageServiceImpl implements MessageService {
     final private ResourceService resourceService;
     final private UserService userService;
     final private NotificationService notificationService;
+    final private RedisService redisService;
     final private ModelMapper modelMapper;
 
     @Autowired
-    public MessageServiceImpl(MessageRepository messageRepository, ChannelRepository channelRepository, InboxRepository inboxRepository, ResourceService resourceService, UserService userService, NotificationService notificationService, ModelMapper modelMapper) {
+    public MessageServiceImpl(MessageRepository messageRepository, ChannelRepository channelRepository, InboxRepository inboxRepository, ResourceService resourceService, UserService userService, NotificationService notificationService, RedisService redisService, ModelMapper modelMapper) {
         this.messageRepository = messageRepository;
         this.channelRepository = channelRepository;
         this.inboxRepository = inboxRepository;
         this.resourceService = resourceService;
         this.userService = userService;
         this.notificationService = notificationService;
+        this.redisService = redisService;
         this.modelMapper = modelMapper;
     }
 
     @Override
+    @Cacheable(key = "'group-' + channelId + '-' + {#pageNo, #pageSize}")
     @Transactional
-    public Page<DResponseMessage> getMessagesFromChannel(Integer channelId, String content, Integer page, Integer size) {
+    public Page<DResponseMessage> getMessagesFromChannel(Integer channelId, String content, Integer pageNo, Integer pageSize) {
 
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Channel not found."));
 
         // create pageable
-        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by("id").descending());
 
         // fetch entity page
         Page<Message> messagePage = messageRepository.findByChannel(content, channel, pageable);
@@ -68,14 +74,15 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
+    @Cacheable(key = "'group-' + inboxId + '-' + {#pageNo, #pageSize}")
     @Transactional
-    public Page<DResponseMessage> getMessagesFromInbox(Integer inboxId, String content, Integer page, Integer size) {
+    public Page<DResponseMessage> getMessagesFromInbox(Integer inboxId, String content, Integer pageNo, Integer pageSize) {
 
         Inbox inbox = inboxRepository.findById(inboxId)
                 .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Inbox not found."));
 
         // create pageable
-        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by("id").descending());
 
         // fetch entity page
         Page<Message> messagePage = messageRepository.findByInbox(content, inbox, pageable);
@@ -117,6 +124,9 @@ public class MessageServiceImpl implements MessageService {
 
         // create notification and send socket message
         notificationService.messageToChannel(locationId);
+
+        // evict message group
+        redisService.evictKeysByPrefix("messages", "group-" + locationId);
     }
 
     @Override
@@ -153,6 +163,9 @@ public class MessageServiceImpl implements MessageService {
 
         // create notification and send socket message
         notificationService.messageToInbox(locationId);
+
+        // evict message group
+        redisService.evictKeysByPrefix("messages", "group-" + locationId);
     }
 
     @Override
@@ -177,6 +190,9 @@ public class MessageServiceImpl implements MessageService {
         message.setModifiedDate(LocalDateTime.now());
 
         messageRepository.save(message);
+
+        // evict message group
+        redisService.evictKeysByPrefix("messages", "group-" + locationId);
     }
 
     @Override
@@ -194,6 +210,9 @@ public class MessageServiceImpl implements MessageService {
         message.setModifiedDate(LocalDateTime.now());
 
         messageRepository.save(message);
+
+        // evict message group
+        redisService.evictKeysByPrefix("messages", "group-" + locationId);
     }
 
     @Override
@@ -210,6 +229,9 @@ public class MessageServiceImpl implements MessageService {
         message.setModifiedDate(LocalDateTime.now());
 
         messageRepository.save(message);
+
+        // evict message group
+        redisService.evictKeysByPrefix("messages", "group-" + locationId);
     }
 
     @Override
@@ -239,6 +261,9 @@ public class MessageServiceImpl implements MessageService {
 
         // set inbox
         inboxRepository.save(inbox);
+
+        // evict message group
+        redisService.evictKeysByPrefix("messages", "group-" + inboxId);
     }
 
     private Page<DResponseMessage> mapToDTO(Page<Message> messagePage) {

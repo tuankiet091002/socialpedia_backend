@@ -7,11 +7,7 @@ import com.java.java_proj.exceptions.HttpException;
 import com.java.java_proj.services.templates.UserService;
 import jakarta.validation.constraints.Null;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 @RestController
 @RequestMapping("/user")
@@ -85,7 +80,6 @@ public class UserController {
 
     @PutMapping("/{userId}/role")
     @PreAuthorize("hasPermission('GLOBAL', 'USER', 'MODIFY')")
-    @CacheEvict(value = "userCache", key = "#userId")
     public ResponseEntity<Null> updateUserRole(@PathVariable Integer userId,
                                                @RequestParam(value = "role") String role) {
 
@@ -96,10 +90,6 @@ public class UserController {
 
     @DeleteMapping("/{userId}")
     @PreAuthorize("hasPermission('GLOBAL', 'USER', 'MODIFY')")
-    @Caching(evict = {
-            @CacheEvict(value = "userCache", key = "#userId"),
-            @CacheEvict(value = "userPageCache", allEntries = true)
-    })
     public ResponseEntity<Null> disableUser(@PathVariable Integer userId) {
 
         userService.disableUser(userId);

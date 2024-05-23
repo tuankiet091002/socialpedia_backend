@@ -22,7 +22,8 @@ import com.java.java_proj.services.templates.ResourceService;
 import com.java.java_proj.services.templates.UserService;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.convention.MatchingStrategies;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -36,6 +37,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Service
+@CacheConfig(cacheNames = "channels")
 public class ChannelServiceImpl implements ChannelService {
 
     final private ChannelRepository channelRepository;
@@ -44,28 +46,31 @@ public class ChannelServiceImpl implements ChannelService {
     final private MessageRepository messageRepository;
     final private ResourceService resourceService;
     final private NotificationService notificationService;
+    final private RedisService redisService;
     final private UserService userService;
     final private ModelMapper modelMapper;
 
-    public ChannelServiceImpl(ChannelRepository channelRepository, ChannelMemberRepository channelMemberRepository, UserRepository userRepository, MessageRepository messageRepository, ResourceService resourceService, NotificationService notificationService, UserService userService, ModelMapper modelMapper) {
+    public ChannelServiceImpl(ChannelRepository channelRepository, ChannelMemberRepository channelMemberRepository, UserRepository userRepository, MessageRepository messageRepository, ResourceService resourceService, NotificationService notificationService, RedisService redisService, UserService userService, ModelMapper modelMapper) {
         this.channelRepository = channelRepository;
         this.channelMemberRepository = channelMemberRepository;
         this.userRepository = userRepository;
         this.messageRepository = messageRepository;
         this.resourceService = resourceService;
         this.notificationService = notificationService;
+        this.redisService = redisService;
         this.userService = userService;
         this.modelMapper = modelMapper;
     }
 
     @Override
-    public Page<LResponseChatSpace> getChannelList(String name, Integer page, Integer size, String orderBy, String orderDirection) {
+    @Cacheable(key = "'page-' + {#pageNo, #pageSize, #orderBy, #orderDirection}", condition = "#name.isEmpty()")
+    public Page<LResponseChatSpace> getChannelList(String name, Integer pageNo, Integer pageSize, String orderBy, String orderDirection) {
 
         // create pageable
         Pageable paging = orderDirection.equals("ASC")
-                ? PageRequest.of(page, size, Sort.by(
+                ? PageRequest.of(pageNo, pageSize, Sort.by(
                 Objects.equals(orderBy, "createdBy") ? "createdBy.name" : orderBy).ascending())
-                : PageRequest.of(page, size, Sort.by(
+                : PageRequest.of(pageNo, pageSize, Sort.by(
                 Objects.equals(orderBy, "createdBy") ? "createdBy.name" : orderBy).descending());
 
         // fetch entity page
@@ -114,6 +119,7 @@ public class ChannelServiceImpl implements ChannelService {
     }
 
     @Override
+    @Cacheable(key = "#id")
     public DResponseChannel getChannelProfile(Integer id) {
 
         Channel channel = channelRepository.findOneById(id).orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Channel not found."));
@@ -207,6 +213,10 @@ public class ChannelServiceImpl implements ChannelService {
         channel.setModifiedDate(LocalDateTime.now());
 
         channelRepository.save(channel);
+
+        // evict personal and global cache
+        redisService.evictKey("channels", channelId.toString());
+        redisService.evictKeysByPrefix("channels", "page-");
     }
 
     @Override
@@ -232,6 +242,10 @@ public class ChannelServiceImpl implements ChannelService {
 
         if (oldResource != null)
             resourceService.deleteFile(oldResource);
+
+        // evict personal and global cache
+        redisService.evictKey("channels", channelId.toString());
+        redisService.evictKeysByPrefix("channels", "page-");
     }
 
     @Override
@@ -247,6 +261,9 @@ public class ChannelServiceImpl implements ChannelService {
         channel.setModifiedDate(LocalDateTime.now());
 
         channelRepository.save(channel);
+
+        // evict global cache
+        redisService.evictKeysByPrefix("channels", "page-");
     }
 
     @Override
@@ -299,6 +316,10 @@ public class ChannelServiceImpl implements ChannelService {
 
         // create notification and send socket message
         notificationService.channelRequestAccepted(channelMember.getChannel(), channelMember.getMember());
+
+        // evict personal and global cache
+        redisService.evictKey("channels", channelId.toString());
+        redisService.evictKeysByPrefix("channels", "page-");
     }
 
     @Override
@@ -332,6 +353,9 @@ public class ChannelServiceImpl implements ChannelService {
         channelMember.setMemberPermission(requestChannel.getMemberPermission());
 
         channelMemberRepository.save(channelMember);
+
+        // evict personal cache
+        redisService.evictKey("channels", channelId.toString());
     }
 
     @Override
@@ -346,6 +370,9 @@ public class ChannelServiceImpl implements ChannelService {
         channelMember.setStatus(RequestType.REJECTED);
 
         channelMemberRepository.save(channelMember);
+
+        // evict personal and global cache
+        redisService.evictKeysByPrefix("channels", "page-");
     }
 
     @Override

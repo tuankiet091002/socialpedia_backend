@@ -13,9 +13,6 @@ import com.java.java_proj.services.templates.ChannelService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Null;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -48,7 +45,6 @@ public class ChannelController {
 
     @GetMapping("")
     @PreAuthorize("hasPermission('GLOBAL', 'CHANNEL', 'VIEW')")
-    @Cacheable(value = "channelPageCache")
     public ResponseEntity<Page<LResponseChatSpace>> getChannelList(
             @RequestParam(value = "name", defaultValue = "") String name,
             @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
@@ -83,7 +79,6 @@ public class ChannelController {
     }
 
     @GetMapping("/{channelId}")
-    @Cacheable(value = "channelCache", key = "#channelId")
     public ResponseEntity<DResponseChannel> getChannelProfile(@PathVariable Integer channelId) {
 
         DResponseChannel channel = channelService.getChannelProfile(channelId);
@@ -100,7 +95,6 @@ public class ChannelController {
     }
 
     @PostMapping("")
-    @CacheEvict(value = "channelPageCache", allEntries = true)
     public ResponseEntity<Null> createChannel(@RequestPart String content,
                                               @RequestPart(required = false) MultipartFile file) throws JsonProcessingException {
 
@@ -127,10 +121,6 @@ public class ChannelController {
 
     @PutMapping("/{channelId}/profile")
     @PreAuthorize("hasPermission(#channelId, 'CHANNEL', 'MODIFY')")
-    @Caching(evict = {
-            @CacheEvict(value = "channelPageCache", allEntries = true),
-            @CacheEvict(value = "channelCache", key = "#channelId")
-    })
     public ResponseEntity<Null> updateChannelProfile(
             @PathVariable Integer channelId,
             @Valid @RequestBody URequestChannel requestChannel, BindingResult bindingResult) {
@@ -147,7 +137,6 @@ public class ChannelController {
 
     @PutMapping("/{channelId}/avatar")
     @PreAuthorize("hasPermission(#channelId, 'CHANNEL', 'MODIFY')")
-    @CacheEvict(value = "channelCache", key = "#channelId")
     public ResponseEntity<Null> updateChannelAvatar(@PathVariable Integer channelId, @RequestPart MultipartFile file) {
 
         channelService.updateChannelAvatar(channelId, file);
@@ -158,10 +147,6 @@ public class ChannelController {
     @DeleteMapping("/{channelId}")
     @PreAuthorize("hasPermission('GLOBAL', 'CHANNEL', 'MODIFY') " +
             "or hasPermission(#channelId, 'CHANNEL', 'MODIFY')")
-    @Caching(evict = {
-            @CacheEvict(value = "channelPageCache", allEntries = true),
-            @CacheEvict(value = "channelCache", key = "#channelId")
-    })
     public ResponseEntity<Null> disableChannel(@PathVariable Integer channelId) {
 
         channelService.disableChannel(channelId);
@@ -199,7 +184,6 @@ public class ChannelController {
 
     @PutMapping("/{channelId}/member/{memberId}")
     @PreAuthorize("hasPermission(#channelId, 'CHANNEL-MEMBER', 'MODIFY')")
-    @CacheEvict(value = "channelCache", key = "#channelId")
     public ResponseEntity<Null> updateMemberPermission(@PathVariable Integer channelId,
                                                        @PathVariable Integer memberId,
                                                        @Valid @RequestBody URequestChannelMember requestChannel,
@@ -218,7 +202,6 @@ public class ChannelController {
 
     @DeleteMapping("/{channelId}/member/leave")
     @PreAuthorize("hasPermission(#channelId, 'CHANNEL-MEMBER', 'SELF')")
-    @CacheEvict(value = "channelCache", key = "#channelId")
     public ResponseEntity<Null> leaveChannel(@PathVariable Integer channelId) {
 
         channelService.leaveChannel(channelId);

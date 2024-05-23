@@ -7,7 +7,7 @@ import org.springframework.data.domain.Page;
 
 public interface InboxService {
 
-    Page<LResponseChatSpace> getInboxList(String name, Integer page, Integer size);
+    Page<LResponseChatSpace> getInboxList(String name, Integer pageNo, Integer pageSize);
 
     DResponseInbox getInboxProfile(Integer inboxId);
 
