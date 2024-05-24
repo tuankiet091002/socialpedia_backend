@@ -2,6 +2,7 @@ package com.java.java_proj.controllers;
 
 import com.java.java_proj.dto.response.forlist.LResponseNotification;
 import com.java.java_proj.services.templates.NotificationService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ public class NotificationController {
 
     final private NotificationService notificationService;
 
+    @Autowired
     public NotificationController(NotificationService notificationService) {
         this.notificationService = notificationService;
     }

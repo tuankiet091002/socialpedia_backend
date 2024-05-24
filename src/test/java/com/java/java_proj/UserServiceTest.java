@@ -209,7 +209,6 @@ public class UserServiceTest {
         DResponseUser user = userService.getUserProfile(0);
 
         Assertions.assertEquals(0, user.getId());
-        Assertions.assertEquals("kiet01@gmail.com", user.getEmail());
         Mockito.verify(userRepository, Mockito.times(1)).findById(eq(0));
     }
 

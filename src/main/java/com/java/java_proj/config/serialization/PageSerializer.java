@@ -1,4 +1,4 @@
-package com.java.java_proj.util.serialization;
+package com.java.java_proj.config.serialization;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;

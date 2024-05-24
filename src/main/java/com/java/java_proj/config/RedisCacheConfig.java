@@ -3,7 +3,7 @@ package com.java.java_proj.config;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.java.java_proj.util.serialization.PageSerializationModule;
+import com.java.java_proj.config.serialization.PageSerializationModule;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

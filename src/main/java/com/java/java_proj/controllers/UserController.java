@@ -33,10 +33,10 @@ public class UserController {
     public ResponseEntity<Page<LResponseUser>> getUserList(@RequestParam(value = "name", defaultValue = "") String name,
                                                            @RequestParam(value = "pageNo", defaultValue = "0") Integer pageNo,
                                                            @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
-                                                           @RequestParam(value = "orderBy", defaultValue = "dob") String orderBy,
+                                                           @RequestParam(value = "orderBy", defaultValue = "name") String orderBy,
                                                            @RequestParam(value = "orderDirection", defaultValue = "DESC") String orderDirection) {
 
-        List<String> allowedFields = Arrays.asList("id", "name", "email", "phone", "dob", "gender", "role");
+        List<String> allowedFields = Arrays.asList("id", "name", "dob", "gender", "role");
         if (!allowedFields.contains(orderBy)) {
             throw new HttpException(HttpStatus.BAD_REQUEST, "Order by column " + orderBy + " is illegal!");
         }

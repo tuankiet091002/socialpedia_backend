@@ -22,7 +22,6 @@ public class UserPermission {
     private Integer id;
 
     @Column(unique = true, nullable = false)
-    @Convert(converter = AttributeEncryptor.class)
     private String name;
 
     @Column(name = "channel_permission")

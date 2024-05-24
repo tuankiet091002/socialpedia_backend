@@ -1,4 +1,4 @@
-package com.java.java_proj.util.serialization;
+package com.java.java_proj.config.serialization;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;

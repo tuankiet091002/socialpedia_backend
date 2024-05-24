@@ -19,8 +19,6 @@ public class DResponseUser {
 
     public String name;
 
-    public String email;
-
     public String phone;
 
     public LocalDate dob;

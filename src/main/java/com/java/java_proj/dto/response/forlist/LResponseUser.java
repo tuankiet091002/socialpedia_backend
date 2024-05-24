@@ -24,8 +24,6 @@ public class LResponseUser {
 
     private String name;
 
-    private String email;
-
     private DResponseResource avatar;
 
     private String phone;
