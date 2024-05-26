@@ -18,6 +18,8 @@ public class DResponseInbox {
 
     private String name;
 
+    private LResponseUserMinimal contactWith;
+
     private DResponseResource avatar;
 
     private LResponseUserMinimal modifiedBy;

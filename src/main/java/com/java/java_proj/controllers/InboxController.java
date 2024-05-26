@@ -55,7 +55,7 @@ public class InboxController {
     }
 
     @PutMapping("/{userId}/profile")
-    @PreAuthorize("hasPermission(#userId, 'USER', 'MODIFIY')")
+//    @PreAuthorize("hasPermission(#userId, 'USER', 'MODIFIY')")
     public ResponseEntity<Null> updateInboxProfile(@PathVariable Integer userId,
                                                    @Valid @RequestBody URequestInbox requestChannel,
                                                    BindingResult bindingResult) {

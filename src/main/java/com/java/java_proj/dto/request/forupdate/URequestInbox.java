@@ -16,7 +16,4 @@ public class URequestInbox {
     @NotBlank(message = "Inbox name is required.")
     private String name;
 
-    @NotNull(message = "Inbox status is required.")
-    private Boolean isActive;
-
 }

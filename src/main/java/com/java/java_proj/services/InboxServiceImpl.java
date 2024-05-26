@@ -95,18 +95,23 @@ public class InboxServiceImpl implements InboxService {
         // map to dto
         DResponseInbox result = modelMapper.map(inbox, DResponseInbox.class);
 
+        boolean ownerIsSender = Objects.equals(inbox.getFriendship().getSender().getId(), userService.getOwner().getId());
+
+        // get contact link
+        result.setContactWith(modelMapper.map(ownerIsSender ?
+                inbox.getFriendship().getReceiver() : inbox.getFriendship().getSender(), LResponseUserMinimal.class));
+
         // get opposite's avatar as inbox's avatar
-        Resource avatar = inbox.getFriendship().getSender() == userService.getOwner() ?
-                inbox.getFriendship().getSender().getAvatar()
-                : inbox.getFriendship().getReceiver().getAvatar();
+        Resource avatar = ownerIsSender ?
+                inbox.getFriendship().getReceiver().getAvatar()
+                : inbox.getFriendship().getSender().getAvatar();
 
         if (avatar != null) {
             result.setAvatar(modelMapper.map(avatar, DResponseResource.class));
         }
 
         // get opposite account's last seen message
-
-        if (inbox.getFriendship().getSender() == userService.getOwner()) {
+        if (ownerIsSender) {
             if (inbox.getReceiverLastSeen() != null)
                 result.setLastSeenMessageId(inbox.getReceiverLastSeen().getId());
         } else {
@@ -142,13 +147,11 @@ public class InboxServiceImpl implements InboxService {
 
     @Override
     public void updateInboxProfile(Integer userId, URequestInbox requestInbox) {
-
         // find active inbox
         Inbox inbox = inboxRepository.findByFriendshipAndIsActive(userService.findFriendship(userId), true)
                 .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Inbox not found."));
 
         inbox.setName(requestInbox.getName());
-        inbox.setIsActive(requestInbox.getIsActive());
 
         inboxRepository.save(inbox);
     }
