@@ -5,17 +5,17 @@ import com.java.java_proj.dto.request.forupdate.URequestChannel;
 import com.java.java_proj.dto.request.forupdate.URequestChannelMember;
 import com.java.java_proj.dto.response.fordetail.DResponseChannel;
 import com.java.java_proj.dto.response.fordetail.DResponseChannelMember;
-import com.java.java_proj.dto.response.forlist.LResponseChatSpace;
+import com.java.java_proj.dto.response.forlist.LResponseChannel;
 import com.java.java_proj.entities.ChannelMember;
 import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface ChannelService {
 
-    Page<LResponseChatSpace> getChannelList(String name, Integer pageNo, Integer pageSize,
-                                            String orderBy, String orderDirection);
+    Page<LResponseChannel> getChannelList(String name, Integer pageNo, Integer pageSize,
+                                          String orderBy, String orderDirection);
 
-    Page<LResponseChatSpace> getPersonalChannelList(String name, Integer pageNo, Integer pageSize);
+    Page<LResponseChannel> getPersonalChannelList(String name, Integer pageNo, Integer pageSize);
 
     DResponseChannel getChannelProfile(Integer channelId);
 

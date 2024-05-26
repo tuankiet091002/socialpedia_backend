@@ -4,7 +4,7 @@ import com.java.java_proj.dto.request.forcreate.CRequestChannel;
 import com.java.java_proj.dto.request.forupdate.URequestChannel;
 import com.java.java_proj.dto.request.forupdate.URequestChannelMember;
 import com.java.java_proj.dto.response.fordetail.DResponseChannel;
-import com.java.java_proj.dto.response.forlist.LResponseChatSpace;
+import com.java.java_proj.dto.response.forlist.LResponseChannel;
 import com.java.java_proj.entities.*;
 import com.java.java_proj.entities.enums.PermissionAccessType;
 import com.java.java_proj.entities.enums.RequestType;
@@ -146,7 +146,7 @@ public class ChannelServiceTest {
     @Test
     public void testGetChannelList() {
 
-        Page<LResponseChatSpace> channelPage = channelService.getChannelList("", 0, 10, "id", "DESC");
+        Page<LResponseChannel> channelPage = channelService.getChannelList("", 0, 10, "id", "DESC");
 
         Assertions.assertEquals(10, channelPage.getContent().size());
         Mockito.verify(channelRepository, Mockito.times(1)).findByNameContaining(any(String.class), any(Pageable.class));
@@ -157,7 +157,7 @@ public class ChannelServiceTest {
     @Test
     public void testGetPersonalChannelList() {
 
-        Page<LResponseChatSpace> channelPage = channelService.getPersonalChannelList("", 0, 10);
+        Page<LResponseChannel> channelPage = channelService.getPersonalChannelList("", 0, 10);
 
         Assertions.assertEquals(10, channelPage.getContent().size());
         Mockito.verify(channelRepository, Mockito.times(1)).findPersonalChannelList(any(String.class), any(User.class), any(Pageable.class));

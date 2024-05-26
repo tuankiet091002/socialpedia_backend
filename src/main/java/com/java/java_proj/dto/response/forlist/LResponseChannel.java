@@ -6,15 +6,27 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @Builder
-public class LResponseUserMinimal {
+public class LResponseChannel {
 
     private Integer id;
 
     private String name;
 
     private DResponseResource avatar;
+
+    private Integer memberNum;
+
+    private LResponseMessage latestMessage;
+
+    private LResponseUserMinimal createdBy;
+
+    private LocalDateTime createdDate;
+
+    private LocalDateTime modifiedDate;
 }

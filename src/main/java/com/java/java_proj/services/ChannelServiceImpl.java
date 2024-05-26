@@ -6,7 +6,7 @@ import com.java.java_proj.dto.request.forupdate.URequestChannel;
 import com.java.java_proj.dto.request.forupdate.URequestChannelMember;
 import com.java.java_proj.dto.response.fordetail.DResponseChannel;
 import com.java.java_proj.dto.response.fordetail.DResponseChannelMember;
-import com.java.java_proj.dto.response.forlist.LResponseChatSpace;
+import com.java.java_proj.dto.response.forlist.LResponseChannel;
 import com.java.java_proj.dto.response.forlist.LResponseMessage;
 import com.java.java_proj.entities.*;
 import com.java.java_proj.entities.enums.PermissionAccessType;
@@ -32,6 +32,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -64,7 +65,7 @@ public class ChannelServiceImpl implements ChannelService {
 
     @Override
     @Cacheable(key = "'page-' + {#pageNo, #pageSize, #orderBy, #orderDirection}", condition = "#name.isEmpty()")
-    public Page<LResponseChatSpace> getChannelList(String name, Integer pageNo, Integer pageSize, String orderBy, String orderDirection) {
+    public Page<LResponseChannel> getChannelList(String name, Integer pageNo, Integer pageSize, String orderBy, String orderDirection) {
 
         // create pageable
         Pageable paging = orderDirection.equals("ASC")
@@ -79,7 +80,7 @@ public class ChannelServiceImpl implements ChannelService {
         // map to dto
         return channelPage.map(entity -> {
             // map to dto
-            LResponseChatSpace channel = modelMapper.map(entity, LResponseChatSpace.class);
+            LResponseChannel channel = modelMapper.map(entity, LResponseChannel.class);
 
             // fetch member number
             channel.setMemberNum(channelMemberRepository.countByChannel(entity));
@@ -89,7 +90,7 @@ public class ChannelServiceImpl implements ChannelService {
     }
 
     @Override
-    public Page<LResponseChatSpace> getPersonalChannelList(String name, Integer page, Integer size) {
+    public Page<LResponseChannel> getPersonalChannelList(String name, Integer page, Integer size) {
 
         // fetch user
         User user = userService.getOwner();
@@ -104,7 +105,7 @@ public class ChannelServiceImpl implements ChannelService {
         return channelPage.map(entity -> {
 
             // map to dto
-            LResponseChatSpace channel = modelMapper.map(entity, LResponseChatSpace.class);
+            LResponseChannel channel = modelMapper.map(entity, LResponseChannel.class);
 
             // fetch top message and skip the pageable part
             List<Message> messageList = messageRepository.findByChannel("", entity,
@@ -128,6 +129,7 @@ public class ChannelServiceImpl implements ChannelService {
     }
 
     @Override
+    @Transactional
     public DResponseChannelMember getChannelRelation(Integer channelId) {
 
         // fetch user
@@ -156,6 +158,7 @@ public class ChannelServiceImpl implements ChannelService {
         // set normal field
         channel.setCreatedBy(owner);
         channel.setCreatedDate(LocalDateTime.now());
+        channel.setModifiedDate(LocalDateTime.now());
         channel.setIsActive(true);
 
         // avatar file check
@@ -292,6 +295,7 @@ public class ChannelServiceImpl implements ChannelService {
                     .channelPermission(PermissionAccessType.VIEW)
                     .memberPermission(PermissionAccessType.VIEW)
                     .messagePermission(PermissionAccessType.CREATE)
+                    .joinedDate(LocalDate .now())
                     .build());
         channelMember.setStatus(RequestType.PENDING);
 

@@ -2,7 +2,8 @@ package com.java.java_proj.controllers;
 
 import com.java.java_proj.dto.request.forupdate.URequestInbox;
 import com.java.java_proj.dto.response.fordetail.DResponseInbox;
-import com.java.java_proj.dto.response.forlist.LResponseChatSpace;
+import com.java.java_proj.dto.response.forlist.LResponseChannel;
+import com.java.java_proj.dto.response.forlist.LResponseInbox;
 import com.java.java_proj.exceptions.HttpException;
 import com.java.java_proj.services.templates.InboxService;
 import jakarta.validation.Valid;
@@ -28,11 +29,11 @@ public class InboxController {
     }
 
     @GetMapping("")
-    public ResponseEntity<Page<LResponseChatSpace>> getInboxList(@RequestParam(value = "name", defaultValue = "") String name,
-                                                                 @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
-                                                                 @RequestParam(value = "pageSize", defaultValue = "10") Integer size) {
+    public ResponseEntity<Page<LResponseInbox>> getInboxList(@RequestParam(value = "name", defaultValue = "") String name,
+                                                             @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
+                                                             @RequestParam(value = "pageSize", defaultValue = "10") Integer size) {
 
-        Page<LResponseChatSpace> inboxPage = inboxService.getInboxList(name, page, size);
+        Page<LResponseInbox> inboxPage = inboxService.getInboxList(name, page, size);
 
         return new ResponseEntity<>(inboxPage, new HttpHeaders(), HttpStatus.OK);
     }

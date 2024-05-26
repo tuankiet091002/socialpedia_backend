@@ -64,9 +64,6 @@ public class UserServiceImpl implements UserService {
     final private ModelMapper modelMapper;
     final private DateFormatter dateFormatter;
 
-    @jakarta.annotation.Resource
-    private UserService self;
-
     @Autowired
     public UserServiceImpl(UserRepository userRepository, UserPermissionRepository userPermissionRepository, UserFriendshipRepository userFriendshipRepository, InboxRepository inboxRepository, ResourceService resourceService, JwtTokenProvider tokenProvider, RefreshTokenService refreshTokenService, NotificationService notificationService, RedisService redisService, AuthenticationManager authenticationManager, BCryptPasswordEncoder bCryptPasswordEncoder, ModelMapper modelMapper, DateFormatter dateFormatter) {
         this.userRepository = userRepository;
@@ -223,7 +220,7 @@ public class UserServiceImpl implements UserService {
         ResponseJwt response = new ResponseJwt();
         response.setToken(tokenProvider.generateToken((CustomUserDetail) authentication.getPrincipal()));
         response.setRefreshToken(refreshTokenService.createToken(user.getEmail()).getToken());
-        response.setUser(self.getUserProfile(user.getId()));
+        response.setUser(getUserProfile(user.getId()));
 
         return response;
     }
@@ -283,6 +280,9 @@ public class UserServiceImpl implements UserService {
         // check user
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new HttpException(HttpStatus.BAD_REQUEST, "User not found."));
+
+        if (Objects.equals(user.getId(), getOwner().getId()))
+            throw new HttpException(HttpStatus.BAD_REQUEST, "Can't change your own role.");
 
         // check role
         UserPermission newRole = userPermissionRepository.findByName(role);

@@ -2,9 +2,10 @@ package com.java.java_proj.services;
 
 import com.java.java_proj.dto.request.forupdate.URequestInbox;
 import com.java.java_proj.dto.response.fordetail.DResponseInbox;
-import com.java.java_proj.dto.response.fordetail.DResponseResourceClass;
-import com.java.java_proj.dto.response.forlist.LResponseChatSpace;
+import com.java.java_proj.dto.response.fordetail.DResponseResource;
+import com.java.java_proj.dto.response.forlist.LResponseInbox;
 import com.java.java_proj.dto.response.forlist.LResponseMessage;
+import com.java.java_proj.dto.response.forlist.LResponseUserMinimal;
 import com.java.java_proj.entities.*;
 import com.java.java_proj.exceptions.HttpException;
 import com.java.java_proj.repositories.InboxRepository;
@@ -42,7 +43,7 @@ public class InboxServiceImpl implements InboxService {
 
     @Override
     @Transactional
-    public Page<LResponseChatSpace> getInboxList(String name, Integer page, Integer size) {
+    public Page<LResponseInbox> getInboxList(String name, Integer page, Integer size) {
 
         // create pageable
         Pageable paging = PageRequest.of(page, size);
@@ -54,7 +55,7 @@ public class InboxServiceImpl implements InboxService {
         // map to dto
         return inboxPage.map(entity -> {
             // map to dto
-            LResponseChatSpace inbox = modelMapper.map(entity, LResponseChatSpace.class);
+            LResponseInbox inbox = modelMapper.map(entity, LResponseInbox.class);
 
             // fetch top message and skip the pageable part
             List<Message> messageList = messageRepository.findByInbox("", entity,
@@ -64,13 +65,19 @@ public class InboxServiceImpl implements InboxService {
                 inbox.setLatestMessage(modelMapper.map(messageList.get(0), LResponseMessage.class));
             }
 
+            boolean ownerIsSender = Objects.equals(entity.getFriendship().getSender().getId(), user.getId());
+
+            // get contact link
+            inbox.setContactWith(modelMapper.map(ownerIsSender ?
+                    entity.getFriendship().getReceiver() : entity.getFriendship().getSender(), LResponseUserMinimal.class));
+
             // get opposite's avatar as inbox's avatar
-            Resource avatar = Objects.equals(entity.getFriendship().getSender().getId(), user.getId()) ?
-                    entity.getFriendship().getSender().getAvatar()
-                    : entity.getFriendship().getReceiver().getAvatar();
+            Resource avatar = ownerIsSender ?
+                    entity.getFriendship().getReceiver().getAvatar()
+                    : entity.getFriendship().getSender().getAvatar();
 
             if (avatar != null) {
-                inbox.setAvatar(modelMapper.map(avatar, DResponseResourceClass.class));
+                inbox.setAvatar(modelMapper.map(avatar, DResponseResource.class));
             }
 
             return inbox;
@@ -94,12 +101,18 @@ public class InboxServiceImpl implements InboxService {
                 : inbox.getFriendship().getReceiver().getAvatar();
 
         if (avatar != null) {
-            result.setAvatar(modelMapper.map(avatar, DResponseResourceClass.class));
+            result.setAvatar(modelMapper.map(avatar, DResponseResource.class));
         }
 
         // get opposite account's last seen message
-        result.setLastSeenMessageId(inbox.getFriendship().getSender() == userService.getOwner() ?
-                inbox.getSenderLastSeen().getId() : inbox.getReceiverLastSeen().getId());
+
+        if (inbox.getFriendship().getSender() == userService.getOwner()) {
+            if (inbox.getReceiverLastSeen() != null)
+                result.setLastSeenMessageId(inbox.getReceiverLastSeen().getId());
+        } else {
+            if (inbox.getSenderLastSeen() != null)
+                result.setLastSeenMessageId(inbox.getSenderLastSeen().getId());
+        }
 
         return result;
     }
@@ -117,8 +130,7 @@ public class InboxServiceImpl implements InboxService {
         }
 
         Inbox inbox = Inbox.builder()
-                .name("Chat between " + friendship.getSender().getName() +
-                        " and " + friendship.getReceiver().getName())
+                .name(friendship.getSender().getName() + " -- " + friendship.getReceiver().getName())
                 .friendship(friendship)
                 .senderLastSeen(null)
                 .receiverLastSeen(null)

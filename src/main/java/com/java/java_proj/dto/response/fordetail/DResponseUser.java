@@ -25,7 +25,7 @@ public class DResponseUser {
 
     public Boolean gender;
 
-    public DResponseResourceClass avatar;
+    public DResponseResource avatar;
 
     public LocalDateTime modifiedDate;
 }

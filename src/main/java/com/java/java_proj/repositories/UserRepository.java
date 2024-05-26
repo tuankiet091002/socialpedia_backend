@@ -1,6 +1,5 @@
 package com.java.java_proj.repositories;
 
-import com.java.java_proj.dto.response.forlist.LResponseUser;
 import com.java.java_proj.entities.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,12 +19,13 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     Integer countByPhone(String phone);
 
+    @Query("SELECT u FROM User u WHERE u.name LIKE CONCAT('%',:name, '%') AND u.isActive = true ")
     Page<User> findByNameContaining(String name, Pageable paging);
 
     @Query(value = "SELECT u from User u " +
             "WHERE u IN (SELECT s.receiver FROM UserFriendship s WHERE s.sender = :user AND s.status = 'ACCEPTED')" +
             "OR u IN (SELECT r.sender FROM UserFriendship r WHERE r.receiver = :user AND r.status = 'ACCEPTED')" +
-            "AND u.name LIKE CONCAT('%',:name, '%')")
+            "AND u.name LIKE CONCAT('%',:name, '%') AND u.isActive = TRUE")
     Page<User> findFriendsByName(String name, User user, Pageable paging);
 
     @Query(value = "SELECT u.id from User u " +

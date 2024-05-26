@@ -7,7 +7,7 @@ import com.java.java_proj.dto.request.forupdate.URequestChannel;
 import com.java.java_proj.dto.request.forupdate.URequestChannelMember;
 import com.java.java_proj.dto.response.fordetail.DResponseChannel;
 import com.java.java_proj.dto.response.fordetail.DResponseChannelMember;
-import com.java.java_proj.dto.response.forlist.LResponseChatSpace;
+import com.java.java_proj.dto.response.forlist.LResponseChannel;
 import com.java.java_proj.exceptions.HttpException;
 import com.java.java_proj.services.templates.ChannelService;
 import jakarta.validation.Valid;
@@ -45,14 +45,14 @@ public class ChannelController {
 
     @GetMapping("")
     @PreAuthorize("hasPermission('GLOBAL', 'CHANNEL', 'VIEW')")
-    public ResponseEntity<Page<LResponseChatSpace>> getChannelList(
+    public ResponseEntity<Page<LResponseChannel>> getChannelList(
             @RequestParam(value = "name", defaultValue = "") String name,
             @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
             @RequestParam(value = "pageSize", defaultValue = "10") Integer size,
             @RequestParam(value = "orderBy", defaultValue = "id") String orderBy,
             @RequestParam(value = "orderDirection", defaultValue = "DESC") String orderDirection) {
 
-        List<String> allowedFields = Arrays.asList("id", "name", "createdBy", "createdDate");
+        List<String> allowedFields = Arrays.asList("id", "name", "createdBy", "createdDate", "modifiedDate");
         if (!allowedFields.contains(orderBy)) {
             throw new HttpException(HttpStatus.BAD_REQUEST, "Order by column " + orderBy + " is illegal!");
         }
@@ -62,18 +62,18 @@ public class ChannelController {
             throw new HttpException(HttpStatus.BAD_REQUEST, "Sort Direction " + orderDirection + " is illegal!");
         }
 
-        Page<LResponseChatSpace> channelPage = channelService.getChannelList(name, page, size, orderBy, orderDirection);
+        Page<LResponseChannel> channelPage = channelService.getChannelList(name, page, size, orderBy, orderDirection);
 
         return new ResponseEntity<>(channelPage, new HttpHeaders(), HttpStatus.OK);
     }
 
     @GetMapping("/self")
-    public ResponseEntity<Page<LResponseChatSpace>> getPersonalChannelList(
+    public ResponseEntity<Page<LResponseChannel>> getPersonalChannelList(
             @RequestParam(value = "name", defaultValue = "") String name,
             @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
             @RequestParam(value = "pageSize", defaultValue = "10") Integer size) {
 
-        Page<LResponseChatSpace> channelPage = channelService.getPersonalChannelList(name, page, size);
+        Page<LResponseChannel> channelPage = channelService.getPersonalChannelList(name, page, size);
 
         return new ResponseEntity<>(channelPage, new HttpHeaders(), HttpStatus.OK);
     }

@@ -14,20 +14,21 @@ import com.java.java_proj.services.templates.MessageService;
 import com.java.java_proj.services.templates.NotificationService;
 import com.java.java_proj.services.templates.ResourceService;
 import com.java.java_proj.services.templates.UserService;
+import com.java.java_proj.util.AttributeEncryptor;
 import jakarta.transaction.Transactional;
+import org.checkerframework.checker.units.qual.A;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.core.env.Environment;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -43,9 +44,10 @@ public class MessageServiceImpl implements MessageService {
     final private NotificationService notificationService;
     final private RedisService redisService;
     final private ModelMapper modelMapper;
+    final private AttributeEncryptor attributeEncryptor;
 
     @Autowired
-    public MessageServiceImpl(MessageRepository messageRepository, ChannelRepository channelRepository, InboxRepository inboxRepository, ResourceService resourceService, UserService userService, NotificationService notificationService, RedisService redisService, ModelMapper modelMapper) {
+    public MessageServiceImpl(MessageRepository messageRepository, ChannelRepository channelRepository, InboxRepository inboxRepository, ResourceService resourceService, UserService userService, NotificationService notificationService, RedisService redisService, ModelMapper modelMapper, Environment environment) {
         this.messageRepository = messageRepository;
         this.channelRepository = channelRepository;
         this.inboxRepository = inboxRepository;
@@ -54,40 +56,63 @@ public class MessageServiceImpl implements MessageService {
         this.notificationService = notificationService;
         this.redisService = redisService;
         this.modelMapper = modelMapper;
+        this.attributeEncryptor = new AttributeEncryptor(environment);
     }
 
     @Override
-    @Cacheable(key = "'group-' + channelId + '-' + {#pageNo, #pageSize}")
+    @Cacheable(key = "'group-' + #channelId + '-' + {#content, #pageNo, #pageSize}")
     @Transactional
     public Page<DResponseMessage> getMessagesFromChannel(Integer channelId, String content, Integer pageNo, Integer pageSize) {
 
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Channel not found."));
 
-        // create pageable
-        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by("id").descending());
-
         // fetch entity page
-        Page<Message> messagePage = messageRepository.findByChannel(content, channel, pageable);
+        Sort sort = Sort.by("id").descending();
+        List<Message> fullMessageList = messageRepository.findAllByChannel(channel, sort);
+        fullMessageList = fullMessageList.stream()
+                .filter(m -> attributeEncryptor.convertToEntityAttribute(m.getContent()).contains(content))
+                .toList();
 
-        return mapToDTO(messagePage);
+        int fromIndex = pageNo * pageSize, toIndex = (pageNo + 1) * pageSize, size = fullMessageList.size();
+       
+        if (fromIndex < size)
+            fullMessageList = fullMessageList.subList(fromIndex, Math.min(toIndex, size));
+        else
+            fullMessageList = new ArrayList<>();
+
+        // create pageable
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+
+        return mapToDTO(new PageImpl<>(fullMessageList, pageable, fullMessageList.size()));
     }
 
     @Override
-    @Cacheable(key = "'group-' + inboxId + '-' + {#pageNo, #pageSize}")
+    @Cacheable(key = "'group-' + #inboxId + '-' + {#content, #pageNo, #pageSize}")
     @Transactional
     public Page<DResponseMessage> getMessagesFromInbox(Integer inboxId, String content, Integer pageNo, Integer pageSize) {
 
         Inbox inbox = inboxRepository.findById(inboxId)
                 .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Inbox not found."));
 
-        // create pageable
-        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by("id").descending());
 
         // fetch entity page
-        Page<Message> messagePage = messageRepository.findByInbox(content, inbox, pageable);
+        Sort sort = Sort.by("id").descending();
+        List<Message> fullMessageList = messageRepository.findAllByInbox(inbox, sort);
+        fullMessageList = fullMessageList.stream()
+                .filter(m -> attributeEncryptor.convertToEntityAttribute(m.getContent()).contains(content))
+                .toList();
 
-        return mapToDTO(messagePage);
+        int fromIndex = pageNo * pageSize, toIndex = (pageNo + 1) * pageSize, size = fullMessageList.size();
+        if (fromIndex < size)
+            fullMessageList = fullMessageList.subList(fromIndex, Math.min(toIndex, size));
+        else
+            fullMessageList = new ArrayList<>();
+
+        // create pageable
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+
+        return mapToDTO(new PageImpl<>(fullMessageList, pageable, fullMessageList.size()));
     }
 
     @Override

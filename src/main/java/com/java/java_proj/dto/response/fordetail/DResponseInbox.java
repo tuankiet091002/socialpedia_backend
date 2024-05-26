@@ -1,6 +1,6 @@
 package com.java.java_proj.dto.response.fordetail;
 
-import com.java.java_proj.dto.response.forlist.LResponseUserMinimalClass;
+import com.java.java_proj.dto.response.forlist.LResponseUserMinimal;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,9 +18,9 @@ public class DResponseInbox {
 
     private String name;
 
-    private DResponseResourceClass avatar;
+    private DResponseResource avatar;
 
-    private LResponseUserMinimalClass modifiedBy;
+    private LResponseUserMinimal modifiedBy;
 
     private LocalDateTime modifiedDate;
 

@@ -6,15 +6,21 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @Builder
-public class LResponseUserMinimal {
+public class LResponseInbox {
 
     private Integer id;
 
     private String name;
 
     private DResponseResource avatar;
+
+    private LResponseUserMinimal contactWith;
+
+    private LResponseMessage latestMessage;
 }

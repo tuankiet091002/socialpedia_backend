@@ -2,7 +2,8 @@ package com.java.java_proj;
 
 import com.java.java_proj.dto.request.forupdate.URequestInbox;
 import com.java.java_proj.dto.response.fordetail.DResponseInbox;
-import com.java.java_proj.dto.response.forlist.LResponseChatSpace;
+import com.java.java_proj.dto.response.forlist.LResponseChannel;
+import com.java.java_proj.dto.response.forlist.LResponseInbox;
 import com.java.java_proj.entities.*;
 import com.java.java_proj.repositories.InboxRepository;
 import com.java.java_proj.repositories.MessageRepository;
@@ -97,7 +98,7 @@ public class InboxServiceTest {
 
     @Test
     public void testGetInboxList() {
-        Page<LResponseChatSpace> inboxPage = inboxService.getInboxList("", 0, 10);
+        Page<LResponseInbox> inboxPage = inboxService.getInboxList("", 0, 10);
 
         Assertions.assertEquals(10, inboxPage.getContent().size());
         Mockito.verify(userService, Mockito.times(1)).getOwner();
