@@ -129,7 +129,7 @@ public class InboxServiceTest {
     @Test
     public void testUpdateInboxProfile() {
 
-        URequestInbox requestInbox = new URequestInbox("Inbox", true);
+        URequestInbox requestInbox = new URequestInbox("Inbox");
 
         inboxService.updateInboxProfile(0, requestInbox);
 

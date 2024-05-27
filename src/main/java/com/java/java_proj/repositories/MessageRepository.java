@@ -22,8 +22,9 @@ public interface MessageRepository extends JpaRepository<Message, Integer> {
     Page<Message> findByChannel(String content, Channel channel, Pageable pageable);
 
     @Query("SELECT m FROM Message m " +
-            "WHERE m IN (SELECT c.messages FROM Channel c WHERE c = :channel)")
-    List<Message> findAllByChannel(Channel channel, Sort sort);
+            "WHERE m IN (SELECT c.messages FROM Channel c WHERE c = :channel)" +
+            "AND ((:fullFormat = TRUE AND m.replyTo IS NULL) OR (:fullFormat = FALSE))")
+    List<Message> findAllByChannel(Channel channel, Sort sort, boolean fullFormat);
 
     @Query("SELECT m FROM Message m " +
             "WHERE m IN (SELECT i.messages FROM Inbox i WHERE i = :inbox) " +

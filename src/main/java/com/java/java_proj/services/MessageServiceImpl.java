@@ -14,14 +14,11 @@ import com.java.java_proj.services.templates.MessageService;
 import com.java.java_proj.services.templates.NotificationService;
 import com.java.java_proj.services.templates.ResourceService;
 import com.java.java_proj.services.templates.UserService;
-import com.java.java_proj.util.AttributeEncryptor;
 import jakarta.transaction.Transactional;
-import org.checkerframework.checker.units.qual.A;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.core.env.Environment;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -44,10 +41,9 @@ public class MessageServiceImpl implements MessageService {
     final private NotificationService notificationService;
     final private RedisService redisService;
     final private ModelMapper modelMapper;
-    final private AttributeEncryptor attributeEncryptor;
 
     @Autowired
-    public MessageServiceImpl(MessageRepository messageRepository, ChannelRepository channelRepository, InboxRepository inboxRepository, ResourceService resourceService, UserService userService, NotificationService notificationService, RedisService redisService, ModelMapper modelMapper, Environment environment) {
+    public MessageServiceImpl(MessageRepository messageRepository, ChannelRepository channelRepository, InboxRepository inboxRepository, ResourceService resourceService, UserService userService, NotificationService notificationService, RedisService redisService, ModelMapper modelMapper) {
         this.messageRepository = messageRepository;
         this.channelRepository = channelRepository;
         this.inboxRepository = inboxRepository;
@@ -56,11 +52,10 @@ public class MessageServiceImpl implements MessageService {
         this.notificationService = notificationService;
         this.redisService = redisService;
         this.modelMapper = modelMapper;
-        this.attributeEncryptor = new AttributeEncryptor(environment);
     }
 
     @Override
-    @Cacheable(key = "'group-' + #channelId + '-' + {#content, #pageNo, #pageSize}")
+//    @Cacheable(key = "'group-' + #channelId + '-' + {#content, #pageNo, #pageSize}")
     @Transactional
     public Page<DResponseMessage> getMessagesFromChannel(Integer channelId, String content, Integer pageNo, Integer pageSize) {
 
@@ -69,13 +64,20 @@ public class MessageServiceImpl implements MessageService {
 
         // fetch entity page
         Sort sort = Sort.by("id").descending();
-        List<Message> fullMessageList = messageRepository.findAllByChannel(channel, sort);
+        // if content == "", search by normal format (nested replies)
+        boolean fullFormat = content.isEmpty();
+        List<Message> fullMessageList = messageRepository.findAllByChannel(channel, sort, fullFormat);
+        System.out.println(fullMessageList.size());
         fullMessageList = fullMessageList.stream()
-                .filter(m -> attributeEncryptor.convertToEntityAttribute(m.getContent()).contains(content))
+                .filter(m -> m.getContent().toLowerCase().contains(content.toLowerCase()))
+                .peek(m -> {
+                    if (!fullFormat)
+                        m.setReplies(new ArrayList<>());
+                })
                 .toList();
 
         int fromIndex = pageNo * pageSize, toIndex = (pageNo + 1) * pageSize, size = fullMessageList.size();
-       
+
         if (fromIndex < size)
             fullMessageList = fullMessageList.subList(fromIndex, Math.min(toIndex, size));
         else
@@ -100,7 +102,7 @@ public class MessageServiceImpl implements MessageService {
         Sort sort = Sort.by("id").descending();
         List<Message> fullMessageList = messageRepository.findAllByInbox(inbox, sort);
         fullMessageList = fullMessageList.stream()
-                .filter(m -> attributeEncryptor.convertToEntityAttribute(m.getContent()).contains(content))
+                .filter(m -> m.getContent().contains(content))
                 .toList();
 
         int fromIndex = pageNo * pageSize, toIndex = (pageNo + 1) * pageSize, size = fullMessageList.size();
