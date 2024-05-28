@@ -22,7 +22,7 @@ public interface MessageService {
 
     public void deleteMessage(Integer locationId, Integer id);
 
-    public void seeInboxMessage(Integer inboxId, Integer messageId, Integer ownerId);
+    public void seeInboxMessage(Integer inboxId, Integer ownerId);
 
 }
 

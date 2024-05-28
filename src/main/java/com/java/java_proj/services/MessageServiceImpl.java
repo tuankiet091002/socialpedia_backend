@@ -64,10 +64,11 @@ public class MessageServiceImpl implements MessageService {
 
         // fetch entity page
         Sort sort = Sort.by("id").descending();
+
         // if content == "", search by normal format (nested replies)
         boolean fullFormat = content.isEmpty();
         List<Message> fullMessageList = messageRepository.findAllByChannel(channel, sort, fullFormat);
-        System.out.println(fullMessageList.size());
+
         fullMessageList = fullMessageList.stream()
                 .filter(m -> m.getContent().toLowerCase().contains(content.toLowerCase()))
                 .peek(m -> {
@@ -76,6 +77,8 @@ public class MessageServiceImpl implements MessageService {
                 })
                 .toList();
 
+        // get size before slice
+        int totalElement = fullMessageList.size();
         int fromIndex = pageNo * pageSize, toIndex = (pageNo + 1) * pageSize, size = fullMessageList.size();
 
         if (fromIndex < size)
@@ -86,7 +89,7 @@ public class MessageServiceImpl implements MessageService {
         // create pageable
         Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
 
-        return mapToDTO(new PageImpl<>(fullMessageList, pageable, fullMessageList.size()));
+        return mapToDTO(new PageImpl<>(fullMessageList, pageable, totalElement));
     }
 
     @Override
@@ -102,9 +105,11 @@ public class MessageServiceImpl implements MessageService {
         Sort sort = Sort.by("id").descending();
         List<Message> fullMessageList = messageRepository.findAllByInbox(inbox, sort);
         fullMessageList = fullMessageList.stream()
-                .filter(m -> m.getContent().contains(content))
+                .filter(m -> m.getContent().toLowerCase().contains(content.toLowerCase()))
                 .toList();
 
+        // get size before slice
+        int totalElement = fullMessageList.size();
         int fromIndex = pageNo * pageSize, toIndex = (pageNo + 1) * pageSize, size = fullMessageList.size();
         if (fromIndex < size)
             fullMessageList = fullMessageList.subList(fromIndex, Math.min(toIndex, size));
@@ -114,7 +119,7 @@ public class MessageServiceImpl implements MessageService {
         // create pageable
         Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
 
-        return mapToDTO(new PageImpl<>(fullMessageList, pageable, fullMessageList.size()));
+        return mapToDTO(new PageImpl<>(fullMessageList, pageable, totalElement));
     }
 
     @Override
@@ -263,34 +268,34 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     @Transactional
-    public void seeInboxMessage(Integer inboxId, Integer messageId, Integer ownerId) {
-
-        // check message
-        Message message = messageRepository.findById(messageId)
-                .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Message not found."));
-
-        // check if message belong to that location
-        if (messageRepository.countByLocation(message, inboxId) == 0)
-            throw new HttpException(HttpStatus.FORBIDDEN, "Message don't belong to that location.");
+    public void seeInboxMessage(Integer inboxId, Integer ownerId) {
 
         Inbox inbox = inboxRepository.findById(inboxId)
                 .orElseThrow(() -> new HttpException(HttpStatus.BAD_REQUEST, "Inbox not found."));
-        if (!inbox.getIsActive()) throw new HttpException(HttpStatus.BAD_REQUEST, "Invalid inbox");
+        if (!inbox.getIsActive()) return;
 
-        UserFriendship friendship = inbox.getFriendship();
-        if (Objects.equals(friendship.getSender().getId(), ownerId)) {
-            inbox.setSenderLastSeen(message);
-        } else if (Objects.equals(friendship.getReceiver().getId(), ownerId)) {
-            inbox.setReceiverLastSeen(message);
-        } else {
-            throw new HttpException(HttpStatus.BAD_REQUEST, "Not your inbox.");
+        // check message
+        Page<Message> messagePage = messageRepository.findByInbox(inbox, PageRequest.of(0, 1, Sort.by("id").descending()));
+
+        if (!messagePage.isEmpty()) {
+            Message message = messagePage.getContent().get(0);
+
+            // check if message belong to that location
+            if (messageRepository.countByLocation(message, inboxId) == 0)
+                return;
+
+            UserFriendship friendship = inbox.getFriendship();
+            if (Objects.equals(friendship.getSender().getId(), ownerId)) {
+                inbox.setSenderLastSeen(message);
+            } else if (Objects.equals(friendship.getReceiver().getId(), ownerId)) {
+                inbox.setReceiverLastSeen(message);
+            } else {
+                return;
+            }
+
+            // set inbox
+            inboxRepository.save(inbox);
         }
-
-        // set inbox
-        inboxRepository.save(inbox);
-
-        // evict message group
-        redisService.evictKeysByPrefix("messages", "group-" + inboxId);
     }
 
     private Page<DResponseMessage> mapToDTO(Page<Message> messagePage) {

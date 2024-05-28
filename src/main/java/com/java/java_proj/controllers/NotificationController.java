@@ -6,10 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/notification")
@@ -30,5 +27,13 @@ public class NotificationController {
         Page<LResponseNotification> notificationPage = notificationService.getNotificationList(page, size);
 
         return new ResponseEntity<>(notificationPage, HttpStatus.OK);
+    }
+
+    @PutMapping("/seen")
+    public ResponseEntity<Page<LResponseNotification>> seenAllNotification() {
+
+        notificationService.seenAll();
+
+        return new ResponseEntity<>(null, HttpStatus.OK);
     }
 }

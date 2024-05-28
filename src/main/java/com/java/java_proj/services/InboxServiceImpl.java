@@ -58,7 +58,7 @@ public class InboxServiceImpl implements InboxService {
             LResponseInbox inbox = modelMapper.map(entity, LResponseInbox.class);
 
             // fetch top message and skip the pageable part
-            List<Message> messageList = messageRepository.findByInbox("", entity,
+            List<Message> messageList = messageRepository.findByInbox(entity,
                     PageRequest.of(0, 1,
                             Sort.by("id").descending())).getContent();
             if (!messageList.isEmpty()) {

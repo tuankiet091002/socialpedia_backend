@@ -18,8 +18,8 @@ public interface MessageRepository extends JpaRepository<Message, Integer> {
 
     @Query("SELECT m FROM Message m " +
             "WHERE m IN (SELECT c.messages FROM Channel c WHERE c = :channel) " +
-            "AND m.content LIKE CONCAT('%', :content, '%') AND m.replyTo IS null ")
-    Page<Message> findByChannel(String content, Channel channel, Pageable pageable);
+            "AND m.replyTo IS null ")
+    Page<Message> findByChannel(Channel channel, Pageable pageable);
 
     @Query("SELECT m FROM Message m " +
             "WHERE m IN (SELECT c.messages FROM Channel c WHERE c = :channel)" +
@@ -28,8 +28,8 @@ public interface MessageRepository extends JpaRepository<Message, Integer> {
 
     @Query("SELECT m FROM Message m " +
             "WHERE m IN (SELECT i.messages FROM Inbox i WHERE i = :inbox) " +
-            "AND m.content LIKE CONCAT('%', :content, '%') AND m.replyTo IS null ")
-    Page<Message> findByInbox(String content, Inbox inbox, Pageable pageable);
+            "AND m.replyTo IS NULL")
+    Page<Message> findByInbox(Inbox inbox, Pageable pageable);
 
     @Query("SELECT m FROM Message m " +
             "WHERE m IN (SELECT i.messages FROM Inbox i WHERE i = :inbox)")

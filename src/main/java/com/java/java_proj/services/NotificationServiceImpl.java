@@ -154,6 +154,13 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    @Transactional
+    public void seenAll() {
+        User owner = getOwner();
+        notificationRepository.seenByUser(owner);
+    }
+
+    @Override
     public void seenByDestination(String destination) {
         notificationRepository.seenByDestination(destination);
     }

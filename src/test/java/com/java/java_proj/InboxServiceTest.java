@@ -2,9 +2,11 @@ package com.java.java_proj;
 
 import com.java.java_proj.dto.request.forupdate.URequestInbox;
 import com.java.java_proj.dto.response.fordetail.DResponseInbox;
-import com.java.java_proj.dto.response.forlist.LResponseChannel;
 import com.java.java_proj.dto.response.forlist.LResponseInbox;
-import com.java.java_proj.entities.*;
+import com.java.java_proj.entities.Inbox;
+import com.java.java_proj.entities.Message;
+import com.java.java_proj.entities.User;
+import com.java.java_proj.entities.UserFriendship;
 import com.java.java_proj.repositories.InboxRepository;
 import com.java.java_proj.repositories.MessageRepository;
 import com.java.java_proj.services.InboxServiceImpl;
@@ -77,7 +79,7 @@ public class InboxServiceTest {
     public void setMessageRepository() {
         Message message = Message.builder().id(0).build();
 
-        Mockito.when(messageRepository.findByInbox(any(String.class), any(Inbox.class), any(Pageable.class))).thenReturn(new PageImpl<>(List.of(message), PageRequest.of(0, 10), 1));
+        Mockito.when(messageRepository.findByInbox(any(Inbox.class), any(Pageable.class))).thenReturn(new PageImpl<>(List.of(message), PageRequest.of(0, 10), 1));
     }
 
     @BeforeEach
@@ -104,7 +106,7 @@ public class InboxServiceTest {
         Mockito.verify(userService, Mockito.times(1)).getOwner();
         Mockito.verify(inboxRepository, Mockito.times(1)).findByNameAndUser(any(String.class), any(User.class), any(Pageable.class));
         Mockito.verify(modelMapper, Mockito.times(10)).map(any(Inbox.class), any());
-        Mockito.verify(messageRepository, Mockito.times(10)).findByInbox(any(String.class), any(Inbox.class), any(Pageable.class));
+        Mockito.verify(messageRepository, Mockito.times(10)).findByInbox(any(Inbox.class), any(Pageable.class));
     }
 
     @Test

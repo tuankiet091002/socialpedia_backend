@@ -108,7 +108,7 @@ public class ChannelServiceImpl implements ChannelService {
             LResponseChannel channel = modelMapper.map(entity, LResponseChannel.class);
 
             // fetch top message and skip the pageable part
-            List<Message> messageList = messageRepository.findByChannel("", entity,
+            List<Message> messageList = messageRepository.findByChannel(entity,
                             PageRequest.of(0, 1, Sort.by("id").descending()))
                     .getContent();
             if (!messageList.isEmpty()) {
@@ -295,7 +295,7 @@ public class ChannelServiceImpl implements ChannelService {
                     .channelPermission(PermissionAccessType.VIEW)
                     .memberPermission(PermissionAccessType.VIEW)
                     .messagePermission(PermissionAccessType.CREATE)
-                    .joinedDate(LocalDate .now())
+                    .joinedDate(LocalDate.now())
                     .build());
         channelMember.setStatus(RequestType.PENDING);
 

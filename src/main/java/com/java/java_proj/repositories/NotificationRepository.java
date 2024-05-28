@@ -16,6 +16,10 @@ public interface NotificationRepository extends JpaRepository<Notification, Inte
     Page<Notification> findByUserOrderByIdDesc(User user, Pageable pageable);
 
     @Modifying
+    @Query("UPDATE Notification n SET n.type = 2 WHERE n.user = :user")
+    void seenByUser(User user);
+
+    @Modifying
     @Query("UPDATE Notification n SET n.type = 2 WHERE n.user = :user AND n.destination = :destination")
     void seenByUserAndDestination(User user, String destination);
 

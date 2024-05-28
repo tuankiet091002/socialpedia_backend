@@ -107,7 +107,7 @@ public class ChannelServiceTest {
     public void setMessageRepository() {
         Message message = Message.builder().id(0).build();
 
-        Mockito.when(messageRepository.findByChannel(eq(""), any(Channel.class), any(Pageable.class))).thenReturn(new PageImpl<>(List.of(message), PageRequest.of(0, 10), 1));
+        Mockito.when(messageRepository.findByChannel(any(Channel.class), any(Pageable.class))).thenReturn(new PageImpl<>(List.of(message), PageRequest.of(0, 10), 1));
     }
 
     @BeforeEach
@@ -162,7 +162,7 @@ public class ChannelServiceTest {
         Assertions.assertEquals(10, channelPage.getContent().size());
         Mockito.verify(channelRepository, Mockito.times(1)).findPersonalChannelList(any(String.class), any(User.class), any(Pageable.class));
         Mockito.verify(modelMapper, Mockito.times(10)).map(any(Channel.class), any());
-        Mockito.verify(messageRepository, Mockito.times(10)).findByChannel(eq(""), any(Channel.class), any(Pageable.class));
+        Mockito.verify(messageRepository, Mockito.times(10)).findByChannel(any(Channel.class), any(Pageable.class));
     }
 
     @Test
@@ -235,13 +235,13 @@ public class ChannelServiceTest {
     @Test
     public void testAcceptChannelRequest() {
 
-        Assertions.assertThrows(HttpException.class, () ->channelService.acceptChannelRequest(0, 0));
+        Assertions.assertThrows(HttpException.class, () -> channelService.acceptChannelRequest(0, 0));
     }
 
     @Test
     public void testRejectChannelRequest() {
 
-        Assertions.assertThrows(HttpException.class, () ->channelService.rejectChannelRequest(0, 0));
+        Assertions.assertThrows(HttpException.class, () -> channelService.rejectChannelRequest(0, 0));
     }
 
     @Test

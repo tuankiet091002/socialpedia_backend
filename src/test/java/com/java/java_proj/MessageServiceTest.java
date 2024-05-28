@@ -75,8 +75,8 @@ public class MessageServiceTest {
             messages.add(message);
         }
 
-        Mockito.when(messageRepository.findByChannel(any(String.class), any(Channel.class), any(Pageable.class))).thenReturn(new PageImpl<>(messages, pageable, messages.size()));
-        Mockito.when(messageRepository.findByInbox(any(String.class), any(Inbox.class), any(Pageable.class))).thenReturn(new PageImpl<>(messages, pageable, messages.size()));
+        Mockito.when(messageRepository.findByChannel(any(Channel.class), any(Pageable.class))).thenReturn(new PageImpl<>(messages, pageable, messages.size()));
+        Mockito.when(messageRepository.findByInbox(any(Inbox.class), any(Pageable.class))).thenReturn(new PageImpl<>(messages, pageable, messages.size()));
         Mockito.when(messageRepository.findByIdAndChannel(any(Integer.class), any(Channel.class))).thenReturn(Optional.of(messages.get(0)));
         Mockito.when(messageRepository.findByIdAndInbox(any(Integer.class), any(Inbox.class))).thenReturn(Optional.of(messages.get(0)));
         Mockito.when(messageRepository.countByLocation(any(Message.class), any(Integer.class))).thenReturn(1);
@@ -127,7 +127,7 @@ public class MessageServiceTest {
 
         Assertions.assertEquals(10, messages.getContent().size());
         Mockito.verify(channelRepository, Mockito.times(1)).findById(eq(0));
-        Mockito.verify(messageRepository, Mockito.times(1)).findByChannel(eq(""), any(Channel.class), any(Pageable.class));
+        Mockito.verify(messageRepository, Mockito.times(1)).findByChannel(any(Channel.class), any(Pageable.class));
     }
 
     @Test
@@ -137,7 +137,7 @@ public class MessageServiceTest {
 
         Assertions.assertEquals(10, messages.getContent().size());
         Mockito.verify(inboxRepository, Mockito.times(1)).findById(eq(0));
-        Mockito.verify(messageRepository, Mockito.times(1)).findByInbox(eq(""), any(Inbox.class), any(Pageable.class));
+        Mockito.verify(messageRepository, Mockito.times(1)).findByInbox(any(Inbox.class), any(Pageable.class));
     }
 
     @Test
@@ -214,7 +214,7 @@ public class MessageServiceTest {
     @Test
     public void testSeeInboxMessage() {
 
-        messageService.seeInboxMessage(0, 0, 1);
+        messageService.seeInboxMessage(0, 0);
 
         Mockito.verify(messageRepository, Mockito.times(1)).findById(eq(0));
         Mockito.verify(messageRepository, Mockito.times(1)).countByLocation(any(Message.class), eq(0));

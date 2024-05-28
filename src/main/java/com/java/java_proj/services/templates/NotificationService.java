@@ -21,6 +21,8 @@ public interface NotificationService {
 
     public void messageToInbox(Integer inboxId);
 
+    public void seenAll();
+
     public void seenByDestination(String destination);
 
     public void seenByUserAndDestination(User user, String destination);
