@@ -13,6 +13,7 @@ import com.java.java_proj.exceptions.HttpException;
 import com.java.java_proj.repositories.NotificationRepository;
 import com.java.java_proj.services.templates.NotificationService;
 import jakarta.transaction.Transactional;
+import org.hibernate.tool.schema.internal.exec.ScriptTargetOutputToUrl;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -63,8 +64,8 @@ public class NotificationServiceImpl implements NotificationService {
         Notification notification = Notification.builder()
                 .user(target)
                 .avatar(source.getAvatar())
-                .title("Lời mời kết bạn mới")
-                .content(String.format("%s đã gửi cho bạn lời mời kết bạn", source.getName()))
+                .title("New friend request")
+                .content(String.format("%s has sent you a friend request.", source.getName()))
                 .destination("/user/" + source.getId())
                 .type(NotificationType.REQUEST)
                 .createdDate(LocalDateTime.now())
@@ -81,8 +82,8 @@ public class NotificationServiceImpl implements NotificationService {
         Notification notification = Notification.builder()
                 .user(target)
                 .avatar(source.getAvatar())
-                .title("Kết bạn thành công")
-                .content(source.getName() + " đã đồng ý lời mời kết bạn")
+                .title("Friend request accepted")
+                .content(source.getName() + " has accepted your friend request.")
                 .destination("/user/" + source.getId())
                 .type(NotificationType.VIEW)
                 .createdDate(LocalDateTime.now())
@@ -102,6 +103,7 @@ public class NotificationServiceImpl implements NotificationService {
     public void channelRequestSend(User source, Channel channel) {
 
         channel.getChannelMembers().forEach(channelMember -> {
+
             // loop all members with appropriate permission
             if (channelMember.getMemberPermission().getValue() >= PermissionAccessType.CREATE.getValue() && channelMember.getStatus() == RequestType.ACCEPTED) {
 
@@ -109,13 +111,14 @@ public class NotificationServiceImpl implements NotificationService {
                 notificationRepository.save(Notification.builder()
                         .user(channelMember.getMember())
                         .avatar(source.getAvatar())
-                        .title("Có lời mời vào nhóm")
-                        .content(source.getName() + " đã gửi lời mời vào nhóm " + channel.getName() + ".")
+                        .title("Join request")
+                        .content(source.getName() + " want to join " + channel.getName() + ".")
                         .destination("/channel/" + channel.getId() + "/member/" + source.getId())
                         .type(NotificationType.REQUEST)
                         .createdDate(LocalDateTime.now())
                         .build());
 
+                // refresh device notification list
                 messagingTemplate.convertAndSend("/user/" + channelMember.getMember().getId() + "/notification", new SocketMessage());
             }
         });
@@ -127,8 +130,8 @@ public class NotificationServiceImpl implements NotificationService {
         Notification notification = Notification.builder()
                 .user(target)
                 .avatar(channel.getAvatar())
-                .title("Vào nhóm thành công")
-                .content("Yêu cầu tham gia vào nhóm " + channel.getName() + " của bạn đã được đồng ý.")
+                .title("Join request accepted")
+                .content("You are now a member of channel " + channel.getName() + ".")
                 .destination("/channel/" + channel.getId())
                 .type(NotificationType.VIEW)
                 .createdDate(LocalDateTime.now())

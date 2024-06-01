@@ -7,8 +7,6 @@ import com.java.java_proj.exceptions.HttpException;
 import com.java.java_proj.repositories.ChannelMemberRepository;
 import com.java.java_proj.repositories.InboxRepository;
 import com.java.java_proj.repositories.UserRepository;
-import jakarta.transaction.Transactional;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

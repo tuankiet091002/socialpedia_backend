@@ -46,7 +46,7 @@ public class InboxServiceImpl implements InboxService {
     public Page<LResponseInbox> getInboxList(String name, Integer page, Integer size) {
 
         // create pageable
-        Pageable paging = PageRequest.of(page, size);
+        Pageable paging = PageRequest.of(page, size, Sort.by("modifiedDate").descending());
 
         // fetch entity page
         User user = userService.getOwner();

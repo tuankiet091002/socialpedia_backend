@@ -290,7 +290,7 @@ public class ChannelServiceImpl implements ChannelService {
         // fetch channel from id
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Channel not found."));
-
+        System.out.println('a');
         // fetch user from id
         User member = userRepository.findById(userService.getOwner().getId())
                 .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "User not found."));
@@ -309,7 +309,6 @@ public class ChannelServiceImpl implements ChannelService {
                     .channelPermission(PermissionAccessType.VIEW)
                     .memberPermission(PermissionAccessType.VIEW)
                     .messagePermission(PermissionAccessType.CREATE)
-                    .joinedDate(LocalDate.now())
                     .build());
         channelMember.setStatus(RequestType.PENDING);
 
@@ -329,7 +328,11 @@ public class ChannelServiceImpl implements ChannelService {
         if (channelMember.getStatus() != RequestType.PENDING)
             throw new HttpException(HttpStatus.BAD_REQUEST, "Member request is not pending");
         channelMember.setStatus(RequestType.ACCEPTED);
+        channelMember.setJoinedDate(LocalDate.now());
+        channelMember.getChannel().setModifiedBy(userService.getOwner());
+        channelMember.getChannel().setModifiedDate(LocalDateTime.now());
 
+        channelRepository.save(channelMember.getChannel());
         channelMemberRepository.save(channelMember);
 
         // create notification and send socket message
@@ -340,7 +343,7 @@ public class ChannelServiceImpl implements ChannelService {
         redisService.evictKeysByPrefix("channels", "page-");
 
         // send socket message to group member
-        messagingTemplate.convertAndSend("/location/" + channelId, new SocketMessage(
+        messagingTemplate.convertAndSend("/space/" + channelId, new SocketMessage(
                 SocketMessage.MessageType.JOIN,
                 modelMapper.map(channelMember.getMember(), DResponseUser.class)));
     }
@@ -376,7 +379,10 @@ public class ChannelServiceImpl implements ChannelService {
         channelMember.setChannelPermission(requestChannel.getChannelPermission());
         channelMember.setMessagePermission(requestChannel.getMessagePermission());
         channelMember.setMemberPermission(requestChannel.getMemberPermission());
+        channelMember.getChannel().setModifiedBy(userService.getOwner());
+        channelMember.getChannel().setModifiedDate(LocalDateTime.now());
 
+        channelRepository.save(channelMember.getChannel());
         channelMemberRepository.save(channelMember);
 
         // evict personal cache
@@ -392,11 +398,19 @@ public class ChannelServiceImpl implements ChannelService {
         if (channelMember.getStatus() != RequestType.ACCEPTED)
             throw new HttpException(HttpStatus.BAD_REQUEST, "User is not a member.");
         channelMember.setStatus(RequestType.REJECTED);
+        channelMember.getChannel().setModifiedBy(userService.getOwner());
+        channelMember.getChannel().setModifiedDate(LocalDateTime.now());
 
+        channelRepository.save(channelMember.getChannel());
         channelMemberRepository.save(channelMember);
 
         // evict personal cache
         redisService.evictKey("channels", channelId.toString());
+
+        // send notification to group member
+        messagingTemplate.convertAndSend("/space/" + channelId, new SocketMessage(
+                SocketMessage.MessageType.LEAVE,
+                modelMapper.map(channelMember.getMember(), DResponseUser.class)));
     }
 
     @Override
@@ -409,14 +423,17 @@ public class ChannelServiceImpl implements ChannelService {
         if (channelMember.getStatus() != RequestType.ACCEPTED)
             throw new HttpException(HttpStatus.BAD_REQUEST, "User is not a member.");
         channelMember.setStatus(RequestType.REJECTED);
+        channelMember.getChannel().setModifiedDate(LocalDateTime.now());
 
+        channelRepository.save(channelMember.getChannel());
         channelMemberRepository.save(channelMember);
 
         // evict personal and global cache
+        redisService.evictKey("channels", channelId.toString());
         redisService.evictKeysByPrefix("channels", "page-");
 
         // send notification to group member
-        messagingTemplate.convertAndSend("/location/" + channelId + "/notification", new SocketMessage(
+        messagingTemplate.convertAndSend("/space/" + channelId, new SocketMessage(
                 SocketMessage.MessageType.LEAVE,
                 modelMapper.map(channelMember.getMember(), DResponseUser.class)));
     }

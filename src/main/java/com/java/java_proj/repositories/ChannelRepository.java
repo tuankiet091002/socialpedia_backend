@@ -16,11 +16,12 @@ public interface ChannelRepository extends JpaRepository<Channel, Integer> {
 
     Page<Channel> findByNameContaining(String name, Pageable pageable);
 
-    @Query("SELECT m.channel as status FROM ChannelMember m " +
+    @Query("SELECT m.channel FROM ChannelMember m " +
             "WHERE m.member = :user " +
             "AND m.status = 'ACCEPTED' " +
             "AND m.channel.name LIKE CONCAT('%',:name, '%') " +
-            "AND m.channel.isActive = TRUE ")
+            "AND m.channel.isActive = TRUE " +
+            "ORDER BY m.channel.modifiedDate DESC ")
     Page<Channel> findPersonalChannelList(String name, User user, Pageable pageable);
 
     @Query("SELECT c FROM Channel c JOIN FETCH c.channelMembers WHERE c.id = :id AND c.isActive = TRUE")
