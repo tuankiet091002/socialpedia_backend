@@ -45,12 +45,12 @@ public class ChannelController {
 
     @GetMapping("")
     @PreAuthorize("hasPermission('GLOBAL', 'CHANNEL', 'VIEW')")
-    public ResponseEntity<Page<LResponseChannel>> getChannelList(
-            @RequestParam(value = "name", defaultValue = "") String name,
-            @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
-            @RequestParam(value = "pageSize", defaultValue = "10") Integer size,
-            @RequestParam(value = "orderBy", defaultValue = "id") String orderBy,
-            @RequestParam(value = "orderDirection", defaultValue = "DESC") String orderDirection) {
+    public ResponseEntity<Page<LResponseChannel>>
+    getChannelList(@RequestParam(value = "name", defaultValue = "") String name,
+                   @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
+                   @RequestParam(value = "pageSize", defaultValue = "10") Integer size,
+                   @RequestParam(value = "orderBy", defaultValue = "id") String orderBy,
+                   @RequestParam(value = "orderDirection", defaultValue = "DESC") String orderDirection) {
 
         List<String> allowedFields = Arrays.asList("id", "name", "createdBy", "createdDate", "modifiedDate");
         if (!allowedFields.contains(orderBy)) {
@@ -68,10 +68,10 @@ public class ChannelController {
     }
 
     @GetMapping("/self")
-    public ResponseEntity<Page<LResponseChannel>> getPersonalChannelList(
-            @RequestParam(value = "name", defaultValue = "") String name,
-            @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
-            @RequestParam(value = "pageSize", defaultValue = "10") Integer size) {
+    public ResponseEntity<Page<LResponseChannel>>
+    getPersonalChannelList(@RequestParam(value = "name", defaultValue = "") String name,
+                           @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
+                           @RequestParam(value = "pageSize", defaultValue = "10") Integer size) {
 
         Page<LResponseChannel> channelPage = channelService.getPersonalChannelList(name, page, size);
 
@@ -199,8 +199,18 @@ public class ChannelController {
         return new ResponseEntity<>(null, HttpStatus.OK);
     }
 
+    @DeleteMapping("/{channelId}/member/{memberId}")
+    @PreAuthorize("hasPermission(#channelId, 'CHANNEL-MEMBER', 'MODIFY')")
+    public ResponseEntity<Null> kickMember(@PathVariable Integer channelId,
+                                           @PathVariable Integer memberId) {
 
-    @DeleteMapping("/{channelId}/member/leave")
+        channelService.kickMember(channelId, memberId);
+
+        return new ResponseEntity<>(null, HttpStatus.OK);
+    }
+
+
+    @DeleteMapping("/{channelId}/member")
     @PreAuthorize("hasPermission(#channelId, 'CHANNEL-MEMBER', 'SELF')")
     public ResponseEntity<Null> leaveChannel(@PathVariable Integer channelId) {
 

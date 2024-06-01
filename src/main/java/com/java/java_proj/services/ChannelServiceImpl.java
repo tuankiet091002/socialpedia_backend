@@ -6,11 +6,13 @@ import com.java.java_proj.dto.request.forupdate.URequestChannel;
 import com.java.java_proj.dto.request.forupdate.URequestChannelMember;
 import com.java.java_proj.dto.response.fordetail.DResponseChannel;
 import com.java.java_proj.dto.response.fordetail.DResponseChannelMember;
+import com.java.java_proj.dto.response.fordetail.DResponseUser;
 import com.java.java_proj.dto.response.forlist.LResponseChannel;
 import com.java.java_proj.dto.response.forlist.LResponseMessage;
 import com.java.java_proj.entities.*;
 import com.java.java_proj.entities.enums.PermissionAccessType;
 import com.java.java_proj.entities.enums.RequestType;
+import com.java.java_proj.entities.miscs.SocketMessage;
 import com.java.java_proj.exceptions.HttpException;
 import com.java.java_proj.repositories.ChannelMemberRepository;
 import com.java.java_proj.repositories.ChannelRepository;
@@ -29,6 +31,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -50,8 +53,9 @@ public class ChannelServiceImpl implements ChannelService {
     final private RedisService redisService;
     final private UserService userService;
     final private ModelMapper modelMapper;
+    final private SimpMessagingTemplate messagingTemplate;
 
-    public ChannelServiceImpl(ChannelRepository channelRepository, ChannelMemberRepository channelMemberRepository, UserRepository userRepository, MessageRepository messageRepository, ResourceService resourceService, NotificationService notificationService, RedisService redisService, UserService userService, ModelMapper modelMapper) {
+    public ChannelServiceImpl(ChannelRepository channelRepository, ChannelMemberRepository channelMemberRepository, UserRepository userRepository, MessageRepository messageRepository, ResourceService resourceService, NotificationService notificationService, RedisService redisService, UserService userService, ModelMapper modelMapper, SimpMessagingTemplate messagingTemplate) {
         this.channelRepository = channelRepository;
         this.channelMemberRepository = channelMemberRepository;
         this.userRepository = userRepository;
@@ -61,6 +65,7 @@ public class ChannelServiceImpl implements ChannelService {
         this.redisService = redisService;
         this.userService = userService;
         this.modelMapper = modelMapper;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @Override
@@ -121,11 +126,20 @@ public class ChannelServiceImpl implements ChannelService {
 
     @Override
     @Cacheable(key = "#id")
+    @Transactional
     public DResponseChannel getChannelProfile(Integer id) {
 
         Channel channel = channelRepository.findOneById(id).orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Channel not found."));
 
-        return modelMapper.map(channel, DResponseChannel.class);
+
+        DResponseChannel result = modelMapper.map(channel, DResponseChannel.class);
+
+        // only show official member
+        result.setChannelMembers(result.getChannelMembers().stream().filter(
+                m -> m.getStatus() == RequestType.ACCEPTED
+        ).toList());
+
+        return result;
     }
 
     @Override
@@ -324,6 +338,11 @@ public class ChannelServiceImpl implements ChannelService {
         // evict personal and global cache
         redisService.evictKey("channels", channelId.toString());
         redisService.evictKeysByPrefix("channels", "page-");
+
+        // send socket message to group member
+        messagingTemplate.convertAndSend("/location/" + channelId, new SocketMessage(
+                SocketMessage.MessageType.JOIN,
+                modelMapper.map(channelMember.getMember(), DResponseUser.class)));
     }
 
     @Override
@@ -352,9 +371,27 @@ public class ChannelServiceImpl implements ChannelService {
         // change permission
         if (channelMember.getStatus() != RequestType.ACCEPTED)
             throw new HttpException(HttpStatus.BAD_REQUEST, "User is not a member.");
+        if (Objects.equals(channelMember.getChannel().getCreatedBy().getId(), memberId))
+            throw new HttpException(HttpStatus.BAD_REQUEST, "Can't change the channel creator's permission.");
         channelMember.setChannelPermission(requestChannel.getChannelPermission());
         channelMember.setMessagePermission(requestChannel.getMessagePermission());
         channelMember.setMemberPermission(requestChannel.getMemberPermission());
+
+        channelMemberRepository.save(channelMember);
+
+        // evict personal cache
+        redisService.evictKey("channels", channelId.toString());
+    }
+
+    @Override
+    @Transactional
+    public void kickMember(Integer channelId, Integer memberId) {
+        ChannelMember channelMember = findMemberRequest(channelId, memberId);
+
+        // change permission
+        if (channelMember.getStatus() != RequestType.ACCEPTED)
+            throw new HttpException(HttpStatus.BAD_REQUEST, "User is not a member.");
+        channelMember.setStatus(RequestType.REJECTED);
 
         channelMemberRepository.save(channelMember);
 
@@ -377,6 +414,11 @@ public class ChannelServiceImpl implements ChannelService {
 
         // evict personal and global cache
         redisService.evictKeysByPrefix("channels", "page-");
+
+        // send notification to group member
+        messagingTemplate.convertAndSend("/location/" + channelId + "/notification", new SocketMessage(
+                SocketMessage.MessageType.LEAVE,
+                modelMapper.map(channelMember.getMember(), DResponseUser.class)));
     }
 
     @Override

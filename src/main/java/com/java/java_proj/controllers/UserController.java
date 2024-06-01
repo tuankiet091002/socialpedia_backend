@@ -30,11 +30,12 @@ public class UserController {
 
     @GetMapping("")
     @PreAuthorize("hasPermission('GLOBAL', 'USER', 'VIEW')")
-    public ResponseEntity<Page<LResponseUser>> getUserList(@RequestParam(value = "name", defaultValue = "") String name,
-                                                           @RequestParam(value = "pageNo", defaultValue = "0") Integer pageNo,
-                                                           @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
-                                                           @RequestParam(value = "orderBy", defaultValue = "name") String orderBy,
-                                                           @RequestParam(value = "orderDirection", defaultValue = "DESC") String orderDirection) {
+    public ResponseEntity<Page<LResponseUser>>
+    getFullUserList(@RequestParam(value = "name", defaultValue = "") String name,
+                    @RequestParam(value = "pageNo", defaultValue = "0") Integer pageNo,
+                    @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
+                    @RequestParam(value = "orderBy", defaultValue = "name") String orderBy,
+                    @RequestParam(value = "orderDirection", defaultValue = "DESC") String orderDirection) {
 
         List<String> allowedFields = Arrays.asList("id", "name", "dob", "gender", "role");
         if (!allowedFields.contains(orderBy)) {
@@ -46,18 +47,31 @@ public class UserController {
             throw new HttpException(HttpStatus.BAD_REQUEST, "Sort Direction " + orderDirection + " is illegal!");
         }
 
-        Page<LResponseUser> userPage = userService.getUserList(name, pageNo, pageSize, orderBy, orderDirection);
+        Page<LResponseUser> userPage = userService.getFullUserList(name, pageNo, pageSize, orderBy, orderDirection);
+
+        return new ResponseEntity<>(userPage, new HttpHeaders(), HttpStatus.OK);
+    }
+
+    @GetMapping("/other")
+    @PreAuthorize("hasPermission('GLOBAL', 'USER', 'SELF')")
+    public ResponseEntity<Page<LResponseUser>>
+    getOtherUserList(@RequestParam(value = "name", defaultValue = "") String name,
+                     @RequestParam(value = "pageNo", defaultValue = "0") Integer pageNo,
+                     @RequestParam(value = "pageSize", defaultValue = "7") Integer pageSize) {
+
+
+        Page<LResponseUser> userPage = userService.getOtherUserList(name, pageNo, pageSize);
 
         return new ResponseEntity<>(userPage, new HttpHeaders(), HttpStatus.OK);
     }
 
     @GetMapping("/friend")
-    public ResponseEntity<Page<LResponseUser>> getFriendList(
-            @RequestParam(value = "name", defaultValue = "") String name,
-            @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
-            @RequestParam(value = "pageSize", defaultValue = "10") Integer size) {
+    public ResponseEntity<Page<DResponseUserFriendship>>
+    getFriendList(@RequestParam(value = "name", defaultValue = "") String name,
+                  @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
+                  @RequestParam(value = "pageSize", defaultValue = "10") Integer size) {
 
-        Page<LResponseUser> userPage = userService.getFriendList(name, page, size);
+        Page<DResponseUserFriendship> userPage = userService.getFriendList(name, page, size);
 
         return new ResponseEntity<>(userPage, new HttpHeaders(), HttpStatus.OK);
     }

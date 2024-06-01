@@ -37,6 +37,8 @@ public interface ChannelService {
 
     public void updateMemberPermission(Integer channelId, Integer memberId, URequestChannelMember requestChannel);
 
+    public void kickMember(Integer channelId, Integer memberId);
+
     public void leaveChannel(Integer channelId);
 
     public ChannelMember findMemberRequest(Integer channelId, Integer userId);

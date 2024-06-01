@@ -1,5 +1,6 @@
 package com.java.java_proj.dto.response.fordetail;
 
+import com.java.java_proj.dto.response.forlist.LResponseUserMinimal;
 import com.java.java_proj.entities.enums.RequestType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,9 +15,7 @@ import java.time.LocalDateTime;
 @Builder
 public class DResponseUserFriendship {
 
-    private Integer senderId;
-
-    private Integer receiverId;
+    private LResponseUserMinimal other;
 
     private RequestType status;
 

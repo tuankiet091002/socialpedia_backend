@@ -22,11 +22,14 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query("SELECT u FROM User u WHERE u.name LIKE CONCAT('%',:name, '%') AND u.isActive = true ")
     Page<User> findByNameContaining(String name, Pageable paging);
 
-    @Query(value = "SELECT u from User u " +
-            "WHERE u IN (SELECT s.receiver FROM UserFriendship s WHERE s.sender = :user AND s.status = 'ACCEPTED')" +
-            "OR u IN (SELECT r.sender FROM UserFriendship r WHERE r.receiver = :user AND r.status = 'ACCEPTED')" +
-            "AND u.name LIKE CONCAT('%',:name, '%') AND u.isActive = TRUE")
-    Page<User> findFriendsByName(String name, User user, Pageable paging);
+    // only return if user type correct word
+    @Query("SELECT u FROM User u " +
+            "WHERE (u.name LIKE CONCAT(:name, ' %') OR " +
+            "(u.name LIKE CONCAT('% ', :name)) OR " +
+            "(u.name LIKE CONCAT('% ', :name, ' %')) OR" +
+            "(u.name LIKE :name)) " +
+            "AND u.isActive = true ")
+    Page<User> findBySpecificWord(String name, Pageable paging);
 
     @Query(value = "SELECT u.id from User u " +
             "WHERE u IN (SELECT s.receiver FROM UserFriendship s WHERE s.sender = :user AND s.status = 'ACCEPTED')" +

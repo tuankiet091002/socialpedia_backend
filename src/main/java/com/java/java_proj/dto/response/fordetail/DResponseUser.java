@@ -23,6 +23,8 @@ public class DResponseUser {
 
     public LocalDate dob;
 
+    private DResponseUserPermission role;
+
     public Boolean gender;
 
     public DResponseResource avatar;

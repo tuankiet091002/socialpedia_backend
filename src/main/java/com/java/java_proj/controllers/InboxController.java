@@ -27,9 +27,10 @@ public class InboxController {
     }
 
     @GetMapping("")
-    public ResponseEntity<Page<LResponseInbox>> getInboxList(@RequestParam(value = "name", defaultValue = "") String name,
-                                                             @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
-                                                             @RequestParam(value = "pageSize", defaultValue = "10") Integer size) {
+    public ResponseEntity<Page<LResponseInbox>>
+    getInboxList(@RequestParam(value = "name", defaultValue = "") String name,
+                 @RequestParam(value = "pageNo", defaultValue = "0") Integer page,
+                 @RequestParam(value = "pageSize", defaultValue = "10") Integer size) {
 
         Page<LResponseInbox> inboxPage = inboxService.getInboxList(name, page, size);
 

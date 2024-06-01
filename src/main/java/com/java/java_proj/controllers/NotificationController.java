@@ -20,8 +20,9 @@ public class NotificationController {
     }
 
     @GetMapping("")
-    public ResponseEntity<Page<LResponseNotification>> getNotificationList(@RequestParam(value = "pageNo", defaultValue = "0") Integer page,
-                                                                           @RequestParam(value = "pageSize", defaultValue = "10") Integer size) {
+    public ResponseEntity<Page<LResponseNotification>>
+    getNotificationList(@RequestParam(value = "pageNo", defaultValue = "0") Integer page,
+                        @RequestParam(value = "pageSize", defaultValue = "10") Integer size) {
 
 
         Page<LResponseNotification> notificationPage = notificationService.getNotificationList(page, size);

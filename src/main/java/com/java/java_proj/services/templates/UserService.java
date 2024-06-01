@@ -19,10 +19,12 @@ public interface UserService {
 
     public User getOwner();
 
-    Page<LResponseUser> getUserList(String name, Integer pageNo, Integer pageSize,
-                                    String orderBy, String orderDirection);
+    Page<LResponseUser> getFullUserList(String name, Integer pageNo, Integer pageSize,
+                                        String orderBy, String orderDirection);
 
-    Page<LResponseUser> getFriendList(String name, Integer pageNo, Integer pageSize);
+    Page<LResponseUser> getOtherUserList(String name, Integer pageNo, Integer pageSize);
+    
+    Page<DResponseUserFriendship> getFriendList(String name, Integer pageNo, Integer pageSize);
 
     public DResponseUser getUserProfile(Integer userId);
 

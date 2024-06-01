@@ -8,6 +8,7 @@ import com.java.java_proj.dto.request.security.RequestRefreshToken;
 import com.java.java_proj.dto.response.fordetail.DResponseUser;
 import com.java.java_proj.dto.response.fordetail.DResponseUserFriendship;
 import com.java.java_proj.dto.response.forlist.LResponseUser;
+import com.java.java_proj.dto.response.forlist.LResponseUserMinimal;
 import com.java.java_proj.dto.response.security.ResponseJwt;
 import com.java.java_proj.dto.response.security.ResponseRefreshToken;
 import com.java.java_proj.entities.*;
@@ -92,7 +93,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Cacheable(key = "'page-' + {#pageNo, #pageSize, #orderBy, #orderDirection}", condition = "#name.isEmpty()")
-    public Page<LResponseUser> getUserList(String name, Integer pageNo, Integer pageSize, String orderBy, String orderDirection) {
+    public Page<LResponseUser> getFullUserList(String name, Integer pageNo, Integer pageSize, String orderBy, String orderDirection) {
 
         // if orderBy = role, need to access field of child class (Permission.role)
         Pageable paging = orderDirection.equals("ASC")
@@ -105,14 +106,40 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<LResponseUser> getFriendList(String name, Integer pageNo, Integer pageSize) {
+//    @Cacheable(key = "'page-' + {#pageNo, #pageSize}")
+    public Page<LResponseUser> getOtherUserList(String name, Integer pageNo, Integer pageSize) {
+        return userRepository.findBySpecificWord(name,
+                        PageRequest.of(pageNo, pageSize, Sort.by("name").ascending()))
+                .map(user -> modelMapper.map(user, LResponseUser.class));
+    }
+
+    @Override
+    @Transactional
+    public Page<DResponseUserFriendship> getFriendList(String name, Integer pageNo, Integer pageSize) {
         // get owner
         User owner = getOwner();
 
         // if orderBy = role, need to access field of child class (Permission.role)
         Pageable paging = PageRequest.of(pageNo, pageSize);
 
-        return userRepository.findFriendsByName(name, owner, paging).map(user -> modelMapper.map(user, LResponseUser.class));
+        Page<UserFriendship> userFriendshipPage = userFriendshipRepository.findFriendsByName(name, owner, paging);
+
+        return userFriendshipPage.map(userFriendship -> {
+            DResponseUserFriendship response = modelMapper.map(userFriendship, DResponseUserFriendship.class);
+
+            // set other fields
+            if (Objects.equals(owner.getId(), userFriendship.getSender().getId())) {
+                response.setOther(modelMapper.map(userFriendship.getReceiver(), LResponseUserMinimal.class));
+            } else {
+                response.setOther(modelMapper.map(userFriendship.getSender(), LResponseUserMinimal.class));
+            }
+
+            // get inbox
+            Inbox inbox = inboxRepository.findByFriendshipAndIsActive(userFriendship, true).orElse(null);
+            response.setInboxId(inbox != null ? inbox.getId() : null);
+
+            return response;
+        });
     }
 
     @Override
@@ -128,22 +155,27 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public DResponseUserFriendship getUserFriendship(Integer userId) {
 
-        User sender = getOwner();
-        User receiver = userRepository.findById(userId)
+        User owner = getOwner();
+        User other = userRepository.findById(userId)
                 .orElseThrow(() -> new HttpException(HttpStatus.BAD_REQUEST, "User not found."));
 
         // get friendship
-        Optional<UserFriendship> optionalUserFriendship = userFriendshipRepository.findByUser(sender, receiver);
+        Optional<UserFriendship> optionalUserFriendship = userFriendshipRepository.findByUser(owner, other);
         if (optionalUserFriendship.isPresent()) {
             // map to dto
             UserFriendship userFriendship = optionalUserFriendship.get();
             DResponseUserFriendship response = modelMapper.map(userFriendship, DResponseUserFriendship.class);
 
             // set other fields
-            response.setSenderId(userFriendship.getSender().getId());
-            response.setReceiverId(userFriendship.getReceiver().getId());
+            if (Objects.equals(owner.getId(), userFriendship.getSender().getId())) {
+                response.setOther(modelMapper.map(userFriendship.getReceiver(), LResponseUserMinimal.class));
+            } else {
+                response.setOther(modelMapper.map(userFriendship.getSender(), LResponseUserMinimal.class));
+            }
+
             // get inbox
             Inbox inbox = inboxRepository.findByFriendshipAndIsActive(userFriendship, true).orElse(null);
             response.setInboxId(inbox != null ? inbox.getId() : null);

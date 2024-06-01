@@ -13,10 +13,12 @@ import java.util.Optional;
 
 public interface InboxRepository extends JpaRepository<Inbox, Integer> {
 
+    // search by inbox name and opponent name
     @Query("SELECT i FROM Inbox i WHERE i.friendship IN " +
             "(SELECT f FROM UserFriendship f WHERE f.status = 'ACCEPTED' AND " +
-            "f.sender = :user OR f.receiver = :user)" +
-            "AND i.name LIKE CONCAT('%', :name, '%')" +
+            "f.sender = :user OR f.receiver = :user) " +
+            "AND ((i.friendship.sender = :user AND CONCAT(i.name, ' ' ,i.friendship.receiver.name) LIKE CONCAT('%', :name, '%')) " +
+            "OR (i.friendship.receiver = :user AND CONCAT(i.name, ' ' ,i.friendship.sender.name) LIKE CONCAT('%', :name, '%')))" +
             "AND i.isActive = TRUE")
     Page<Inbox> findByNameAndUser(String name, User user, Pageable pageable);
 

@@ -74,7 +74,7 @@ public class JavaProjApplication implements CommandLineRunner {
             UserPermission user = UserPermission.builder()
                     .name("user")
                     .userPermission(PermissionAccessType.SELF)
-                    .channelPermission(PermissionAccessType.SELF)
+                    .channelPermission(PermissionAccessType.VIEW)
                     .build();
             // adding to db
             userPermissionRepository.save(admin);
