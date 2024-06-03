@@ -315,6 +315,9 @@ public class ChannelServiceImpl implements ChannelService {
 
         channelMemberRepository.save(channelMember);
 
+        // evict personal and global cache
+        redisService.evictKey("channels", channelId.toString());
+
         // create notification and send socket message
         notificationService.channelRequestSend(member, channel);
     }
