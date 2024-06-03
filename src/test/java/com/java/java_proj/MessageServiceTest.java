@@ -111,9 +111,7 @@ public class MessageServiceTest {
 
     @BeforeEach
     public void setNotificationService() {
-        Mockito.doNothing().when(notificationService).messageToChannel(any(Integer.class));
-
-        Mockito.doNothing().when(notificationService).messageToInbox(any(Integer.class));
+        Mockito.doNothing().when(notificationService).messageToSpace(any(Integer.class));
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -151,7 +149,7 @@ public class MessageServiceTest {
         Mockito.verify(channelRepository, Mockito.times(1)).findById(eq(0));
         Mockito.verify(userService, Mockito.times(1)).getOwner();
         Mockito.verify(channelRepository, Mockito.times(1)).save(any(Channel.class));
-        Mockito.verify(notificationService, Mockito.times(1)).messageToChannel(eq(0));
+        Mockito.verify(notificationService, Mockito.times(1)).messageToSpace(eq(0));
 
     }
 
@@ -166,7 +164,7 @@ public class MessageServiceTest {
         Mockito.verify(inboxRepository, Mockito.times(1)).findById(eq(0));
         Mockito.verify(userService, Mockito.times(1)).getOwner();
         Mockito.verify(inboxRepository, Mockito.times(1)).save(any(Inbox.class));
-        Mockito.verify(notificationService, Mockito.times(1)).messageToInbox(eq(0));
+        Mockito.verify(notificationService, Mockito.times(1)).messageToSpace(eq(0));
     }
 
     @Test

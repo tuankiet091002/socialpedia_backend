@@ -127,12 +127,14 @@ public class UserServiceImpl implements UserService {
         return userFriendshipPage.map(userFriendship -> {
             DResponseUserFriendship response = modelMapper.map(userFriendship, DResponseUserFriendship.class);
 
+            boolean isSender  = Objects.equals(owner.getId(), userFriendship.getSender().getId());
             // set other fields
-            if (Objects.equals(owner.getId(), userFriendship.getSender().getId())) {
+            if (isSender) {
                 response.setOther(modelMapper.map(userFriendship.getReceiver(), LResponseUserMinimal.class));
             } else {
                 response.setOther(modelMapper.map(userFriendship.getSender(), LResponseUserMinimal.class));
             }
+            response.setIsSender(isSender);
 
             // get inbox
             Inbox inbox = inboxRepository.findByFriendshipAndIsActive(userFriendship, true).orElse(null);
@@ -169,12 +171,14 @@ public class UserServiceImpl implements UserService {
             UserFriendship userFriendship = optionalUserFriendship.get();
             DResponseUserFriendship response = modelMapper.map(userFriendship, DResponseUserFriendship.class);
 
+            boolean isSender  = Objects.equals(owner.getId(), userFriendship.getSender().getId());
             // set other fields
-            if (Objects.equals(owner.getId(), userFriendship.getSender().getId())) {
+            if (isSender) {
                 response.setOther(modelMapper.map(userFriendship.getReceiver(), LResponseUserMinimal.class));
             } else {
                 response.setOther(modelMapper.map(userFriendship.getSender(), LResponseUserMinimal.class));
             }
+            response.setIsSender(isSender);
 
             // get inbox
             Inbox inbox = inboxRepository.findByFriendshipAndIsActive(userFriendship, true).orElse(null);

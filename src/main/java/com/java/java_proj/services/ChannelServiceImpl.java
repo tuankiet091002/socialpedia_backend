@@ -136,7 +136,7 @@ public class ChannelServiceImpl implements ChannelService {
 
         // only show official member
         result.setChannelMembers(result.getChannelMembers().stream().filter(
-                m -> m.getStatus() == RequestType.ACCEPTED
+                m -> m.getStatus() != RequestType.REJECTED
         ).toList());
 
         return result;
@@ -207,9 +207,10 @@ public class ChannelServiceImpl implements ChannelService {
                     .member(user)
                     .channel(finalChannel)
                     .status(RequestType.ACCEPTED)
-                    .channelPermission(PermissionAccessType.VIEW)
-                    .memberPermission(PermissionAccessType.VIEW)
-                    .messagePermission(PermissionAccessType.CREATE)
+                    .channelPermission(request.getChannelPermission())
+                    .messagePermission(request.getMessagePermission())
+                    .memberPermission(request.getMemberPermission())
+                    .joinedDate(LocalDate.now())
                     .build());
         });
     }
@@ -290,7 +291,7 @@ public class ChannelServiceImpl implements ChannelService {
         // fetch channel from id
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "Channel not found."));
-        System.out.println('a');
+
         // fetch user from id
         User member = userRepository.findById(userService.getOwner().getId())
                 .orElseThrow(() -> new HttpException(HttpStatus.NOT_FOUND, "User not found."));
@@ -306,9 +307,9 @@ public class ChannelServiceImpl implements ChannelService {
             channelMember = (ChannelMember.builder()
                     .channel(channel)
                     .member(member)
-                    .channelPermission(PermissionAccessType.VIEW)
-                    .memberPermission(PermissionAccessType.VIEW)
-                    .messagePermission(PermissionAccessType.CREATE)
+                    .channelPermission(PermissionAccessType.NO_ACCESS)
+                    .memberPermission(PermissionAccessType.NO_ACCESS)
+                    .messagePermission(PermissionAccessType.NO_ACCESS)
                     .build());
         channelMember.setStatus(RequestType.PENDING);
 
@@ -329,6 +330,9 @@ public class ChannelServiceImpl implements ChannelService {
             throw new HttpException(HttpStatus.BAD_REQUEST, "Member request is not pending");
         channelMember.setStatus(RequestType.ACCEPTED);
         channelMember.setJoinedDate(LocalDate.now());
+        channelMember.setChannelPermission(PermissionAccessType.VIEW);
+        channelMember.setMemberPermission(PermissionAccessType.VIEW);
+        channelMember.setMessagePermission(PermissionAccessType.CREATE);
         channelMember.getChannel().setModifiedBy(userService.getOwner());
         channelMember.getChannel().setModifiedDate(LocalDateTime.now());
 

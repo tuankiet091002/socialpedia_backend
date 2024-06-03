@@ -151,14 +151,13 @@ public class MessageServiceImpl implements MessageService {
 
             message.setReplyTo(repliedMessage);
         }
-
-        channelRepository.save(channel);
-
-        // create notification and send socket message
-        notificationService.messageToChannel(locationId);
-
         // evict message group
         redisService.evictKeysByPrefix("messages", "group-" + locationId);
+
+        channelRepository.saveAndFlush(channel);
+
+        // create notification and send socket message
+        notificationService.messageToSpace(locationId);
     }
 
     @Override
@@ -190,14 +189,13 @@ public class MessageServiceImpl implements MessageService {
 
             message.setReplyTo(repliedMessage);
         }
-
-        inboxRepository.save(inbox);
-
-        // create notification and send socket message
-        notificationService.messageToInbox(locationId);
-
         // evict message group
         redisService.evictKeysByPrefix("messages", "group-" + locationId);
+
+        inboxRepository.saveAndFlush(inbox);
+
+        // create notification and send socket message
+        notificationService.messageToSpace(locationId);
     }
 
     @Override

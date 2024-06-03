@@ -3,7 +3,7 @@ package com.java.java_proj.config;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.java.java_proj.config.serialization.SortSerializationModule;
+import com.java.java_proj.config.serialization.PageSerializationModule;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,7 +34,7 @@ public class RedisCacheConfig {
         // Do not change the default object mapper, we need to serialize the class name into the value
         objectMapper = objectMapper.copy();
         objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.registerModule(new SortSerializationModule());
+        objectMapper.registerModule(new PageSerializationModule());
 
         objectMapper = objectMapper.activateDefaultTyping(objectMapper.getPolymorphicTypeValidator(), ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.WRAPPER_ARRAY);
 

@@ -117,17 +117,9 @@ public class NotificationServiceTest {
     }
 
     @Test
-    public void testMessageToChannel() {
+    public void testMessageToSpace() {
 
-        notificationService.messageToChannel(0);
-
-        Mockito.verify(messagingTemplate, Mockito.times(1)).convertAndSend(any(String.class), any(SocketMessage.class));
-    }
-
-    @Test
-    public void testMessageToInbox() {
-
-        notificationService.messageToInbox(0);
+        notificationService.messageToSpace(0);
 
         Mockito.verify(messagingTemplate, Mockito.times(1)).convertAndSend(any(String.class), any(SocketMessage.class));
     }

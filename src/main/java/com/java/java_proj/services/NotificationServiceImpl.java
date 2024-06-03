@@ -13,7 +13,6 @@ import com.java.java_proj.exceptions.HttpException;
 import com.java.java_proj.repositories.NotificationRepository;
 import com.java.java_proj.services.templates.NotificationService;
 import jakarta.transaction.Transactional;
-import org.hibernate.tool.schema.internal.exec.ScriptTargetOutputToUrl;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -145,15 +144,14 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public void messageToChannel(Integer channelId) {
-        messagingTemplate.convertAndSend("/space/" + channelId,
-                new SocketMessage(SocketMessage.MessageType.CHAT, null));
-    }
-
-    @Override
-    public void messageToInbox(Integer inboxId) {
-        messagingTemplate.convertAndSend("/space/" + inboxId,
-                new SocketMessage(SocketMessage.MessageType.CHAT, null));
+    public void messageToSpace(Integer spaceId) {
+        try {
+            Thread.sleep(500);
+            messagingTemplate.convertAndSend("/space/" + spaceId,
+                    new SocketMessage(SocketMessage.MessageType.CHAT, null));
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     @Override

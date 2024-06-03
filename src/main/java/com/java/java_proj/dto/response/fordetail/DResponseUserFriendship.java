@@ -17,6 +17,8 @@ public class DResponseUserFriendship {
 
     private LResponseUserMinimal other;
 
+    private Boolean isSender;
+
     private RequestType status;
 
     private LocalDateTime modifiedDate;

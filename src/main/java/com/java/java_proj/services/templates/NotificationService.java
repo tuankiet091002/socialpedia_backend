@@ -17,9 +17,7 @@ public interface NotificationService {
 
     public void channelRequestAccepted(Channel channel, User target);
 
-    public void messageToChannel(Integer channelId);
-
-    public void messageToInbox(Integer inboxId);
+    public void messageToSpace(Integer spaceId);
 
     public void seenAll();
 
