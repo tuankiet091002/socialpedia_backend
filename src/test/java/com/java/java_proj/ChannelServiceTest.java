@@ -8,12 +8,14 @@ import com.java.java_proj.dto.response.forlist.LResponseChannel;
 import com.java.java_proj.entities.*;
 import com.java.java_proj.entities.enums.PermissionAccessType;
 import com.java.java_proj.entities.enums.RequestType;
+import com.java.java_proj.entities.miscs.SocketMessage;
 import com.java.java_proj.exceptions.HttpException;
 import com.java.java_proj.repositories.ChannelMemberRepository;
 import com.java.java_proj.repositories.ChannelRepository;
 import com.java.java_proj.repositories.MessageRepository;
 import com.java.java_proj.repositories.UserRepository;
 import com.java.java_proj.services.ChannelServiceImpl;
+import com.java.java_proj.services.RedisService;
 import com.java.java_proj.services.templates.NotificationService;
 import com.java.java_proj.services.templates.ResourceService;
 import com.java.java_proj.services.templates.UserService;
@@ -34,8 +36,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -65,6 +69,10 @@ public class ChannelServiceTest {
     private UserService userService;
     @Spy
     private ModelMapper modelMapper;
+    @Mock
+    private RedisService redisService;
+    @Mock
+    private SimpMessagingTemplate messagingTemplate;
 
     @BeforeEach
     public void setChannelRepository() {
@@ -76,6 +84,7 @@ public class ChannelServiceTest {
             channel.setName("Channel " + i);
             channel.setDescription("Description " + i);
             channel.setIsActive(true);
+            channel.setCreatedBy(User.builder().id(0).build());
 
             channels.add(channel);
         }
@@ -137,6 +146,17 @@ public class ChannelServiceTest {
     public void setModelMapper() {
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
         modelMapper.getConfiguration().setAmbiguityIgnored(true);
+    }
+
+    @BeforeEach
+    public void setRedisService() {
+        Mockito.doNothing().when(redisService).evictKey(any(String.class), any(String.class));
+        Mockito.doNothing().when(redisService).evictKey(any(String.class), any(String.class));
+    }
+
+    @BeforeEach
+    public void setMessagingTemplate() {
+        Mockito.doNothing().when(messagingTemplate).convertAndSend(any(String.class), any(SocketMessage.class));
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -203,6 +223,8 @@ public class ChannelServiceTest {
 
         Mockito.verify(channelRepository, Mockito.times(1)).findById(any(Integer.class));
         Mockito.verify(channelRepository, Mockito.times(1)).save(any(Channel.class));
+        Mockito.verify(redisService, Mockito.times(1)).evictKey(any(String.class), any(String.class));
+        Mockito.verify(redisService, Mockito.times(1)).evictKeysByPrefix(any(String.class), any(String.class));
     }
 
     @Test
@@ -212,6 +234,8 @@ public class ChannelServiceTest {
 
         Mockito.verify(channelRepository, Mockito.times(1)).findById(eq(0));
         Mockito.verify(resourceService, Mockito.times(1)).addFile(any());
+        Mockito.verify(redisService, Mockito.times(1)).evictKey(any(String.class), any(String.class));
+        Mockito.verify(redisService, Mockito.times(1)).evictKeysByPrefix(any(String.class), any(String.class));
     }
 
     @Test
@@ -221,6 +245,7 @@ public class ChannelServiceTest {
 
         Mockito.verify(channelRepository, Mockito.times(1)).findById(eq(0));
         Mockito.verify(channelRepository, Mockito.times(1)).save(any(Channel.class));
+        Mockito.verify(redisService, Mockito.times(1)).evictKeysByPrefix(any(String.class), any(String.class));
     }
 
     @Test
@@ -245,12 +270,14 @@ public class ChannelServiceTest {
     }
 
     @Test
-    public void testUpdateMemberPermission() {
-        URequestChannelMember requestChannelMember = new URequestChannelMember(PermissionAccessType.CREATE, PermissionAccessType.CREATE, PermissionAccessType.CREATE);
+    public void testKickMember() {
 
-        channelService.updateMemberPermission(0, 0, requestChannelMember);
+        channelService.kickMember(0, 0);
 
         Mockito.verify(channelMemberRepository, Mockito.times(1)).save(any(ChannelMember.class));
+        Mockito.verify(redisService, Mockito.times(1)).evictKey(any(String.class), any(String.class));
+        Mockito.verify(redisService, Mockito.times(1)).evictKey(any(String.class), any(String.class));
+        Mockito.verify(messagingTemplate, Mockito.times(1)).convertAndSend(any(String.class), any(SocketMessage.class));
     }
 
     @Test
@@ -259,6 +286,9 @@ public class ChannelServiceTest {
         channelService.leaveChannel(0);
 
         Mockito.verify(channelMemberRepository, Mockito.times(1)).save(any(ChannelMember.class));
+                Mockito.verify(redisService, Mockito.times(1)).evictKeysByPrefix(any(String.class), any(String.class));
+        Mockito.verify(redisService, Mockito.times(1)).evictKey(any(String.class), any(String.class));
+        Mockito.verify(messagingTemplate, Mockito.times(1)).convertAndSend(any(String.class), any(SocketMessage.class));
     }
 
     @Test

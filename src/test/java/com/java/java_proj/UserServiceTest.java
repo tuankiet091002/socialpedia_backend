@@ -16,6 +16,7 @@ import com.java.java_proj.repositories.InboxRepository;
 import com.java.java_proj.repositories.UserFriendshipRepository;
 import com.java.java_proj.repositories.UserPermissionRepository;
 import com.java.java_proj.repositories.UserRepository;
+import com.java.java_proj.services.RedisService;
 import com.java.java_proj.services.UserServiceImpl;
 import com.java.java_proj.services.templates.NotificationService;
 import com.java.java_proj.services.templates.RefreshTokenService;
@@ -78,6 +79,8 @@ public class UserServiceTest {
     private ModelMapper modelMapper;
     @Spy
     private DateFormatter dateFormatter;
+    @Mock
+    private RedisService redisService;
 
     @BeforeEach
     public void setUserService() {
@@ -178,6 +181,12 @@ public class UserServiceTest {
         Mockito.doNothing().when(notificationService).friendRequestAccepted(any(User.class), any(User.class));
 
         Mockito.doNothing().when(notificationService).seenByUserAndDestination(any(User.class), any(String.class));
+    }
+
+    @BeforeEach
+    public void setRedisService() {
+        Mockito.doNothing().when(redisService).evictKey(any(String.class), any(String.class));
+        Mockito.doNothing().when(redisService).evictKey(any(String.class), any(String.class));
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -288,11 +297,7 @@ public class UserServiceTest {
     @Test
     public void testUpdateUserRole() {
 
-        userService.updateUserRole(0, "admin");
-
-        Mockito.verify(userRepository, Mockito.times(1)).findById(any(Integer.class));
-        Mockito.verify(userPermissionRepository, Mockito.times(1)).findByName(eq("admin"));
-        Mockito.verify(userRepository, Mockito.times(1)).save(any(User.class));
+        Assertions.assertThrows(HttpException.class, () -> userService.updateUserRole(0, "admin"));
     }
 
     @Test

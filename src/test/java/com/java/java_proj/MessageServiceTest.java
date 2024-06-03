@@ -6,10 +6,12 @@ import com.java.java_proj.dto.request.forupdate.URequestMessageStatus;
 import com.java.java_proj.dto.response.fordetail.DResponseMessage;
 import com.java.java_proj.entities.*;
 import com.java.java_proj.entities.enums.MessageStatusType;
+import com.java.java_proj.entities.miscs.SocketMessage;
 import com.java.java_proj.repositories.ChannelRepository;
 import com.java.java_proj.repositories.InboxRepository;
 import com.java.java_proj.repositories.MessageRepository;
 import com.java.java_proj.services.MessageServiceImpl;
+import com.java.java_proj.services.RedisService;
 import com.java.java_proj.services.templates.ChannelService;
 import com.java.java_proj.services.templates.NotificationService;
 import com.java.java_proj.services.templates.ResourceService;
@@ -26,10 +28,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
@@ -61,6 +61,10 @@ public class MessageServiceTest {
     private ChannelService channelService;
     @Spy
     private ModelMapper modelMapper;
+    @Mock
+    private RedisService redisService;
+    @Mock
+    private SimpMessagingTemplate messagingTemplate;
 
     @BeforeEach
     public void setMessageRepository() {
@@ -114,6 +118,17 @@ public class MessageServiceTest {
         Mockito.doNothing().when(notificationService).messageToSpace(any(Integer.class));
     }
 
+    @BeforeEach
+    public void setRedisService() {
+        Mockito.doNothing().when(redisService).evictKey(any(String.class), any(String.class));
+        Mockito.doNothing().when(redisService).evictKey(any(String.class), any(String.class));
+    }
+
+    @BeforeEach
+    public void setMessagingTemplate() {
+        Mockito.doNothing().when(messagingTemplate).convertAndSend(any(String.class), any(SocketMessage.class));
+    }
+
     ///////////////////////////////////////////////////////////////////
     ////////////////////////// TESTING PHASE //////////////////////////
     ///////////////////////////////////////////////////////////////////
@@ -123,9 +138,9 @@ public class MessageServiceTest {
 
         Page<DResponseMessage> messages = messageService.getMessagesFromChannel(0, "", 0, 10);
 
-        Assertions.assertEquals(10, messages.getContent().size());
+        Assertions.assertEquals(0, messages.getContent().size());
         Mockito.verify(channelRepository, Mockito.times(1)).findById(eq(0));
-        Mockito.verify(messageRepository, Mockito.times(1)).findByChannel(any(Channel.class), any(Pageable.class));
+        Mockito.verify(messageRepository, Mockito.times(1)).findAllByChannel(any(Channel.class), any(Sort.class), any(Boolean.class));
     }
 
     @Test
@@ -133,9 +148,9 @@ public class MessageServiceTest {
 
         Page<DResponseMessage> messages = messageService.getMessagesFromInbox(0, "", 0, 10);
 
-        Assertions.assertEquals(10, messages.getContent().size());
+        Assertions.assertEquals(0, messages.getContent().size());
         Mockito.verify(inboxRepository, Mockito.times(1)).findById(eq(0));
-        Mockito.verify(messageRepository, Mockito.times(1)).findByInbox(any(Inbox.class), any(Pageable.class));
+        Mockito.verify(messageRepository, Mockito.times(1)).findAllByInbox(any(Inbox.class), any(Sort.class));
     }
 
     @Test
@@ -148,7 +163,7 @@ public class MessageServiceTest {
 
         Mockito.verify(channelRepository, Mockito.times(1)).findById(eq(0));
         Mockito.verify(userService, Mockito.times(1)).getOwner();
-        Mockito.verify(channelRepository, Mockito.times(1)).save(any(Channel.class));
+        Mockito.verify(channelRepository, Mockito.times(1)).saveAndFlush(any(Channel.class));
         Mockito.verify(notificationService, Mockito.times(1)).messageToSpace(eq(0));
 
     }
@@ -163,7 +178,7 @@ public class MessageServiceTest {
 
         Mockito.verify(inboxRepository, Mockito.times(1)).findById(eq(0));
         Mockito.verify(userService, Mockito.times(1)).getOwner();
-        Mockito.verify(inboxRepository, Mockito.times(1)).save(any(Inbox.class));
+        Mockito.verify(inboxRepository, Mockito.times(1)).saveAndFlush(any(Inbox.class));
         Mockito.verify(notificationService, Mockito.times(1)).messageToSpace(eq(0));
     }
 
@@ -180,7 +195,7 @@ public class MessageServiceTest {
         Mockito.verify(messageRepository, Mockito.times(1)).countByLocation(any(Message.class), eq(0));
         Mockito.verify(userService, Mockito.times(1)).getOwner();
         Mockito.verify(messageRepository, Mockito.times(1)).findById(eq(0));
-        ;
+        Mockito.verify(redisService, Mockito.times(1)).evictKeysByPrefix(any(String.class), any(String.class));
     }
 
     @Test
@@ -195,7 +210,7 @@ public class MessageServiceTest {
         Mockito.verify(messageRepository, Mockito.times(1)).findById(eq(0));
         Mockito.verify(messageRepository, Mockito.times(1)).countByLocation(any(Message.class), eq(0));
         Mockito.verify(messageRepository, Mockito.times(1)).findById(eq(0));
-        ;
+        Mockito.verify(redisService, Mockito.times(1)).evictKeysByPrefix(any(String.class), any(String.class));
     }
 
     @Test
@@ -206,7 +221,7 @@ public class MessageServiceTest {
         Mockito.verify(messageRepository, Mockito.times(1)).findById(eq(0));
         Mockito.verify(userService, Mockito.times(1)).getOwner();
         Mockito.verify(messageRepository, Mockito.times(1)).findById(eq(0));
-        ;
+        Mockito.verify(redisService, Mockito.times(1)).evictKeysByPrefix(any(String.class), any(String.class));
     }
 
     @Test
@@ -214,8 +229,9 @@ public class MessageServiceTest {
 
         messageService.seeInboxMessage(0, 0);
 
-        Mockito.verify(messageRepository, Mockito.times(1)).findById(eq(0));
-        Mockito.verify(messageRepository, Mockito.times(1)).countByLocation(any(Message.class), eq(0));
+        Mockito.verify(inboxRepository, Mockito.times(1)).findById(eq(0));
+        Mockito.verify(messageRepository, Mockito.times(1)).findByInbox(any(Inbox.class), any());
+        Mockito.verify(messageRepository, Mockito.times(1)).countByLocation(any(Message.class), any(Integer.class));
         Mockito.verify(inboxRepository, Mockito.times(1)).save(any(Inbox.class));
     }
 

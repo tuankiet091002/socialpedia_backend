@@ -11,7 +11,7 @@
  Target Server Version : 80033 (8.0.33)
  File Encoding         : 65001
 
- Date: 03/06/2024 11:28:12
+ Date: 03/06/2024 15:19:06
 */
 
 SET NAMES utf8mb4;
@@ -105,6 +105,38 @@ CREATE TABLE `channel_messages`  (
 -- ----------------------------
 -- Records of channel_messages
 -- ----------------------------
+INSERT INTO `channel_messages` VALUES (53, 1);
+INSERT INTO `channel_messages` VALUES (53, 2);
+INSERT INTO `channel_messages` VALUES (53, 3);
+INSERT INTO `channel_messages` VALUES (53, 4);
+INSERT INTO `channel_messages` VALUES (53, 5);
+INSERT INTO `channel_messages` VALUES (53, 6);
+INSERT INTO `channel_messages` VALUES (53, 7);
+INSERT INTO `channel_messages` VALUES (53, 8);
+INSERT INTO `channel_messages` VALUES (53, 9);
+INSERT INTO `channel_messages` VALUES (53, 10);
+INSERT INTO `channel_messages` VALUES (53, 11);
+INSERT INTO `channel_messages` VALUES (53, 12);
+INSERT INTO `channel_messages` VALUES (53, 13);
+INSERT INTO `channel_messages` VALUES (53, 14);
+INSERT INTO `channel_messages` VALUES (53, 15);
+INSERT INTO `channel_messages` VALUES (53, 16);
+INSERT INTO `channel_messages` VALUES (53, 17);
+INSERT INTO `channel_messages` VALUES (53, 18);
+INSERT INTO `channel_messages` VALUES (53, 19);
+INSERT INTO `channel_messages` VALUES (53, 20);
+INSERT INTO `channel_messages` VALUES (53, 21);
+INSERT INTO `channel_messages` VALUES (53, 22);
+INSERT INTO `channel_messages` VALUES (53, 23);
+INSERT INTO `channel_messages` VALUES (53, 24);
+INSERT INTO `channel_messages` VALUES (53, 25);
+INSERT INTO `channel_messages` VALUES (53, 26);
+INSERT INTO `channel_messages` VALUES (53, 27);
+INSERT INTO `channel_messages` VALUES (53, 28);
+INSERT INTO `channel_messages` VALUES (53, 29);
+INSERT INTO `channel_messages` VALUES (53, 30);
+INSERT INTO `channel_messages` VALUES (53, 31);
+INSERT INTO `channel_messages` VALUES (53, 32);
 
 -- ----------------------------
 -- Table structure for channels
@@ -132,14 +164,14 @@ CREATE TABLE `channels`  (
 -- ----------------------------
 -- Records of channels
 -- ----------------------------
-INSERT INTO `channels` VALUES (1, '2024-06-03 10:32:35', 'TechTalk Lounge is the ultimate destination for tech enthusiasts to engage in lively discussions about the latest innovations, gadgets, and breakthroughs in the world of technology. Whether you\'re a seasoned developer, a curious consumer, or just someone fascinated by the rapid advancements in the tech realm, this channel provides a space to share insights, troubleshoot tech issues, and explore the future of digital evolution.', 1, '2024-06-03 10:58:27', 'TechTalk Lounge', 12, 1, 1);
+INSERT INTO `channels` VALUES (1, '2024-06-03 10:32:35', 'TechTalk Lounge is the ultimate destination for tech enthusiasts to engage in lively discussions about the latest innovations, gadgets, and breakthroughs in the world of technology. Whether you\'re a seasoned developer, a curious consumer, or just someone fascinated by the rapid advancements in the tech realm, this channel provides a space to share insights, troubleshoot tech issues, and explore the future of digital evolution.', 1, '2024-06-03 11:38:16', 'TechTalk Lounge', 12, 1, 1);
 INSERT INTO `channels` VALUES (2, '2024-06-03 10:33:15', 'Bookworm Haven is a virtual sanctuary for literary aficionados and bookworms alike. Here, the written word takes center stage as members dive into deep conversations about classic novels, contemporary bestsellers, and hidden literary gems. From genre-specific recommendations to thought-provoking discussions on character development and plot twists, this channel is a haven for those who find solace and joy in the pages of a good book.', 1, '2024-06-03 10:58:26', 'Bookworm Haven', 13, 1, 1);
 INSERT INTO `channels` VALUES (3, '2024-06-03 10:33:43', 'Fitness Fanatics Hub is the go-to spot for health enthusiasts, gym buffs, and anyone committed to living an active lifestyle. Whether you\'re a seasoned athlete, a beginner on a fitness journey, or someone just looking for motivation, this channel provides a supportive community to share workout tips, nutrition advice, and celebrate personal milestones. Join the conversation and empower yourself on the path to a healthier, more active life.', 1, '2024-06-03 10:58:25', 'Fitness Fanatics Hub', 14, 1, 1);
 INSERT INTO `channels` VALUES (4, '2024-06-03 10:34:17', 'Creative Minds Collective is a vibrant space where artists, writers, musicians, and creators of all kinds come together to inspire and be inspired. Share your latest artistic endeavors, seek feedback on your work, or collaborate with fellow creatives. This channel is a melting pot of imagination, fostering a community that encourages exploration, experimentation, and the celebration of diverse forms of self-expression.', 1, '2024-06-03 10:58:12', 'Creative Minds Collective', 15, 1, 1);
 INSERT INTO `channels` VALUES (5, '2024-06-03 10:34:47', 'Green Living Oasis is a dedicated channel for eco-conscious individuals striving to make a positive impact on the environment. From sustainable living tips and eco-friendly product recommendations to discussions on climate change and conservation efforts, this channel serves as a gathering place for those passionate about fostering a greener, more sustainable future. Join us in the pursuit of eco-conscious living and share your insights on preserving our planet.', 1, '2024-06-03 10:58:24', 'Green Living Oasis', 16, 1, 1);
 INSERT INTO `channels` VALUES (6, '2024-06-03 10:34:52', 'Global Gastronomy Galore is a delectable channel where foodies from around the world come together to share their love for culinary delights. From international recipes and cooking tips to discussions on food culture and unique dining experiences, this channel is a feast for the senses. Join fellow epicureans in exploring the rich tapestry of global cuisines and discover new flavors that will tantalize your taste buds.', 1, '2024-06-03 10:58:20', 'Global Gastronomy Galore', 18, 1, 1);
 INSERT INTO `channels` VALUES (52, '2024-06-03 10:38:52', 'Adventure Seekers Network is the ultimate virtual basecamp for thrill-seekers and outdoor enthusiasts. Whether you\\\'re into hiking, rock climbing, backpacking, or extreme sports, this channel is your go-to for adrenaline-pumping discussions. Share your latest adventures, seek advice on gear, and connect with fellow adrenaline junkies who understand the call of the wild. Embark on a journey with like-minded individuals who live for the thrill of the great outdoors.', 1, '2024-06-03 10:58:23', 'Adventure Seekers', 19, 1, 1);
-INSERT INTO `channels` VALUES (53, '2024-06-03 10:40:25', 'Language Exchange Plaza is a dynamic hub for language learners and polyglots to come together and embark on a linguistic journey. Whether you\'re brushing up on a second language or starting from scratch, this channel provides a supportive environment for practicing and learning new languages. Engage in language exchange sessions, share helpful resources, and connect with speakers of various languages around the globe. Immerse yourself in a diverse linguistic landscape and broaden your cultural horizons.', 1, '2024-06-03 10:57:30', 'Language Exchange Plaza', 20, 2, 1);
+INSERT INTO `channels` VALUES (53, '2024-06-03 10:40:25', 'Language Exchange Plaza is a dynamic hub for language learners and polyglots to come together and embark on a linguistic journey. Whether you\'re brushing up on a second language or starting from scratch, this channel provides a supportive environment for practicing and learning new languages. Engage in language exchange sessions, share helpful resources, and connect with speakers of various languages around the globe. Immerse yourself in a diverse linguistic landscape and broaden your cultural horizons.', 1, '2024-06-03 15:14:32', 'Language Exchange Plaza', 20, 2, 1);
 
 -- ----------------------------
 -- Table structure for inbox_messages
@@ -203,6 +235,10 @@ CREATE TABLE `message_resources`  (
 -- ----------------------------
 -- Records of message_resources
 -- ----------------------------
+INSERT INTO `message_resources` VALUES (31, 21);
+INSERT INTO `message_resources` VALUES (32, 22);
+INSERT INTO `message_resources` VALUES (32, 23);
+INSERT INTO `message_resources` VALUES (32, 24);
 
 -- ----------------------------
 -- Table structure for messages
@@ -220,11 +256,43 @@ CREATE TABLE `messages`  (
   INDEX `FK70dbtbrm0exf9r8adkipf6rv3`(`reply_to` ASC) USING BTREE,
   CONSTRAINT `FK70dbtbrm0exf9r8adkipf6rv3` FOREIGN KEY (`reply_to`) REFERENCES `messages` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `FKqrh6snbfu5yme4sxyf8vkh5xt` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 33 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of messages
 -- ----------------------------
+INSERT INTO `messages` VALUES (1, 'i8cB85wBSwrSuH95+5MRTw==', '2024-06-03 15:01:16', 'ACTIVE', 1, NULL);
+INSERT INTO `messages` VALUES (2, 'K8REI8b2Bn206WLQgSOArA==', '2024-06-03 15:01:20', 'ACTIVE', 1, NULL);
+INSERT INTO `messages` VALUES (3, '0cS5fWq0m3sP9nTwv981iQ==', '2024-06-03 15:01:24', 'ACTIVE', 1, NULL);
+INSERT INTO `messages` VALUES (4, '23mLcpZpciHpkAwzbQosqw==', '2024-06-03 15:01:27', 'ACTIVE', 1, NULL);
+INSERT INTO `messages` VALUES (5, '7zN+/kBhBQiyFHrhbZEWlA==', '2024-06-03 15:01:30', 'ACTIVE', 1, NULL);
+INSERT INTO `messages` VALUES (6, 'YMirW7DUBZPdXFSAoZBy1A==', '2024-06-03 15:01:33', 'ACTIVE', 1, NULL);
+INSERT INTO `messages` VALUES (7, 'pecb8QZvW+QAXLYiva83JA==', '2024-06-03 15:01:49', 'ACTIVE', 1, NULL);
+INSERT INTO `messages` VALUES (8, 'X79QquCBG0wQfwsKdMVehw==', '2024-06-03 15:02:02', 'ACTIVE', 1, NULL);
+INSERT INTO `messages` VALUES (9, 'BZLuxtLfNVMWU40OL3mPfA==', '2024-06-03 15:02:06', 'ACTIVE', 1, NULL);
+INSERT INTO `messages` VALUES (10, 'EhXEsgAXrHPvo3qKQe3oSA==', '2024-06-03 15:08:06', 'ACTIVE', 1, NULL);
+INSERT INTO `messages` VALUES (11, '6bVs9P6goqvUqy8SP/m3ER4uZpJ7EOqkzAD0l5Utgzk=', '2024-06-03 15:08:27', 'ACTIVE', 1, NULL);
+INSERT INTO `messages` VALUES (12, 'AgHb3UrPU31o5mo6EY9n5RlFvT2lBiHRVQKZD3qmt3I=', '2024-06-03 15:08:35', 'ACTIVE', 1, NULL);
+INSERT INTO `messages` VALUES (13, '/eSGNqzIuxdCuUKdAfs8QncBKvBUTph/lBxcEGXQW3Q=', '2024-06-03 15:08:40', 'ACTIVE', 1, NULL);
+INSERT INTO `messages` VALUES (14, 'lnfP35hrPmZjvfdyk+0RMs+CmxJxfY7kwEXDOVCuPAM=', '2024-06-03 15:08:55', 'ACTIVE', 1, NULL);
+INSERT INTO `messages` VALUES (15, 'IyDVKvsMqGWzTnNqhbzlykBqJoq2HIC8+RiLRRIWeb8=', '2024-06-03 15:09:00', 'ACTIVE', 1, NULL);
+INSERT INTO `messages` VALUES (16, 'rKKGivw4vzRGPGYLYUZvt38UR0Xl1J0uUQtWRnXsKZk=', '2024-06-03 15:09:04', 'ACTIVE', 1, NULL);
+INSERT INTO `messages` VALUES (17, 'rVwrtBE6DtphzguQDkuiKXp82/RZJcr1GlV8E2klBr4=', '2024-06-03 15:09:19', 'ACTIVE', 1, NULL);
+INSERT INTO `messages` VALUES (18, 'bccPudbNtGzgNrEpm230cwZCkcLP1rn57fWwhqKGPrI=', '2024-06-03 15:09:38', 'ACTIVE', 1, NULL);
+INSERT INTO `messages` VALUES (19, 'uq4B4UNakkqK95l61gSk2MRHsg99wR3jvKDTEq7U8TI=', '2024-06-03 15:10:51', 'ACTIVE', 1, NULL);
+INSERT INTO `messages` VALUES (20, 'lX5QPO7v7w5BXu1tAzsclrs5PH5ffEi7PQQggHgUfog=', '2024-06-03 15:11:14', 'ACTIVE', 1, NULL);
+INSERT INTO `messages` VALUES (21, 'amBwsuM5jws5mzbmQ+UTwA==', '2024-06-03 15:12:54', 'ACTIVE', 1, NULL);
+INSERT INTO `messages` VALUES (22, '3ICRqt2Rf6/xkHQ4rSGbWA==', '2024-06-03 15:13:00', 'ACTIVE', 1, NULL);
+INSERT INTO `messages` VALUES (23, 'GjPDOO8ofBiYWmaLAWL0Sg==', '2024-06-03 15:13:04', 'ACTIVE', 1, NULL);
+INSERT INTO `messages` VALUES (24, '+3ByzdZxNpi78/hODcijog==', '2024-06-03 15:13:08', 'ACTIVE', 1, NULL);
+INSERT INTO `messages` VALUES (25, 'jAU/hegQTorY4J5X+/sKfw==', '2024-06-03 15:13:12', 'ACTIVE', 1, NULL);
+INSERT INTO `messages` VALUES (26, 'BCmBmD0m2/7mzRKmrDG92g==', '2024-06-03 15:13:16', 'ACTIVE', 1, NULL);
+INSERT INTO `messages` VALUES (27, 'Hr2OChuG8yi6fSfTjCULDQ==', '2024-06-03 15:13:19', 'ACTIVE', 1, NULL);
+INSERT INTO `messages` VALUES (28, 'q1NKsWXCFOXKMtCHOzZciQ==', '2024-06-03 15:13:32', 'ACTIVE', 1, 26);
+INSERT INTO `messages` VALUES (29, 'iTEACop4OC/HJxZhuFDbrQ==', '2024-06-03 15:13:40', 'ACTIVE', 1, 28);
+INSERT INTO `messages` VALUES (30, '/27bfaJdU/90KuANk4aK1w==', '2024-06-03 15:13:46', 'ACTIVE', 1, 28);
+INSERT INTO `messages` VALUES (31, 'lI93uvguymgXXL3WtESBvw==', '2024-06-03 15:14:06', 'ACTIVE', 1, NULL);
+INSERT INTO `messages` VALUES (32, '1Oaeb1Bu9/3/GhGFXDjaZQ==', '2024-06-03 15:14:32', 'ACTIVE', 1, 31);
 
 -- ----------------------------
 -- Table structure for notifications
@@ -245,7 +313,7 @@ CREATE TABLE `notifications`  (
   CONSTRAINT `FK9y21adhxn0ayjhfocscqox7bh` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `FKlqgkuva6ippuy3npn0qyuic8i` FOREIGN KEY (`avatar`) REFERENCES `resources` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `notifications_chk_1` CHECK (`type` between 0 and 2)
-) ENGINE = InnoDB AUTO_INCREMENT = 148 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 149 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of notifications
@@ -397,6 +465,7 @@ INSERT INTO `notifications` VALUES (144, 'vfjOTh1liHfNJZie8IAYzgq0cj/uq3afA3YL5y
 INSERT INTO `notifications` VALUES (145, 'vfjOTh1liHfNJZie8IAYzgq0cj/uq3afA3YL5yl3cHo15oZQYl2qlTw4qTVVfQIHLjl/MnyaTnz1FvWAle1nEg==', '2024-06-03 10:58:25.048138', 'XmSwpulpk+sl6ONd3Dr6CA==', 'zVwOjVROp+bxovnfZC7d1ariYcBXjvixVhycNde57Tk=', 0, 14, 2);
 INSERT INTO `notifications` VALUES (146, 'vfjOTh1liHfNJZie8IAYzgq0cj/uq3afA3YL5yl3cHppDxnVmaUwOWKrwDESJUbk', '2024-06-03 10:58:25.647220', '5cJ/RwInkIDcLFDMHn7sEw==', 'zVwOjVROp+bxovnfZC7d1ariYcBXjvixVhycNde57Tk=', 0, 13, 2);
 INSERT INTO `notifications` VALUES (147, 'vfjOTh1liHfNJZie8IAYzgq0cj/uq3afA3YL5yl3cHoaynjpUc1QHZ/8UQWAYvDSKJsZJ6sNjvjEUKehq7IK8g==', '2024-06-03 10:58:26.532152', 'DmBdJnwLy4cqFKjs9qKB8g==', 'zVwOjVROp+bxovnfZC7d1ariYcBXjvixVhycNde57Tk=', 0, 12, 2);
+INSERT INTO `notifications` VALUES (148, 'vfjOTh1liHfNJZie8IAYzgq0cj/uq3afA3YL5yl3cHoaynjpUc1QHZ/8UQWAYvDSKJsZJ6sNjvjEUKehq7IK8g==', '2024-06-03 11:38:16.417778', 'DmBdJnwLy4cqFKjs9qKB8g==', 'zVwOjVROp+bxovnfZC7d1ariYcBXjvixVhycNde57Tk=', 0, 12, 2);
 
 -- ----------------------------
 -- Table structure for refresh_tokens
@@ -481,7 +550,7 @@ CREATE TABLE `resources`  (
   `generated_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 21 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 25 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of resources
@@ -505,6 +574,10 @@ INSERT INTO `resources` VALUES (16, 2599281, '9uNYc5rDu+ULDmht2FKE6A==', 'WQnPU3
 INSERT INTO `resources` VALUES (18, 7230574, '9uNYc5rDu+ULDmht2FKE6A==', 'NYIha0OCkOywZGZ+kFRY0w==', 'c5TCkjBS1soDUpdjdRXh7MvzPUHIroY9hF1tb4pxnI5y1GukOgaa4UxZ/5w8y1w4', 'ikigbjYRwMBDYLgll4AILmqIjj/5w7w0g6iZ2Xi/eWHKYwZQ5bW4Q9DS1rBT+iMcATlKxW7JxqeXZrgkU2acQdEPrW9hcdpfk5ehD++50640tNVqkiIfKEjpHzpaVmhR/Wj6HvxSYpAMehW+ug54SQ==');
 INSERT INTO `resources` VALUES (19, 3576718, '9uNYc5rDu+ULDmht2FKE6A==', 'vU820hj7HPQR2+8G2LDnsQ==', 'JOblfwZR1eVOabm8qzgWEn1deaMQpy17qnLENba1Q5MgpOs7b5Gf+gR86y+OIgM3', 'ikigbjYRwMBDYLgll4AILmqIjj/5w7w0g6iZ2Xi/eWHKYwZQ5bW4Q9DS1rBT+iMcoqCWEhy07kuYUWk8luH0lkLYweRF9+e16Wv5IDPdLlLY2iXevDvS05UrMt2ediYgzCEqJGzEWr7TGXQ9JiZXnw==');
 INSERT INTO `resources` VALUES (20, 2554601, '9uNYc5rDu+ULDmht2FKE6A==', 'TdrzQKIAer0Ab6ETAh6yYA==', 'Y9Vi/8UOeSINb/Jh+9sFXT1GeYAtTbR+teClGTQn9a8TfuAt/41yWgeWra7xdKWF', 'ikigbjYRwMBDYLgll4AILmqIjj/5w7w0g6iZ2Xi/eWHKYwZQ5bW4Q9DS1rBT+iMcBlIZmbLHYCE57uybm1O2sguI741X5wOLgxBoS0oRR8pgzI+lmejF9SslpZOP7wnHroXwfqGysMv3aEVrb+OoCg==');
+INSERT INTO `resources` VALUES (21, 5750196, '9uNYc5rDu+ULDmht2FKE6A==', 'bJ2GTEgcklAerNmqcleH1g==', '58U/am30nalxFQYXV0pR0hLnTeJ22kvaU6pvsp6RRUG9OkdCzJIuazpY4wUr/qvt', 'ikigbjYRwMBDYLgll4AILmqIjj/5w7w0g6iZ2Xi/eWHKYwZQ5bW4Q9DS1rBT+iMczX96ZkWZA7TYKgTqmLXGAyP0hx6wP9HNkeRvHmS3EjERWwMOBHDhw2sBzYjoTb5rubRDtumqeqSYmDiCUqHc3w==');
+INSERT INTO `resources` VALUES (22, 28187, 'PJie5b2L5ki5Rl+liq/0/A==', 'swmU5JHe3NjqWScDMFFfiA==', 'ir820Myw465qhWQD4Btoxrnd46SAFGjch0okCDYzQbTznLxMTQd+aQYGo5m7G8yb', 'ikigbjYRwMBDYLgll4AILmqIjj/5w7w0g6iZ2Xi/eWHKYwZQ5bW4Q9DS1rBT+iMcR7L8iVYNMXFG4if86g7U4PVmlgfuwOA+hcdki6KeTri21ZSYp6fIN91fUXKd43dTyiQfc0UzGPNXvz06nwubZw==');
+INSERT INTO `resources` VALUES (23, 29542, 'PJie5b2L5ki5Rl+liq/0/A==', 'geaWyx4n8t8rArC3ufIMgQ==', '2Ryg111x+KXWG5tFSHVihyXT7+5n53SLjjaiRK69Flfruf5alElJzSnr7bcVskaf', 'ikigbjYRwMBDYLgll4AILmqIjj/5w7w0g6iZ2Xi/eWHKYwZQ5bW4Q9DS1rBT+iMc0kcynzFo+U+p+Q9ZhikWUiu14fH/0HXdvhhSEyLVVWvllm118fcc/dqu6GiuCOtNGjHKY/wSnHUMdx5nZbg3hA==');
+INSERT INTO `resources` VALUES (24, 33576, 'PJie5b2L5ki5Rl+liq/0/A==', 'IsHMWb104wLJOL5FRXOwDQ==', 'ATYOWYU0R4gHta0Qe6VbD2Oa06VBq9nXK1cGHqK5LE1Q+sdW29Gowcn4Je/L+TES', 'ikigbjYRwMBDYLgll4AILmqIjj/5w7w0g6iZ2Xi/eWHKYwZQ5bW4Q9DS1rBT+iMcRJNEtC8e7HV8dssC5Rr9w7Q+qyoX3cPkWAXFWp4GNIC7H+figkGJ0Grr2Yqhp5vwR7opjIqfFvYGVRd1ntMNRQ==');
 
 -- ----------------------------
 -- Table structure for space_seq
