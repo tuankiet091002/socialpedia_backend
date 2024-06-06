@@ -8,11 +8,7 @@ Backend for Socialpedia
 - [Usage](#usage)
 - [Features](#features)
 - [API Endpoints](#api-endpoints)
-- [Configuration](#configuration)
-- [Contributing](#contributing)
-- [License](#license)
-- [Contact](#contact)
-
+- 
 ## Installation
 
 Follow these steps to install and set up the project:
