@@ -24,7 +24,7 @@ Follow these steps to install and set up the project:
     ./mvnw clean install
     ```
 4. Set up the database:
-    - Set up MySQL database with suitable name.
+    - Set up MySQL database with suitable name
     - Set up [Redis](https://redis.io/docs/latest/operate/oss_and_stack/install/install-redis/)
     - Update the `application.properties`file with your database configuration.
 
